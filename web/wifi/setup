@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <title>WiFi Setup</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/wifiIcons.css">
+  </head>
+
+  <body style="padding-top:58px;">
+    <div id="header"></div>
+    <div class="base-panel">
+        <form action="/wifi/connect" method="post">
+          <div class="spinner">
+              <div id="dbl">
+                <div id="dbl1" class="dbl-bounce1"></div>
+                <div id="dbl2" class="dbl-bounce2"></div>
+              </div>
+              <div id="ssid_current" style="position:absolute;left:-100%;right:-100%;text-align:center;margin:0px auto;font-weight:bold;color:#0b0b33;">requesting current state...</div>
+          </div>
+          <div style="text-align:center;padding-bottom: 3px;margin:16px 0 16px 0;border-bottom:solid 1px #263238;"></div>
+          <div id="list_ssid"></div>
+          <div id="list_ssid_info" style="margin:16px 0 8px 0;border-bottom:solid 1px #263238;">Load WiFi stations... </div>
+          <div class="noorder">
+            <div>
+                <label id="lbl_ssid" for="ssid">SSID</label>
+                <input id="ssid" type="text" name="ssid" placeholder="SSID">
+            </div>
+            <div>
+                <label id="lbl_passphrase" for="passphrase">Passphrase</label>
+                <input id="passphrase" type="password" name="passphrase" placeholder="Passphrase">
+                <input id="pass-status" type="checkbox" aria-hidden="true" onClick="viewPassword('passphrase', 'pass-status')">
+            </div>
+            <div>
+                <label id="lbl_dhcp" for="dhcp">Enable DHCP</label>
+                <input id="dhcp" type="checkbox" name="dhcp" value="true" checked onclick="vsw(this.checked);">
+            </div>
+            <div class="exp">
+                <label id="lbl_staip" for="staip">IP Address</label>
+                <input id="staip" type="text" name="staip" value="">
+            </div>
+            <div class="exp">
+                <label id="lbl_gtway" for="gtway">Gateway</label>
+                <input id="gtway" type="text" name="gtway" value="">
+            </div>
+            <div class="exp">
+                <label id="lbl_ntmsk" for="ntmsk">Netmask</label>
+                <input id="ntmsk" type="text" name="ntmsk" value="">
+            </div>
+            <div class="exp">
+                <label id="lbl_dns1" for="dns1">DNS1</label>
+                <input id="dns1" type="text" name="dns1" value="">
+            </div>
+            <div class="exp">
+                <label id="lbl_dns2" for="dns2">DNS2</label>
+                <input id="dns2" type="text" name="dns2" value="">
+            </div>
+            <div><input type="submit" name="apply" value="Apply"></div>
+        </div>
+        </form>
+    </div>
+    <input id="btn_disable_wifi" type="button" style="margin:12px 5px 15px 20px;width:9em; background: red;" onClick="onDisableWiFi();" value="Disable WiFi">
+
+<script type="text/javascript">
+window.onload=function(){
+  ["staip","gtway","ntmsk","dns1","dns2"].forEach(function(n,o,t){
+    io=document.getElementById(n),io.placeholder='0.0.0.0',io.pattern='^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'});
+  vsw(true)};
+function onFocus(e){
+  document.getElementById('ssid').value=e,document.getElementById('passphrase').focus()
+}
+function vsw(e){
+  var t;t=e?'none':'block';for(const n of document.getElementsByClassName('exp'))n.style.display=t,n.getElementsByTagName('input')[0].disabled=e;e||document.getElementById('staip').focus()
+}
+function onDisableWiFi() {
+    var check = confirm('Disable WiFi? You will need hardware reset to revert this decision!'); 
+	if (check == true) {
+		location.href='/wifi/disable';
+	}
+}
+function viewPassword(input, status) {
+  var passwordInput = document.getElementById(input);
+  var passStatus = document.getElementById(status);
+
+  if (passwordInput.type == 'password'){
+    passwordInput.type='text';
+  } else {
+    passwordInput.type='password';
+  }
+}
+
+</script>
+<script>jsons = [ ["/wifi/state", "wifistate"], ["/wifi/stations", "wifistations"] ];</script>
+<script src="/js/postload.js"></script>
+</body>
+</html>

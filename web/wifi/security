@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <title>Security</title>
+    <link rel="stylesheet" href="/css/base.css">
+  </head>
+  <body style="padding-top:58px;">
+    <div id="header"></div>
+    <div class="base-panel">
+        <form action="/wifi/secsave" method="post">
+          <div class="noorder">
+            <div>
+                <label id="lbl_apname" for="apname">AP Name</label>
+                <input id="apname" type="text" name="apname" placeholder="Name">
+            </div>
+            <div>
+                <label id="lbl_appass" for="appass">Password</label>
+                <input id="appass" type="password" name="appass" placeholder="Passphrase">
+                <input id="appass-status" type="checkbox" aria-hidden="true" onClick="viewPassword('appass', 'appass-status')">
+            </div>
+            <div>
+              <input id="ap_always_on" type="checkbox" name="ap_always_on" value="true" checked> AP alway on</input>
+              <label id="info_ap_always_on">&#128712; Open AP also while connected to WiFi. </label>
+            </div>
+            <div>
+                <label id="lbl_httpuser" for="httpuser">HTTP User</label>
+                <input id="httpuser" type="text" name="httpuser" placeholder="Username">
+            </div>
+            <div>
+                <label id="lbl_httppass" for="httppass">HTTP Password</label>
+                <input id="httppass" type="password" name="httppass" placeholder="Passphrase">
+                <input id="httpass-status" type="checkbox" aria-hidden="true" onClick="viewPassword('httppass', 'httpass-status')">
+                <!-- class="fa fa-eye"  -->
+            </div>
+          </div>
+          <input type="submit" name="apply" value="Apply">
+        </form>
+    </div>
+
+    <script>var jsons = [ ["/wifi/scrt", "fillsecurity"] ];</script>
+    <script src="/js/postload.js"></script>
+    <script type="text/javascript">
+      function fillsecurity(data, url) {
+        document.getElementById("ap_always_on").checked = data["ap_always_on"];
+        ["apname","appass","httpuser",
+        "httppass"].forEach(function(id,idy,arr) {
+          document.getElementById(id).value = data[id];
+        });
+        // setTimeout(getJSON.bind(null, fillsecurity, "/wifi/scrt"), 3000);
+      }
+
+    function viewPassword(input, status) {
+      var passwordInput = document.getElementById(input);
+      var passStatus = document.getElementById(status);
+    
+      if (passwordInput.type == 'password'){
+        passwordInput.type='text';
+        <!-- passStatus.className='fa fa-eye-slash'; -->
+      } else {
+        passwordInput.type='password';
+        <!--  passStatus.className='fa fa-eye'; -->
+      }
+    }
+    </script>
+  </body>
+</html>

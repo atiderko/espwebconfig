@@ -1,0 +1,30 @@
+{
+  "brand": "ESP WebConfig",
+  "elements": [
+    {
+      "name": "WiFi",
+      "id": "menu_wifi",
+      "href": "/wifi/setup"
+    },
+    {
+      "name": "Security",
+      "id": "menu_security",
+      "href": "/wifi/security"
+    },
+    {
+      "name": "BBS",
+      "id": "menu_bbs",
+      "href": "/bbs/config"
+    },
+    {
+      "name": "Mail",
+      "id": "menu_mail",
+      "href": "/mail/setup"
+    },
+    {
+      "name": "Info",
+      "id": "menu_info",
+      "href": "/ewc/info"
+    }
+  ]
+}

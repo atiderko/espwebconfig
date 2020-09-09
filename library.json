@@ -1,0 +1,29 @@
+{
+  "name": "ESPWebConfig",
+  "keywords": "espressif web interface iot control simple easy ui userinterface",
+  "description": "ESP Web Configuration",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atiderko/ewc.git"
+  },
+  "authors": [{
+    "name": "Alexander Tiderko",
+    "email": "alexander.tiderko@gmail.com",
+    "url": "https://github.com/atiderko/ewc",
+    "maintainer": true
+  }],
+  "dependencies": [{
+      "name": "ESP Async WebServer",
+      "authors": "Hristo Gochkov",
+      "frameworks": "arduino"
+    },
+    {
+      "name": "ArduinoJson",
+      "authors": "Benoit Blanchon",
+      "frameworks": "arduino"
+    }
+  ],
+  "version": "0.1.0",
+  "frameworks": "arduino",
+  "platforms": "*"
+}

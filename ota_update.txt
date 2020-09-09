@@ -1,0 +1,7 @@
+https://github.com/homieiot/homie-esp8266/tree/develop/scripts/ota_updater
+cd .\.pio\libdeps\d1_mini\Homie\scripts\ota_updater\
+pip install -r requirements.txt
+
+D:\MyData\workspace\bewaesserung\bbs_homie\.pio\libdeps\d1_mini\Homie\scripts\ota_updater>python ota_updater.py -l odroid -u odroid -d odroid -i 807d3a6e7014 d:\MyData\workspace\bewaesserung\bbs_balkon_bewaesserungssteuerung\.pio\build\d1_mini\firmware.bin
+
+python ota_updater.py -l odroid -u odroid -d odroid -i 2cf43220b2ea d:\MyData\workspace\bewaesserung\bbs_balkon_bewaesserungssteuerung\.pio\build\d1_mini\firmware.bin

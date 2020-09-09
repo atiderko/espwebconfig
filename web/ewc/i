@@ -1,0 +1,17 @@
+{
+	"estab_ssid": "atid",
+	"wifi_mode": "",
+	"wifi_status": "",
+	"local_ip": "",
+	"gateway": "",
+	"netwask": "",
+	"softap_ip": "",
+	"ap_mac": "",
+	"sta_mac": "",
+	"channel": "",
+	"dbm": "",
+	"chip_id": "",
+	"cpu_freq": "",
+	"flash_size": "123",
+	"free_heap": ""
+}

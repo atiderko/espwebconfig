@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <title>Device Info</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/table.css">
+  </head>
+  <body style="padding-top:58px;">
+    <div id="header"></div>
+      <div>
+        <table class="info" style="border:none;">
+          <tbody>
+          <tr>
+            <td>Established connection</td>
+            <td id="estab_ssid"></td>
+          </tr>
+          <tr>
+            <td>Mode</td>
+            <td id="wifi_mode"></td>
+          </tr>
+          <tr>
+            <td>IP</td>
+            <td id="local_ip"></td>
+          </tr>
+          <tr>
+            <td>Gateway</td>
+            <td id="gateway"></td>
+          </tr>
+          <tr>
+            <td>Netmask</td>
+            <td id="netwask"></td>
+          </tr>
+          <tr>
+            <td>SoftAP IP</td>
+            <td id="softap_ip"></td>
+          </tr>
+          <tr>
+            <td>AP MAC</td>
+            <td id="ap_mac"></td>
+          </tr>
+          <tr>
+            <td>STA MAC</td>
+            <td id="sta_mac"></td>
+          </tr>
+          <tr>
+            <td>Channel</td>
+            <td id="channel"></td>
+          </tr>
+          <tr>
+            <td>dBm</td>
+            <td id="dbm"></td>
+          </tr>
+          <tr>
+            <td>Chip ID</td>
+            <td id="chip_id"></td>
+          </tr>
+          <tr>
+            <td>CPU Freq.</td>
+            <td id="cpu_freq"></td>
+          </tr>
+          <tr>
+            <td>Flash size</td>
+            <td id="flash_size"></td>
+          </tr>
+          <tr>
+            <td>Free memory</td>
+            <td id="free_heap"></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    
+    <script>var jsons = [ ["/ewc/i", "fillinfo"] ];</script>
+    <script src="/js/postload.js"></script>
+    <script type="text/javascript">
+      function fillinfo(data, url) {
+        document.getElementById("wifi_mode").innerText = data["wifi_mode"] + '(' + data["wifi_status"] + ')';
+        ["estab_ssid","local_ip","gateway",
+        "netwask","softap_ip","ap_mac","sta_mac",
+        "channel","dbm","chip_id","cpu_freq","flash_size",
+        "free_heap"].forEach(function(id,idy,arr) {
+          document.getElementById(id).innerText = data[id];
+        });
+        setTimeout(getJSON.bind(null, fillinfo, "/ewc/i"), 3000);
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+{
+    "finished": true,
+    "failed": false,
+    "reason": "",
+    "networks": [
+    {
+        "ssid": "atid",
+        "rssi": -65,
+        "encrypted": true,
+        "channel": 6,
+        "bssid": "00:23:AB:23:24:23",
+        "hidden": false
+    },
+    {
+        "ssid": "atidg",
+        "rssi": -56,
+        "encrypted": true,
+        "channel": 6,
+        "bssid": "00:23:AB:23:24:23",
+        "hidden": true
+    }
+  ]
+}

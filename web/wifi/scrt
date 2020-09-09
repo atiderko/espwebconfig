@@ -1,0 +1,7 @@
+{
+    "apname": "etc-1234567",
+    "appass": "",
+    "ap_always_on": false,
+    "httpuser": "admin",
+    "httppass": "admin"
+}
