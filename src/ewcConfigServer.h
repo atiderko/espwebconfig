@@ -41,13 +41,14 @@ typedef ESPAsyncDNSServer DNSServer;
 #include "ewcLogger.h"
 #include "ewcRTC.h"
 #include "ewcConfig.h"
+#include "ewcInterface.h"
+
+namespace EWC {
 
 const char PROGMEM_CONFIG_APPLICATION_JS[] PROGMEM = "application/javascript";
 const char PROGMEM_CONFIG_APPLICATION_JSON[] PROGMEM = "application/json";
 const char PROGMEM_CONFIG_TEXT_HTML[] PROGMEM = "text/html";
 const char PROGMEM_CONFIG_TEXT_CSS[] PROGMEM = "text/css";
-
-namespace EWC {
 
 struct MenuItem
 {
@@ -56,6 +57,21 @@ struct MenuItem
     String entry_id;
     bool visible;
 };
+
+
+typedef enum {
+    EWC_STATION_IDLE = 0,
+    EWC_STATION_CONNECTING,
+    EWC_STATION_CONNECTED,  // ESP32
+    EWC_STATION_GOT_IP,
+    EWC_STATION_SCAN_COMPLETED,  // ESP32
+    EWC_STATION_WRONG_PASSWORD,
+    EWC_STATION_NO_AP_FOUND,
+    EWC_STATION_CONNECT_FAIL,
+    EWC_STATION_CONNECTION_LOST,  // ESP32
+    EWC_STATION_DISCONNECTED,  // ESP32
+    EWC_STATION_NO_SHIELD  // ESP32
+} wifi_status_t;
 
 
 class ConfigServer
@@ -68,33 +84,60 @@ public:
     bool isAP() { return _ap_address.isSet(); }
     bool isConnected() { return WiFi.status() == WL_CONNECTED; }
     void loop();
+    void setBrand(const char* brand);
     Config& config() { return _config; }
     AsyncWebServer& webserver() { return _server; }
+    void sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summery);
+    void sendPageFailed(AsyncWebServerRequest *request, String title, String redirectUrl, String summery);
 
 private:
     AsyncWebServer _server;
     DNSServer _dnsServer;
     ConfigFS _configFS;
-    Config _config;
     Logger _logger;
     RTC _rtc;
+    Config _config;
+    String _brand;
     std::vector<MenuItem> _menu;
     IPAddress _ap_address;
+    static PGM_P wlStatusSymbols[];
 
     void _startAP();
     void _connect(const char* ssid=nullptr, const char* pass=nullptr);
     /** === web handler === **/
+    String _token_WIFI_MODE();
     String _token_STATION_STATUS(bool failedOnly);
-    void _sendMenu(AsyncWebServerRequest *request);
-    void _sendFileContent(AsyncWebServerRequest *request, const String& filename, const String& contentType);
-    void _sendContent_P(AsyncWebServerRequest *request, PGM_P content, const String& contentType);
-    void _onWiFiConnect(AsyncWebServerRequest *request);
-    void _onWiFiDisconnect(AsyncWebServerRequest *request);
-    void _onWifiState(AsyncWebServerRequest *request);
+    wifi_status_t _station_status();
+    void _sendMenu(AsyncWebServerRequest* request);
+    void _sendFileContent(AsyncWebServerRequest* request, const String& filename, const String& contentType);
+    void _sendContent_P(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
+    void _onSecurityGet(AsyncWebServerRequest* request);
+    void _onSecuritySave(AsyncWebServerRequest* request);
+    void _onGetInfo(AsyncWebServerRequest* request);
+    void _onWiFiConnect(AsyncWebServerRequest* request);
+    void _onWiFiDisconnect(AsyncWebServerRequest* request);
+    void _onWifiState(AsyncWebServerRequest* request);
     void _onWifiScan(AsyncWebServerRequest* request);
     void _onNotFound(AsyncWebServerRequest* request);
 
+    /** === WiFi handler === **/
+#if defined(ESP8266)
+    void _wifiOnStationModeConnected(const WiFiEventStationModeConnected& event);
+    void _wifiOnStationModeDisconnected(const WiFiEventStationModeDisconnected& event);
+    void _wifiOnStationModeAuthModeChanged(const WiFiEventStationModeAuthModeChanged& event);
+    void _wifiOnStationModeGotIP(const WiFiEventStationModeGotIP& event);
+    void _wifiOnStationModeDHCPTimeout();
+    void _wifiOnSoftAPModeStationConnected(const WiFiEventSoftAPModeStationConnected& event);
+    void _wifiOnSoftAPModeStationDisconnected(const WiFiEventSoftAPModeStationDisconnected& event);
+#else
+// TODO: events for ESP32
+#endif
+    static String _toMACAddressString(const uint8_t mac[]);
+    void _startWiFiScan(bool force=false);
+    void _checkAuth(AsyncWebServerRequest *request);
+
     unsigned long _msConnectStart    = 0;
+    unsigned long _msWifiScanStart   = 0;
     unsigned long _msConfigPortalStart    = 0;
     unsigned long _msConfigPortalTimeout  = 300000;
     unsigned long _msConnectTimeout       = 60000;
@@ -116,7 +159,7 @@ private:
     String        toStringIp(const IPAddress& ip);
 
     template <class T>
-    auto _optionalIPFromString(T *obj, const char *s) -> decltype(  obj->fromString(s)  ) {
+    auto _optionalIPFromString(T* obj, const char* s) -> decltype(  obj->fromString(s)  ) {
         return  obj->fromString(s);
     }
     auto _optionalIPFromString(...) -> bool {

@@ -5,6 +5,7 @@
     <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
     <title>E-Mail Setup</title>
     <link rel="stylesheet" href="/css/base.css">
+    <script src="/js/pre.js"></script>
   </head>
 
   <body style="padding-top:58px;">
@@ -43,6 +44,7 @@
             <div>
                 <label id="lbl_passphrase" for="passphrase">Password</label>
                 <input id="passphrase" type="password" name="passphrase" placeholder="Passphrase">
+                <input id="httpass-status" type="checkbox" aria-hidden="true" onClick="viewPassword('passphrase', '')">
             </div>
           </div>
           <input type="submit" name="apply" value="Apply">

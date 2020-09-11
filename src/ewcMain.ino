@@ -21,8 +21,8 @@ limitations under the License.
 #include <Arduino.h>
 #include "ewcConfigServer.h"
 
+EWC::InterfaceData& id = EWC::I::get();
 EWC::ConfigServer server;
-
 
 void setup() {
     Serial.begin(115200);

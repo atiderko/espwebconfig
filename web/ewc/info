@@ -72,7 +72,7 @@
         </table>
       </div>
     
-    <script>var jsons = [ ["/ewc/i", "fillinfo"] ];</script>
+    <script>var jsons = [ ["/ewc/info.json", "fillinfo"] ];</script>
     <script src="/js/postload.js"></script>
     <script type="text/javascript">
       function fillinfo(data, url) {
@@ -83,7 +83,7 @@
         "free_heap"].forEach(function(id,idy,arr) {
           document.getElementById(id).innerText = data[id];
         });
-        setTimeout(getJSON.bind(null, fillinfo, "/ewc/i"), 3000);
+        setTimeout(getJSON.bind(null, fillinfo, "/ewc/info.json"), 3000);
       }
     </script>
   </body>

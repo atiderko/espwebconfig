@@ -36,6 +36,7 @@ public:
     void write(uint8_t address, uint32_t flag);
 
 protected:
+    uint8_t _min;
     uint8_t _max;
     uint8_t _idxCurrent;
 };

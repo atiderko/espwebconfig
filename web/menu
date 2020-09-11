@@ -9,7 +9,7 @@
     {
       "name": "Security",
       "id": "menu_security",
-      "href": "/wifi/security"
+      "href": "/ewc/security"
     },
     {
       "name": "BBS",

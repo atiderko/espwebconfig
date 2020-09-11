@@ -25,16 +25,16 @@ limitations under the License.
 #include "ewcStreamingOperator.h"
 
 namespace EWC {
-class Logger;
 class ConfigServer;
 class ConfigFS;
+class Logger;
 class RTC;
 
 class InterfaceData {
   friend ConfigServer;
 
   public:
-    InterfaceData();
+    InterfaceData() {}
 
     ConfigServer& server() { return *_server; }
     ConfigFS& configFS() { return *_configFS; }
@@ -47,14 +47,18 @@ class InterfaceData {
     Logger* _logger;
     RTC* _rtc;
 };
-}
 
-class ETCI {
+
+class I {
   public:
-    static EWC::InterfaceData& get();
+    static InterfaceData& get() { return _interface; }
 
   private:
-    static EWC::InterfaceData _interface;
+    // Initialized in ewcConfigServer.cpp
+    static InterfaceData _interface;
+};
+
+
 };
 
 #endif

@@ -23,36 +23,87 @@ limitations under the License.
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 #include "ewcInterface.h"
+#include "generated/ewcInfoHTML.h"
+#include "generated/ewcSecurityHTML.h"
 #include "generated/webBaseCSS.h"
 #include "generated/webIndexHTML.h"
 #include "generated/webPostloadJS.h"
+#include "generated/webPreJS.h"
+#include "generated/webTableCSS.h"
 #include "generated/webWifiiconsCSS.h"
 #include "generated/wifiConnectHTML.h"
 #include "generated/wifiSetupHTML.h"
+#include "ewcPages.h"
 
 using namespace EWC;
 
-ConfigServer::ConfigServer(uint16_t port) :_server(80)
+InterfaceData I::_interface;  // need to define the static variable
+
+
+PGM_P ConfigServer::wlStatusSymbols[] = {
+    "IDLE",
+    "CONNECTING",
+    "CONNECTED",
+    "GOT_IP",
+    "SCAN_COMPLETED",
+    "WRONG_PASSWORD",
+    "NO_AP_FOUND",
+    "CONNECT_FAIL",
+    "CONNECTION_LOST",
+    "DISCONNECTED",
+    "NO_SHIELD"
+};
+
+WiFiEventHandler p1;
+WiFiEventHandler p2;
+WiFiEventHandler p3;
+WiFiEventHandler p4;
+WiFiEventHandler p5;
+WiFiEventHandler p6;
+WiFiEventHandler p7;
+
+ConfigServer::ConfigServer(uint16_t port)
+  : _server(port),
+  _brand("ESP Web Config")
 {
-    ETCI::get()._server = this;
-    ETCI::get()._configFS = &_configFS;
-    ETCI::get()._logger = &_logger;
-    ETCI::get()._rtc = &_rtc;
+
+    I::get()._server = this;
+    I::get()._configFS = &_configFS;
+    I::get()._logger = &_logger;
+    I::get()._rtc = &_rtc;
     _configFS.addConfig(_config);
 }
 
 void ConfigServer::setup()
 {
+    I::get().logger() << F("[EWC CS]: setup configFS") << endl;
     _configFS.setup();
+    if (_configFS.resetDetected()) {
+        WiFi.disconnect(true);
+    }
+    I::get().logger() << F("[EWC CS]: setup wifi events") << endl;
+#if defined(ESP8266)
+    p1 = WiFi.onStationModeConnected(std::bind(&ConfigServer::_wifiOnStationModeConnected, this, std::placeholders::_1));
+    p2 = WiFi.onStationModeDisconnected(std::bind(&ConfigServer::_wifiOnStationModeDisconnected, this, std::placeholders::_1));
+    p3 = WiFi.onStationModeAuthModeChanged(std::bind(&ConfigServer::_wifiOnStationModeAuthModeChanged, this, std::placeholders::_1));
+    p4 = WiFi.onStationModeGotIP(std::bind(&ConfigServer::_wifiOnStationModeGotIP, this, std::placeholders::_1));
+    p5 = WiFi.onStationModeDHCPTimeout(std::bind(&ConfigServer::_wifiOnStationModeDHCPTimeout, this));
+    p6 = WiFi.onSoftAPModeStationConnected(std::bind(&ConfigServer::_wifiOnSoftAPModeStationConnected, this, std::placeholders::_1));
+    p7 = WiFi.onSoftAPModeStationDisconnected(std::bind(&ConfigServer::_wifiOnSoftAPModeStationDisconnected, this, std::placeholders::_1));
+#else
+// TODO: events for ESP32
+#endif
+    I::get().logger() << F("[EWC CS]: configure urls") << endl;
     if (!_config.paramWifiDisabled){
-        if (_config.paramAPStartAlways) {
+        if (_config.paramAPStartAlways || _config.getBootMode() == BootMode::CONFIGURATION || _config.getBootMode() == BootMode::STANDALONE) {
             WiFi.mode(WIFI_AP_STA);
             _startAP();
-        } else {
+        } else if (_config.getBootMode() != BootMode::STANDALONE) {
             WiFi.mode(WIFI_STA);
+            delay(500);
         }
         _connect();
-        WiFi.scanNetworks(true);
+        _startWiFiScan();
     } else {
         WiFi.mode(WIFI_OFF);
     }
@@ -62,24 +113,31 @@ void ConfigServer::setup()
     _server.on("/bbs", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_WEB_INDEX, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);
     _server.on("/menu", std::bind(&ConfigServer::_sendMenu, this, std::placeholders::_1));
     _server.on("/css/base.css", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, CSS_WEB_BASE, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
-    _server.on("/css/wifi_icons.css", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, CSS_WEB_WIFIICONS, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
+    _server.on("/css/table.css", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, CSS_WEB_TABLE, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
+    _server.on("/css/wifiicons.css", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, CSS_WEB_WIFIICONS, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
     _server.on("/js/postload.js", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, JS_WEB_POSTLOAD, FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
+    _server.on("/js/pre.js", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, JS_WEB_PRE, FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
     // _server.on("/js/postload.js", HTTP_GET, [](AsyncWebServerRequest *request) {
     //     // if (ESPUI.basicAuth && !request->authenticate(ESPUI.basicAuthUsername, ESPUI.basicAuthPassword))
     //     // {
     //     //   return request->requestAuthentication();
     //     // }
-    //     ETCI::get().logger() << "send postload js: " << ESP.getFreeHeap() << endl;
+    //     I::get().logger() << "send postload js: " << ESP.getFreeHeap() << endl;
     //     request->send_P(200, "application/javascript", JS_POSTLOAD);
-    //     ETCI::get().logger() << "finished postload js: " << ESP.getFreeHeap() << endl;
+    //     I::get().logger() << "finished postload js: " << ESP.getFreeHeap() << endl;
     // });
     _server.rewrite("/wifi", "/wifi/setup");
     insertMenuCb("WiFi", "/wifi/setup", "menu_wifi", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/wifi/connect", std::bind(&ConfigServer::_onWiFiConnect, this, std::placeholders::_1));
-    _server.on("/wifi/connecting", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_WIFI_CONNECT, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
+//    _server.on("/wifi/connecting", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_WIFI_CONNECT, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/wifi/disconnect", std::bind(&ConfigServer::_onWiFiDisconnect, this, std::placeholders::_1));  //.setFilter(ON_AP_FILTER);
-    _server.on("/wifi/state", std::bind(&ConfigServer::_onWifiState, this, std::placeholders::_1));
-    _server.on("/wifi/stations", std::bind(&ConfigServer::_onWifiScan, this, std::placeholders::_1));
+    _server.on("/wifi/state.json", std::bind(&ConfigServer::_onWifiState, this, std::placeholders::_1));
+    _server.on("/wifi/stations.json", std::bind(&ConfigServer::_onWifiScan, this, std::placeholders::_1));
+    insertMenuCb("Security", "/ewc/security", "menu_security", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_EWC_SECURITY, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
+    _server.on("/ewc/security.json", std::bind(&ConfigServer::_onSecurityGet, this, std::placeholders::_1));
+    _server.on("/ewc/secsave", std::bind(&ConfigServer::_onSecuritySave, this, std::placeholders::_1));
+    insertMenuCb("Info", "/ewc/info", "menu_info", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_EWC_INFO, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
+    _server.on("/ewc/info.json", std::bind(&ConfigServer::_onGetInfo, this, std::placeholders::_1));
     _server.on("/fwlink", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
     _server.on("/favicon.ico", std::bind(&ConfigServer::_sendFileContent, this, std::placeholders::_1, "/favicon.ico", "image/x-icon"));
     _server.onNotFound (std::bind(&ConfigServer::_onNotFound,this,std::placeholders::_1));
@@ -87,9 +145,9 @@ void ConfigServer::setup()
 }
 
 void ConfigServer::_startAP() {
-    ETCI::get().logger() << endl;
+    I::get().logger() << endl;
     _msConfigPortalStart = millis();
-    ETCI::get().logger() << F("Configuring access point... ") << _config.paramAPName << endl;
+    I::get().logger() << F("[EWC CS]: Configuring access point... ") << _config.paramAPName << endl;
     //optional soft ip config
     // if (_ap_static_ip) {
     //     DEBUG_WM(F("Custom AP IP/GW/Subnet"));
@@ -102,34 +160,69 @@ void ConfigServer::_startAP() {
     }
     delay(500); // Without delay I've seen the IP address blank
     _ap_address = WiFi.softAPIP();
-    ETCI::get().logger() << F("AP IP address: ") << _ap_address << endl;
+    I::get().logger() << F("[EWC CS]: AP IP address: ") << _ap_address << endl;
     /* Setup the DNS server redirecting all the domains to the apIP */
     _dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     _dnsServer.start(DNS_PORT, "*", _ap_address);
-    ETCI::get().logger() << F("HTTP server started") << endl;
+    I::get().logger() << F("[EWC CS]: HTTP server started") << endl;
 }
 
 void ConfigServer::_connect(const char* ssid, const char* pass)
 {
-    ETCI::get().logger() << F("Connecting as wifi client... ssid: '") << ssid << "', pass: '" << pass << "'" << endl;
+    I::get().logger() << F("[EWC CS]: Connecting as wifi client... ssid: '") << ssid << "', pass: '" << pass << "'" << endl;
     _msConnectStart = millis();
     // check if we've got static_ip settings, if we do, use those.
     if (_sta_static_ip) {
-        ETCI::get().logger() << F("Custom STA IP/GW/Subnet/DNS") << endl;
+        I::get().logger() << F("[EWC CS]: Custom STA IP/GW/Subnet/DNS") << endl;
         WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn, _sta_static_dns1, _sta_static_dns2);
-        ETCI::get().logger() << F("  Local IP: ") << WiFi.localIP() << endl;
+        I::get().logger() << F("[EWC CS]:   Local IP: ") << WiFi.localIP() << endl;
     }
     if (ssid != nullptr && strlen(ssid) > 0) {
         //trying to fix connection in progress hanging
-        ETCI::get().logger() << F("Try to connect with new credentials with SSID: ") << ssid << endl;
+        I::get().logger() << F("[EWC CS]: Try to connect with new credentials with SSID: ") << ssid << endl;
         WiFi.disconnect(false);
         WiFi.begin(ssid, pass);
     } else {
-        ETCI::get().logger() << F("Try to connect with saved credentials for SSID: ") << WiFi.SSID() << endl;
+        I::get().logger() << F("[EWC CS]: Try to connect with saved credentials for SSID: ") << WiFi.SSID() << endl;
         WiFi.begin();
     }
 }
 
+#if defined(ESP8266)
+void ConfigServer::_wifiOnStationModeConnected(const WiFiEventStationModeConnected& event)
+{
+    I::get().logger() << F("[EWC CS]: _wifiOnStationModeConnected: ") << event.ssid << endl;
+    _config.setBootMode(BootMode::NORMAL);
+}
+
+void ConfigServer::_wifiOnStationModeDisconnected(const WiFiEventStationModeDisconnected& event)
+{
+    I::get().logger() << F("✘ [EWC CS]: _wifiOnStationModeDisconnected: ") << event.ssid << endl;
+}
+
+void ConfigServer::_wifiOnStationModeAuthModeChanged(const WiFiEventStationModeAuthModeChanged& event)
+{
+    I::get().logger() << F("[EWC CS]: _wifiOnStationModeAuthModeChanged: ") << event.newMode << endl;
+}
+void ConfigServer::_wifiOnStationModeGotIP(const WiFiEventStationModeGotIP& event)
+{
+    I::get().logger() << F("[EWC CS]: _wifiOnStationModeGotIP: ") << event.ip << endl;
+}
+void ConfigServer::_wifiOnStationModeDHCPTimeout()
+{
+    I::get().logger() << F("✘ [EWC CS]: _wifiOnStationModeDHCPTimeout: ") << endl;
+}
+void ConfigServer::_wifiOnSoftAPModeStationConnected(const WiFiEventSoftAPModeStationConnected& event)
+{
+    I::get().logger() << F("[EWC CS]: _wifiOnSoftAPModeStationConnected: ") << endl;
+}
+void ConfigServer::_wifiOnSoftAPModeStationDisconnected(const WiFiEventSoftAPModeStationDisconnected& event)
+{
+    I::get().logger() << F("[EWC CS]: _wifiOnSoftAPModeStationDisconnected: ") << endl;
+}
+#else
+// TODO: events for ESP32
+#endif
 void ConfigServer::insertMenu(const char* name, const char* uri, const char* entry_id, bool visible, std::size_t position)
 {
     MenuItem item;
@@ -150,141 +243,256 @@ void ConfigServer::insertMenuCb(const char* name, const char* uri, const char* e
   _server.on(uri, onRequest);
 }
 
+String ConfigServer::_token_WIFI_MODE() {
+  PGM_P wifiMode;
+  switch (WiFi.getMode()) {
+  case WIFI_OFF:
+    wifiMode = PSTR("OFF");
+    break;
+  case WIFI_STA:
+    wifiMode = PSTR("STA");
+    break;
+  case WIFI_AP:
+    wifiMode = PSTR("AP");
+    break;
+  case WIFI_AP_STA:
+    wifiMode = PSTR("AP_STA");
+    break;
+#ifdef ARDUINO_ARCH_ESP32
+  case WIFI_MODE_MAX:
+    wifiMode = PSTR("MAX");
+    break;
+#endif
+  default:
+    wifiMode = PSTR("experiment");
+  }
+  return String(FPSTR(wifiMode));
+}
+
+/**
+ *  Convert MAC address in uint8_t array to Sting XX:XX:XX:XX:XX:XX format.
+ *  @param  mac   Array of MAC address 6 bytes.
+ *  @return MAC address string in XX:XX:XX:XX:XX:XX format.
+ */
+String ConfigServer::_toMACAddressString(const uint8_t mac[]) {
+  String  macAddr = String("");
+  for (uint8_t i = 0; i < 6; i++) {
+    char buf[3];
+    sprintf(buf, "%02X", mac[i]);
+    macAddr += buf;
+    if (i < 5)
+      macAddr += ':';
+  }
+  return macAddr;
+}
+
+void ConfigServer::_onSecurityGet(AsyncWebServerRequest *request)
+{
+    _checkAuth(request);
+    I::get().logger() << "[EWC CS]: ESP heap: _onSecurityGet: " << ESP.getFreeHeap() << endl;
+    DynamicJsonDocument jsonDoc(512);
+    JsonObject json = jsonDoc.to<JsonObject>();
+    _config.json(jsonDoc);
+    I::get().logger() << "[EWC CS]: _onSecurityGet MEMUSAGE: " << json.memoryUsage() << endl;
+    I::get().logger() << "[EWC CS]: ESP heap: _onSecurityGet: " << ESP.getFreeHeap() << endl;
+    String output;
+    serializeJson(json, output);
+    I::get().logger() << "[EWC CS]: ESP heap: _onSecurityGet: " << ESP.getFreeHeap() << endl;
+    request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+}
+
+void ConfigServer::_onSecuritySave(AsyncWebServerRequest *request)
+{
+    _checkAuth(request);
+    I::get().logger() << "[EWC CS]: ESP heap: _onSecuritySave: " << ESP.getFreeHeap() << endl;
+    if (request->hasArg("apname")) {
+        _config.paramAPName = request->arg("apname");
+    }
+    if (request->hasArg("appass")) {
+        _config.setAPPass(request->arg("appass"));
+    }
+    if (request->hasArg("ap_always_on")) {
+        _config.paramAPStartAlways = request->arg("ap_always_on").equals("true");
+    }
+    if (request->hasArg("basic_auth")) {
+        _config.paramBasicAuth = request->arg("basic_auth").equals("true");
+    }
+    if (request->hasArg("httpuser")) {
+        _config.paramHttpUser = request->arg("httpuser");
+    }
+    if (request->hasArg("httppass")) {
+        _config.paramHttpPassword = request->arg("httppass");
+    }
+    I::get().logger() << "[EWC CS]: ESP heap: _onSecuritySave: " << ESP.getFreeHeap() << endl;
+    sendPageSuccess(request, "Security save", "/ewc/security", "Save success! Please, restart to apply AP chagnes!");
+    // request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), F("{\"save\": ok, \"msg\": \"Please, restart to apply AP chagnes!\"}"));
+}
+
+void ConfigServer::_onGetInfo(AsyncWebServerRequest *request)
+{
+    _checkAuth(request);
+    I::get().logger() << "[EWC CS]: ESP heap: _onGetInfo: " << ESP.getFreeHeap() << endl;
+    DynamicJsonDocument jsonDoc(512);
+    JsonObject json = jsonDoc.to<JsonObject>();
+  	json["estab_ssid"] = WiFi.status() == WL_CONNECTED ? WiFi.SSID() : String(F("N/A"));
+	json["wifi_mode"] = _token_WIFI_MODE();
+	json["wifi_status"] = String(WiFi.status());
+	json["local_ip"] = WiFi.localIP().toString();
+	json["gateway"] = WiFi.gatewayIP().toString();
+	json["netwask"] = WiFi.subnetMask().toString();
+	json["softap_ip"] = WiFi.softAPIP().toString();
+    uint8_t macAddress[6];
+    WiFi.softAPmacAddress(macAddress);
+	json["ap_mac"] = ConfigServer::_toMACAddressString(macAddress);
+    WiFi.macAddress(macAddress);
+	json["sta_mac"] = ConfigServer::_toMACAddressString(macAddress);
+	json["channel"] = String(WiFi.channel());
+    int32_t dBm = WiFi.RSSI();
+	json["dbm"] = dBm == 31 ? String(F("N/A")) : String(dBm);
+	json["chip_id"] = String(_config.getChipId());
+	json["cpu_freq"] =String(ESP.getCpuFreqMHz());
+#if defined(ARDUINO_ARCH_ESP8266)
+	json["flash_size"] = String(ESP.getFlashChipRealSize());
+#elif defined(ARDUINO_ARCH_ESP32)
+    json["flash_size"] = String(spi_flash_get_chip_size());
+#endif
+	json["free_heap"] = String(ESP.getFreeHeap());
+    I::get().logger() << "[EWC CS]: _onGetInfo MEMUSAGE: " << json.memoryUsage() << endl;
+    String output;
+    serializeJson(json, output);
+    I::get().logger() << "[EWC CS]: ESP heap: _onGetInfo: " << ESP.getFreeHeap() << endl;
+    request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+}
+
 void ConfigServer::_onWiFiConnect(AsyncWebServerRequest *request)
 {
-    ETCI::get().logger() << "ESP heap: _onWiFiConnect: " << ESP.getFreeHeap() << endl;
+    _checkAuth(request);
+    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiConnect: " << ESP.getFreeHeap() << endl;
     for (size_t idx = 0; idx < request->args(); idx++) {
-        ETCI::get().logger() << idx << ": " << request->argName(idx) << request->arg(idx) << endl;
+        I::get().logger() << "[EWC CS]: " << idx << ": " << request->argName(idx) << request->arg(idx) << endl;
     }
     const char* ssid = request->arg("ssid").c_str();
     const char* pass = request->arg("passphrase").c_str();
     if (request->hasArg("staip")) {
-        ETCI::get().logger() << F("static ip: ") << request->arg("staip") << endl;
+        I::get().logger() << F("[EWC CS]: static ip: ") << request->arg("staip") << endl;
         //_sta_static_ip.fromString(request->arg("ip"));
         String ip = request->arg("staip");
         _optionalIPFromString(&_sta_static_ip, ip.c_str());
     }
     if (request->hasArg("gtway")) {
-        ETCI::get().logger() << F("static gateway") << request->arg("gtway") << endl;
+        I::get().logger() << F("[EWC CS]: static gateway") << request->arg("gtway") << endl;
         String gw = request->arg("gtway");
         _optionalIPFromString(&_sta_static_gw, gw.c_str());
     }
     if (request->hasArg("ntmsk")) {
-        ETCI::get().logger() << F("static netmask") << request->arg("ntmsk") << endl;
+        I::get().logger() << F("[EWC CS]: static netmask") << request->arg("ntmsk") << endl;
         String sn = request->arg("ntmsk");
         _optionalIPFromString(&_sta_static_sn, sn.c_str());
     }
     if (request->hasArg("dns1")) {
-        ETCI::get().logger() << F("static DNS 1") << request->arg("dns1") << endl;
+        I::get().logger() << F("[EWC CS]: static DNS 1") << request->arg("dns1") << endl;
         String dns1 = request->arg("dns1");
         _optionalIPFromString(&_sta_static_dns1, dns1.c_str());
     }
     if (request->hasArg("dns2")) {
-        ETCI::get().logger() << F("static DNS 2") << request->arg("dns2") << endl;
+        I::get().logger() << F("[EWC CS]: static DNS 2") << request->arg("dns2") << endl;
         String dns2 = request->arg("dns2");
         _optionalIPFromString(&_sta_static_dns2, dns2.c_str());
     }
+    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiConnect: " << ESP.getFreeHeap() << endl;
+    request->send_P(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_CONNECT);
     _connect(ssid, pass);
-    ETCI::get().logger() << "ESP heap: _onWiFiConnect: " << ESP.getFreeHeap() << endl;
-    AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
-    response->addHeader("Location", "/wifi/connecting");
-    request->send ( response);
+    //HTML_WIFI_CONNECT, FPSTR(PROGMEM_CONFIG_TEXT_HTML)
+    // AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
+    // response->addHeader("Location", "/wifi/connecting");
+    // request->send ( response);
 }
 
 void ConfigServer::_onWiFiDisconnect(AsyncWebServerRequest *request)
 {
-    ETCI::get().logger() << "ESP heap: _onWiFiDisconnect: " << ESP.getFreeHeap() << endl;
+    _checkAuth(request);
+    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiDisconnect: " << ESP.getFreeHeap() << endl;
     AsyncWebServerResponse *response = request->beginResponse(302,"text/plain","");
     response->addHeader("Location", "/wifi/setup");
     request->send ( response);
-    ETCI::get().logger() << "ESP heap: _onWiFiDisconnect: " << ESP.getFreeHeap() << endl;
+    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiDisconnect: " << ESP.getFreeHeap() << endl;
     WiFi.disconnect(false);
 }
 
 
 String ConfigServer::_token_STATION_STATUS(bool failedOnly)
 {
-    PGM_P wlStatusSymbol = PSTR("");
-    PGM_P wlStatusSymbols[] = {
-#if defined(ARDUINO_ARCH_ESP8266)
-        PSTR("IDLE"),
-        PSTR("CONNECTING"),
-        PSTR("WRONG_PASSWORD"),
-        PSTR("NO_AP_FOUND"),
-        PSTR("CONNECT_FAIL"),
-        PSTR("GOT_IP")
-    };
-    switch (wifi_station_get_connect_status()) {
-        case STATION_IDLE:
-            wlStatusSymbol = wlStatusSymbols[0];
-            break;
-        case STATION_CONNECTING:
-            if (!failedOnly)
-                wlStatusSymbol = wlStatusSymbols[1];
-            break;
-        case STATION_WRONG_PASSWORD:
-            wlStatusSymbol = wlStatusSymbols[2];
-            break;
-        case STATION_NO_AP_FOUND:
-            wlStatusSymbol = wlStatusSymbols[3];
-            break;
-        case STATION_CONNECT_FAIL:
-            wlStatusSymbol = wlStatusSymbols[4];
-            break;
-        case STATION_GOT_IP:
-            if (!failedOnly)
-                wlStatusSymbol = wlStatusSymbols[5];
-            break;
-#elif defined(ARDUINO_ARCH_ESP32)
-      PSTR("IDLE"),
-      PSTR("NO_SSID_AVAIL"),
-      PSTR("SCAN_COMPLETED"),
-      PSTR("CONNECTED"),
-      PSTR("CONNECT_FAILED"),
-      PSTR("CONNECTION_LOST"),
-      PSTR("DISCONNECTED"),
-      PSTR("NO_SHIELD")
-    };
-    switch (_rsConnect) {
-        case WL_IDLE_STATUS:
-            wlStatusSymbol = wlStatusSymbols[0];
-            break;
-        case WL_NO_SSID_AVAIL:
-            wlStatusSymbol = wlStatusSymbols[1];
-            break;
-        case WL_SCAN_COMPLETED:
-            if (!failedOnly)
-                wlStatusSymbol = wlStatusSymbols[2];
-            break;
-        case WL_CONNECTED:
-            if (!failedOnly)
-                wlStatusSymbol = wlStatusSymbols[3];
-            break;
-        case WL_CONNECT_FAILED:
-            wlStatusSymbol = wlStatusSymbols[4];
-            break;
-        case WL_CONNECTION_LOST:
-            wlStatusSymbol = wlStatusSymbols[5];
-            break;
-        case WL_DISCONNECTED:
-            if (!failedOnly)
-                wlStatusSymbol = wlStatusSymbols[6];
-            break;
-        case WL_NO_SHIELD:
-            wlStatusSymbol = wlStatusSymbols[7];
-            break;
-#endif
+    wifi_status_t result = _station_status();
+    _logger << F("[EWC CS]: Station status for token: ") << result << endl;
+    PGM_P wlStatusSymbol = "";
+    if (!failedOnly || result > EWC_STATION_GOT_IP) {
+        wlStatusSymbol = wlStatusSymbols[result];
     }
     return String(FPSTR(wlStatusSymbol));
 }
 
+wifi_status_t ConfigServer::_station_status()
+{
+    wifi_status_t result = EWC_STATION_IDLE;
+#if defined(ARDUINO_ARCH_ESP8266)
+    station_status_t status = wifi_station_get_connect_status();
+    switch (status) {
+        case STATION_IDLE:
+            result = EWC_STATION_IDLE;
+            break;
+        case STATION_CONNECTING:
+            result = EWC_STATION_CONNECTING;
+            break;
+        case STATION_WRONG_PASSWORD:
+            result = EWC_STATION_WRONG_PASSWORD;
+            break;
+        case STATION_NO_AP_FOUND:
+            result = EWC_STATION_NO_AP_FOUND;
+            break;
+        case STATION_CONNECT_FAIL:
+            result = EWC_STATION_CONNECT_FAIL;
+            break;
+        case STATION_GOT_IP:
+            result = EWC_STATION_GOT_IP;
+            break;
+#elif defined(ARDUINO_ARCH_ESP32)
+    switch (WiFi.status()) {
+        case WL_IDLE_STATUS:
+            result = EWC_STATION_IDLE;
+            break;
+        case WL_NO_SSID_AVAIL:
+            result = EWC_STATION_NO_AP_FOUND;
+            break;
+        case WL_SCAN_COMPLETED:
+            result = EWC_STATION_SCAN_COMPLETED;
+            break;
+        case WL_CONNECTED:
+            result = EWC_STATION_CONNECTED;
+            break;
+        case WL_CONNECT_FAILED:
+            result = EWC_STATION_CONNECT_FAIL;
+            break;
+        case WL_CONNECTION_LOST:
+            result = EWC_STATION_CONNECTION_LOST;
+            break;
+        case WL_DISCONNECTED:
+            result = EWC_STATION_DISCONNECTED;
+            break;
+        case WL_NO_SHIELD:
+            result = EWC_NO_SHIELD;
+            break;
+#endif
+    }
+    return result;
+}
+
 void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
-    ETCI::get().logger() << "ESP heap: _sendMenu: " << ESP.getFreeHeap() << endl;
+    _checkAuth(request);
+    I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << endl;
     int n = WiFi.scanComplete();
-    Serial.println(n);
     DynamicJsonDocument jsonDoc(2048);
     JsonObject json = jsonDoc.to<JsonObject>();
-    json["brand"] = "BBS";
+    json["brand"] = _brand;
     JsonArray elements = json.createNestedArray("elements");
     std::vector<MenuItem>::iterator it;
     for (it = _menu.begin(); it != _menu.end(); it++) {
@@ -296,14 +504,14 @@ void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
     }
     String output;
     serializeJson(json, output);
-    ETCI::get().logger() << "ESP heap: _sendMenu: " << ESP.getFreeHeap() << endl;
+    I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
 void ConfigServer::_onWifiState(AsyncWebServerRequest *request)
 {
-    ETCI::get().logger() << "ESP heap: _onWifiState: " << ESP.getFreeHeap() << endl;
-    //int n = WiFi.scanComplete();
+    _checkAuth(request);
+    I::get().logger() << "[EWC CS]: ESP heap: _onWifiState: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(2048);
     JsonObject json = jsonDoc.to<JsonObject>();
     json["ssid"] = WiFi.SSID();
@@ -313,7 +521,7 @@ void ConfigServer::_onWifiState(AsyncWebServerRequest *request)
     json["reason"] = reason;
     String output;
     serializeJson(json, output);
-    ETCI::get().logger() << "ESP heap: _onWifiState: " << ESP.getFreeHeap() << endl;
+    I::get().logger() << "[EWC CS]: ESP heap: _onWifiState: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
@@ -326,26 +534,28 @@ void _wiFiState2Json(JsonObject& json, bool finished, bool failed, const char* r
 
 void ConfigServer::_onWifiScan(AsyncWebServerRequest *request)
 {
-    ETCI::get().logger() << "ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
+    _checkAuth(request);
+    I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
+    _startWiFiScan();
     int n = WiFi.scanComplete();
     DynamicJsonDocument jsonDoc(2048);
     JsonObject json = jsonDoc.to<JsonObject>();
     if (n == WIFI_SCAN_FAILED) {
-        ETCI::get().logger() << F("scanNetworks returned: WIFI_SCAN_FAILED!") << endl;
+        I::get().logger() << F("[EWC CS]: scanNetworks returned: WIFI_SCAN_FAILED!") << endl;
         _wiFiState2Json(json, true, true, "scanNetworks returned: WIFI_SCAN_FAILED!");
 	  } else if(n == WIFI_SCAN_RUNNING) {
-        ETCI::get().logger() << F("scanNetworks returned: WIFI_SCAN_RUNNING!") << endl;
+        I::get().logger() << F("[EWC CS]: scanNetworks returned: WIFI_SCAN_RUNNING!") << endl;
         _wiFiState2Json(json, false, false, "");
 	  } else if(n < 0) {
-        ETCI::get().logger() << F("scanNetworks failed with unknown error code!") << endl;
+        I::get().logger() << F("[EWC CS]: scanNetworks failed with unknown error code!") << endl;
         _wiFiState2Json(json, true, true, "scanNetworks failed with unknown error code!");
 	  } else if (n == 0) {
-        ETCI::get().logger() << F("No networks found") << endl;
+        I::get().logger() << F("✘ [EWC CS]: No networks found") << endl;
         _wiFiState2Json(json, true, true, "No networks found");
     }
+    JsonArray networks = json.createNestedArray("networks");
     if (n > 0) {
         _wiFiState2Json(json, true, false, "");
-        JsonArray networks = json.createNestedArray("networks");
         std::set<String> ssids;
         String ssid;
         uint8_t encType;
@@ -357,7 +567,6 @@ void ConfigServer::_onWifiScan(AsyncWebServerRequest *request)
             bool result = WiFi.getNetworkInfo(i, ssid, encType, rssi, bssid, channel, isHidden);
             // do not add the same station twice
             if (result && !ssid.isEmpty() && ssids.find(ssid.c_str()) == ssids.end()) {
-                Serial.println(ssid.c_str());
                 JsonObject jsonNetwork = networks.createNestedObject();
                 jsonNetwork["ssid"] = ssid;
                 jsonNetwork["encrypted"] = encType == ENC_TYPE_NONE ? false : true;
@@ -372,19 +581,18 @@ void ConfigServer::_onWifiScan(AsyncWebServerRequest *request)
         }
         String output;
         serializeJson(json, output);
-        ETCI::get().logger() << "ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
-        Serial.println(output);
+        I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
         request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
-        ETCI::get().logger() << "ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
+        I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
         //WiFi.scanDelete();
         return;
     } else if (n == -2) {
-        WiFi.scanNetworks(true);
+        _startWiFiScan(true);
+        _wiFiState2Json(json, false, false, "");
     }
     String output;
-    json["finished"] = "false";
     serializeJson(json, output);
-    ETCI::get().logger() << "ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
+    I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
@@ -401,8 +609,8 @@ void ConfigServer::loop()
                 startAP = true;
             } else {
                 // check for errors
-                String res = _token_STATION_STATUS(true);
-                if (!res.isEmpty()) {
+                wifi_status_t st = _station_status();
+                if (st == 0 || st > EWC_STATION_GOT_IP) {
                     startAP = true;
                 }
             }
@@ -415,9 +623,35 @@ void ConfigServer::loop()
     }
 }
 
+void ConfigServer::setBrand(const char* brand)
+{
+    _brand = String(brand);
+}
+
+void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summery)
+{
+    I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
+    String result(EWC_PAGE_SUCCESS);
+    result.replace("{{REDIRECT}}", redirectUrl);
+    result.replace("{{TITLE}}", title);
+    result.replace("{{SUMMERY}}", summery);
+    request->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
+    I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
+}
+
+void ConfigServer::sendPageFailed(AsyncWebServerRequest *request, String title, String redirectUrl, String summery)
+{
+    String result(EWC_PAGE_FAIL);
+    result.replace("{{REDIRECT}}", redirectUrl);
+    result.replace("{{TITLE}}", title);
+    result.replace("{{SUMMERY}}", summery);
+    request->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
+}
+
 void ConfigServer::_sendFileContent(AsyncWebServerRequest *request, const String& filename, const String& contentType)
 {
-    ETCI::get().logger() << F("Handle sendFileContent: ") << filename << endl;
+    _checkAuth(request);
+    I::get().logger() << F("[EWC CS]: Handle sendFileContent: ") << filename << endl;
     File reqFile = LittleFS.open(filename, "r");
     if (reqFile && reqFile.isFile()) {
         request->send(LittleFS, filename, contentType);
@@ -429,13 +663,14 @@ void ConfigServer::_sendFileContent(AsyncWebServerRequest *request, const String
 
 void ConfigServer::_sendContent_P(AsyncWebServerRequest *request, PGM_P content, const String& contentType)
 {
-    ETCI::get().logger() << "send " << request->url() << ":" << ESP.getFreeHeap() << endl;
+    _checkAuth(request);
+    I::get().logger() << "[EWC CS]: send content P" << request->url() << ":" << ESP.getFreeHeap() << endl;
     request->send_P(200, contentType.c_str(), content);
-    ETCI::get().logger() << "finished " << request->url() << ":" << ESP.getFreeHeap() << endl;
+    I::get().logger() << "[EWC CS]: finished " << request->url() << ":" << ESP.getFreeHeap() << endl;
 }
 
 void ConfigServer::_onNotFound(AsyncWebServerRequest *request) {
-    ETCI::get().logger() << F("Handle not found") << endl;
+    I::get().logger() << F("[EWC CS]: Handle not found") << endl;
     if (captivePortal(request)) { // If captive portal redirect instead of displaying the error page.
         return;
     }
@@ -461,8 +696,8 @@ void ConfigServer::_onNotFound(AsyncWebServerRequest *request) {
 bool ConfigServer::captivePortal(AsyncWebServerRequest *request)
 {
     if (!isIp(request->host()) ) {
-        ETCI::get().logger() << F("Request host is not an IP: ") << request->host() << endl;
-        ETCI::get().logger() << F("Request redirected to captive portal: ") << toStringIp(request->client()->localIP()) << endl;
+        I::get().logger() << F("[EWC CS]: Request host is not an IP: ") << request->host() << endl;
+        I::get().logger() << F("[EWC CS]: Request redirected to captive portal: ") << toStringIp(request->client()->localIP()) << endl;
         AsyncWebServerResponse *response = request->beginResponse(302,"text/plain","");
         response->addHeader("Location", String("http://") + toStringIp(request->client()->localIP()));
         request->send ( response);
@@ -471,6 +706,20 @@ bool ConfigServer::captivePortal(AsyncWebServerRequest *request)
     return false;
 }
 
+void ConfigServer::_startWiFiScan(bool force)
+{
+    if (force || millis() - _msWifiScanStart > WIFI_SCAN_DELAY) {
+        WiFi.scanNetworks(true, true);
+        _msWifiScanStart = millis();
+    }
+}
+
+void ConfigServer::_checkAuth(AsyncWebServerRequest *request)
+{
+    if (_config.paramBasicAuth && !request->authenticate(_config.paramHttpUser.c_str(), _config.paramHttpPassword.c_str())) {
+        return request->requestAuthentication();
+    }
+}
 //start up config portal callback
 // void ConfigServer::setAPCallback( void (*func)(ConfigServer* myESPAsyncWebConf) ) {
 //   _apcallback = func;

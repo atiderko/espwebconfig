@@ -5,7 +5,8 @@
     <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
     <title>WiFi Setup</title>
     <link rel="stylesheet" href="/css/base.css">
-    <link rel="stylesheet" href="/css/wifiIcons.css">
+    <link rel="stylesheet" href="/css/wifiicons.css">
+    <script src="/js/pre.js"></script>
   </head>
 
   <body style="padding-top:58px;">
@@ -79,19 +80,8 @@ function onDisableWiFi() {
 		location.href='/wifi/disable';
 	}
 }
-function viewPassword(input, status) {
-  var passwordInput = document.getElementById(input);
-  var passStatus = document.getElementById(status);
-
-  if (passwordInput.type == 'password'){
-    passwordInput.type='text';
-  } else {
-    passwordInput.type='password';
-  }
-}
-
 </script>
-<script>jsons = [ ["/wifi/state", "wifistate"], ["/wifi/stations", "wifistations"] ];</script>
+<script>jsons = [ ["/wifi/state.json", "wifistate"], ["/wifi/stations.json", "wifistations"] ];</script>
 <script src="/js/postload.js"></script>
 </body>
 </html>

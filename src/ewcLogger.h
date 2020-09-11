@@ -23,7 +23,6 @@ limitations under the License.
 #define EWC_LOGGER_H
 
 #include <Arduino.h>
-#include "ewcStreamingOperator.h"
 
 namespace EWC {
 class Logger : public Print {

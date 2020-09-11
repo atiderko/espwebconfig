@@ -53,6 +53,7 @@ public:
     /** === Configurations of modules implement ConfigInterface === **/
     void addConfig(ConfigInterface& config);
     //ConfigInterface* sub_config(String name);
+    bool resetDetected() { return _resetDetected; }
 
 protected:
     uint8_t _resetUtcAddress;

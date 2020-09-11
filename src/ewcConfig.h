@@ -31,6 +31,7 @@ namespace EWC {
 const char VERSION[] PROGMEM = "0.1.0";
 const char DEFAULT_HTTP_USER[] = "admin";
 const char DEFAULT_HTTP_PASSWORD[] = "";
+const unsigned long WIFI_SCAN_DELAY = 10000;
 
 enum BootMode {
     NORMAL = 0x10101010,
@@ -66,8 +67,10 @@ public:
     void setAPPass(String pass);
     bool paramAPStartAlways;
     bool paramWifiDisabled;
+    bool paramBasicAuth;
     String paramHttpUser;
     String paramHttpPassword;
+    uint32_t getChipId();
 
 protected:
     String _version;
@@ -78,7 +81,6 @@ protected:
 
     void _initParams();
     void _fromJson(JsonDocument& doc);
-    uint32_t _getChipId();
 };
 
 };

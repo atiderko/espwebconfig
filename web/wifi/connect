@@ -3,7 +3,7 @@
 
   <head>
     <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
-    <title>Bewaesserungsteuerung</title>
+    <title>WiFi connect state</title>
     <link rel="stylesheet" href="/css/base.css">
   </head>
   <body style="padding-top:58px;">
@@ -15,7 +15,7 @@
         </div>
         <div id="ssid_current" style="position:absolute;left:-100%;right:-100%;text-align:center;margin:10px auto;font-weight:bold;color:#0b0b33;">connecting..</div>
     </div>
-    <script>var jsons = [ ["/wifi/state", "wifistate"] ];</script>
+    <script>var jsons = [ ["/wifi/state.json", "wifistate"] ];</script>
     <script src="/js/postload.js"></script>
   </body>
 </html>

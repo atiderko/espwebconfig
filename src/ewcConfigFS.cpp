@@ -28,12 +28,10 @@ using namespace EWC;
 
 ConfigFS::ConfigFS(String filename)
 {
-    Serial.println("create config");
     _filename = filename;
     // initialize utc addresses in sutup method
     _resetUtcAddress = 0;
     _resetDetected = false;
-    Serial.println("ok");
 }
 
 ConfigFS::~ConfigFS()
@@ -43,28 +41,28 @@ ConfigFS::~ConfigFS()
 
 void ConfigFS::setup()
 {
-    ETCI::get().logger() << F("[CC]: setup config container") << endl;
-    _resetUtcAddress = ETCI::get().rtc().get();
-    ETCI::get().logger() << F("[CC]: initialize LittleFS") << endl;
+    I::get().logger() << F("[EWC ConfigFS]: setup config container") << endl;
+    _resetUtcAddress = I::get().rtc().get();
+    I::get().logger() << F("[EWC ConfigFS]: initialize LittleFS") << endl;
     LittleFS.begin();
     Dir root = LittleFS.openDir("");
     while(root.next()) {
-        ETCI::get().logger() << "  found file: " << root.fileName() << endl;
+        I::get().logger() << "  found file: " << root.fileName() << endl;
     }
-    ETCI::get().logger() << F("[CC]: read reset flag") << endl;
-    RTC& rtc = ETCI::get().rtc();
+    I::get().logger() << F("[EWC ConfigFS]: read reset flag") << endl;
+    RTC& rtc = I::get().rtc();
     if (rtc.read(_resetUtcAddress) == RESET_FLAG) {
         // double reset press detected
         _resetDetected = true;
         // reset configuration
-        ETCI::get().logger() << F("\n[CC]: RESET detected, remove configuration") << endl;
+        I::get().logger() << F("\n[EWC ConfigFS]: RESET detected, remove configuration") << endl;
         // TODO: delete configuration file
     }
     rtc.write(_resetUtcAddress, RESET_FLAG);
     delay(1000);
-    ETCI::get().logger() << F("[CC]: clear reset flag") << endl;
+    I::get().logger() << F("[EWC ConfigFS]: clear reset flag") << endl;
     rtc.write(_resetUtcAddress, RESET_FLAG_CLEAR);
-    ETCI::get().logger() << F("[CC]: Load configuration from ") << _filename << endl;
+    I::get().logger() << F("[EWC ConfigFS]: Load configuration from ") << _filename << endl;
     File cfgFile = LittleFS.open(_filename, "r");
     size_t fsize = 1024;
     if (cfgFile && cfgFile.isFile()) {
@@ -76,12 +74,12 @@ void ConfigFS::setup()
     }
     // reset RTC
     if (_resetDetected) {
-        ETCI::get().rtc().reset();
+        I::get().rtc().reset();
     }
     // add sub configurations
-    ETCI::get().logger() << F("[CC]: Load subconfigurations, count: ") << _cfgInterfaces.size() << endl;
+    I::get().logger() << F("[EWC ConfigFS]: Load subconfigurations, count: ") << _cfgInterfaces.size() << endl;
     for(std::size_t i = 0; i < _cfgInterfaces.size(); ++i) {
-        ETCI::get().logger() << F("[CC]:  load [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
+        I::get().logger() << F("[EWC ConfigFS]:  load [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
         _cfgInterfaces[i]->setup(jsondoc, _resetDetected);
     }
 }
@@ -100,10 +98,10 @@ void ConfigFS::loop()
 void ConfigFS::save()
 {
     _tsLastSave = millis();
-    ETCI::get().logger() << F("[CC]: save subconfigurations, count: ") << _cfgInterfaces.size() << endl;
+    I::get().logger() << F("[EWC ConfigFS]: save subconfigurations, count: ") << _cfgInterfaces.size() << endl;
     DynamicJsonDocument doc(2048);
     for(std::size_t i = 0; i < _cfgInterfaces.size(); ++i) {
-        ETCI::get().logger() << F("[CC]:  add [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
+        I::get().logger() << F("[EWC ConfigFS]:  add [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
         _cfgInterfaces[i]->json(doc);
     }
     // Open file for writing

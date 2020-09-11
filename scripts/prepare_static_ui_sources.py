@@ -33,7 +33,7 @@ def get_context(infile, outfile):
     if os.path.isdir(outfile):
         print("DIR:", outfile)
         outdir 	= os.path.realpath(outfile)
-        outdir = os.path.join(outdir, 'generated')
+        # outdir = os.path.join(outdir, 'generated')
         os.makedirs(outdir, exist_ok=True)
         outfilename	= "%s%s%s.h" % (prefix, name.capitalize(), ext.upper())
         outfile	= os.path.realpath(os.path.sep.join([outdir, outfilename]))
@@ -107,7 +107,12 @@ def process_dir(sourcedir, outdir, recursive=True, storemini=True, usegzip=False
 
 def main():
     web = os.path.realpath(os.sep.join((os.path.dirname(os.path.realpath(__file__)), "..", "web")))
-    src  = os.path.realpath(os.sep.join((os.path.dirname(os.path.realpath(__file__)), "..", "src")))
+    src  = os.path.realpath(os.sep.join((os.path.dirname(os.path.realpath(__file__)), "..", "src", "generated")))
+    for root, dirs, files in os.walk(src, topdown=False):
+        for name in files:
+            os.remove(os.path.join(root, name))
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
     process_dir(web, src, recursive = True, storemini = False, usegzip=False)
 
 if __name__ == "__main__" and "get_ipython" not in dir():
