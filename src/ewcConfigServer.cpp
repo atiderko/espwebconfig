@@ -324,8 +324,7 @@ void ConfigServer::_onSecuritySave(AsyncWebServerRequest *request)
         _config.paramHttpPassword = request->arg("httppass");
     }
     I::get().logger() << "[EWC CS]: ESP heap: _onSecuritySave: " << ESP.getFreeHeap() << endl;
-    sendPageSuccess(request, "Security save", "/ewc/security", "Save success! Please, restart to apply AP chagnes!");
-    // request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), F("{\"save\": ok, \"msg\": \"Please, restart to apply AP chagnes!\"}"));
+    sendPageSuccess(request, "Security save", "/ewc/security", "Save success! Please, restart to apply AP changes!");
 }
 
 void ConfigServer::_onGetInfo(AsyncWebServerRequest *request)

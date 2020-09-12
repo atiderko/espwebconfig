@@ -17,6 +17,19 @@ TARGET_TEMPLATE = '''const char {constant}[] PROGMEM = R"=====(
 TARGET_GZIP_TEMPLATE = '''const uint8_t {constant}_GZIP[{gziplen}] PROGMEM = {{ {gzipdata} }};'''
 
 
+def parse_arguments(args=None):
+    parser = argparse.ArgumentParser(
+        description="Generates header files by minifying and gzipping HTML, JS and CSS source files.")
+    parser.add_argument("--project_dir", "-p", dest="project_dir", default="",
+                        help="Target directory containing C header files OR one C header file")
+    parser.add_argument("--storemini", "-m", action="store_true", dest="storemini",
+                        help="Store intermediate minified files next to the originals (i.e. only write to the C header files)")
+    parser.add_argument("--gzip", "-z", action="store_true", dest="gzip",
+                        help="Generate gzip instead of plain text template in header files.")
+    args = parser.parse_args(args)
+    return args
+
+
 def get_context(infile, outfile):
     infile	= os.path.realpath(infile)
     prefix, name, ext 	= (os.path.basename(os.path.dirname(infile)), os.path.basename(infile).split(os.path.extsep)[0], os.path.basename(infile).split(os.path.extsep)[-1] )
@@ -105,15 +118,21 @@ def process_dir(sourcedir, outdir, recursive=True, storemini=True, usegzip=False
         # elif not os.path.isfile(f.replace(".min.", ".")):
         #     process_file(f, outdir, storemini)
 
-def main():
-    web = os.path.realpath(os.sep.join((os.path.dirname(os.path.realpath(__file__)), "..", "web")))
-    src  = os.path.realpath(os.sep.join((os.path.dirname(os.path.realpath(__file__)), "..", "src", "generated")))
+def main(args):
+    pdir = args.project_dir
+    if not pdir:
+        pdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+    web = os.path.realpath(os.path.join(pdir, "web"))
+    src  = os.path.realpath(os.path.join(pdir, "src", "generated"))
+    os.makedirs(src, exist_ok=True)
     for root, dirs, files in os.walk(src, topdown=False):
         for name in files:
             os.remove(os.path.join(root, name))
         for name in dirs:
             os.rmdir(os.path.join(root, name))
-    process_dir(web, src, recursive = True, storemini = False, usegzip=False)
+    print("args.storemini:", args.storemini)
+    print("args.gzip:", args.gzip)
+    process_dir(web, src, recursive = True, storemini=args.storemini, usegzip=args.gzip)
 
 if __name__ == "__main__" and "get_ipython" not in dir():
-    main()
+    main(parse_arguments())

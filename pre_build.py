@@ -1,2 +1,2 @@
 Import("env")
-env.Execute("python $PROJECT_DIR/scripts/prepare_static_ui_sources.py")
+env.Execute("python $PROJECT_DIR/scripts/generate_headers.py -p $PROJECT_DIR")
