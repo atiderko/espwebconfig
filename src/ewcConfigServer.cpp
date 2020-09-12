@@ -333,6 +333,7 @@ void ConfigServer::_onGetInfo(AsyncWebServerRequest *request)
     I::get().logger() << "[EWC CS]: ESP heap: _onGetInfo: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(512);
     JsonObject json = jsonDoc.to<JsonObject>();
+    json["version"] = _version;
   	json["estab_ssid"] = WiFi.status() == WL_CONNECTED ? WiFi.SSID() : String(F("N/A"));
 	json["wifi_mode"] = _token_WIFI_MODE();
 	json["wifi_status"] = String(WiFi.status());
@@ -488,7 +489,6 @@ wifi_status_t ConfigServer::_station_status()
 void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
     _checkAuth(request);
     I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << endl;
-    int n = WiFi.scanComplete();
     DynamicJsonDocument jsonDoc(2048);
     JsonObject json = jsonDoc.to<JsonObject>();
     json["brand"] = _brand;
@@ -622,9 +622,10 @@ void ConfigServer::loop()
     }
 }
 
-void ConfigServer::setBrand(const char* brand)
+void ConfigServer::setBrand(const char* brand, const char* version)
 {
     _brand = String(brand);
+    _version = String(version);
 }
 
 void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summery)

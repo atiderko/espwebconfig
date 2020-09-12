@@ -118,10 +118,8 @@ def process_dir(sourcedir, outdir, recursive=True, storemini=True, usegzip=False
         # elif not os.path.isfile(f.replace(".min.", ".")):
         #     process_file(f, outdir, storemini)
 
-def main(args):
-    pdir = args.project_dir
-    if not pdir:
-        pdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+def main(project_dir, storemini=False, usegzip=False):
+    pdir = project_dir
     web = os.path.realpath(os.path.join(pdir, "web"))
     src  = os.path.realpath(os.path.join(pdir, "src", "generated"))
     os.makedirs(src, exist_ok=True)
@@ -130,9 +128,11 @@ def main(args):
             os.remove(os.path.join(root, name))
         for name in dirs:
             os.rmdir(os.path.join(root, name))
-    print("args.storemini:", args.storemini)
-    print("args.gzip:", args.gzip)
-    process_dir(web, src, recursive = True, storemini=args.storemini, usegzip=args.gzip)
+    process_dir(web, src, recursive = True, storemini=storemini, usegzip=usegzip)
 
 if __name__ == "__main__" and "get_ipython" not in dir():
-    main(parse_arguments())
+    args = parse_arguments()
+    if args.project_dir:
+	    # generate library headers
+        main(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."), args.storemini, args.gzip)
+    main(args.project_dir, args.storemini, args.gzip)

@@ -84,7 +84,7 @@ public:
     bool isAP() { return _ap_address.isSet(); }
     bool isConnected() { return WiFi.status() == WL_CONNECTED; }
     void loop();
-    void setBrand(const char* brand);
+    void setBrand(const char* brand, const char* version="not-set");
     Config& config() { return _config; }
     AsyncWebServer& webserver() { return _server; }
     void sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summery);
@@ -98,6 +98,7 @@ private:
     RTC _rtc;
     Config _config;
     String _brand;
+    String _version;
     std::vector<MenuItem> _menu;
     IPAddress _ap_address;
     static PGM_P wlStatusSymbols[];

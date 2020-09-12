@@ -13,6 +13,10 @@
         <table class="info" style="border:none;">
           <tbody>
           <tr>
+            <td>Firmware version</td>
+            <td id="version"></td>
+          </tr>
+          <tr>
             <td>Established connection</td>
             <td id="estab_ssid"></td>
           </tr>

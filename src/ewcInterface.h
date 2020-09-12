@@ -22,12 +22,12 @@ limitations under the License.
 #define EWC_INTERFACE_H
 
 #include "Arduino.h"
+#include "ewcLogger.h"
 #include "ewcStreamingOperator.h"
 
 namespace EWC {
 class ConfigServer;
 class ConfigFS;
-class Logger;
 class RTC;
 
 class InterfaceData {

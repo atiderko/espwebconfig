@@ -48,8 +48,6 @@ public:
 
     void save();
 
-    String& version() { return _version; }
-
     /** === ConfigInterface Methods === **/    
     void setup(JsonDocument& doc, bool resetConfig=false);
     void loop();
@@ -61,7 +59,6 @@ public:
     bool wifiDisabled() { return _bootMode == BootMode::STANDALONE; }
 
     /** === Parameter === **/
-    const String& getVersion() { return _version; }
     String paramAPName;
     const String& getAPPass() { return _paramAPPass; }
     void setAPPass(String pass);
@@ -73,7 +70,6 @@ public:
     uint32_t getChipId();
 
 protected:
-    String _version;
     uint8_t _bootmodeUtcAddress;
     BootMode _bootMode;
 

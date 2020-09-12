@@ -32,7 +32,6 @@ Config::Config() : ConfigInterface("ewc")
 {
     // initialize utc addresses in sutup method
     _bootmodeUtcAddress = 0;
-    _version = "not-set";
     _bootMode = BootMode::CONFIGURATION;
     _initParams();
 }
@@ -86,7 +85,6 @@ void Config::json(JsonDocument& doc)
     if (etcJson.isNull()) {
         etcJson = doc.createNestedObject("ewc");
     }
-    etcJson["version"] = _version;
     etcJson["apname"] = paramAPName;
     etcJson["appass"] = _paramAPPass;
     etcJson["ap_start_always"] = paramAPStartAlways;
