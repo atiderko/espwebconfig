@@ -85,6 +85,7 @@ public:
     bool isConnected() { return WiFi.status() == WL_CONNECTED; }
     void loop();
     void setBrand(const char* brand, const char* version="not-set");
+    String& version() { return _version; }
     Config& config() { return _config; }
     AsyncWebServer& webserver() { return _server; }
     void sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summery);
