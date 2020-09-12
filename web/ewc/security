@@ -52,7 +52,7 @@
         "httppass"].forEach(function(id,idy,arr) {
           document.getElementById(id).value = data["ewc"][id];
         });
-        // setTimeout(getJSON.bind(null, fillsecurity, "/ewc/security.json"), 3000);
+        // setTimeout(getJSON.bind(null, "/ewc/security.json", "fillsecurity"), 3000);
       }
     </script>
   </body>

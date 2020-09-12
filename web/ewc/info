@@ -81,13 +81,13 @@
     <script type="text/javascript">
       function fillinfo(data, url) {
         document.getElementById("wifi_mode").innerText = data["wifi_mode"] + '(' + data["wifi_status"] + ')';
-        ["estab_ssid","local_ip","gateway",
+        ["version", "estab_ssid","local_ip","gateway",
         "netwask","softap_ip","ap_mac","sta_mac",
         "channel","dbm","chip_id","cpu_freq","flash_size",
         "free_heap"].forEach(function(id,idy,arr) {
           document.getElementById(id).innerText = data[id];
         });
-        setTimeout(getJSON.bind(null, fillinfo, "/ewc/info.json"), 3000);
+        setTimeout(getJSON.bind(null, "/ewc/info.json", "fillinfo"), 3000);
       }
     </script>
   </body>

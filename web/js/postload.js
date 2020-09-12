@@ -20,6 +20,8 @@ function loadJson() {
   if (tuple != undefined) {
     running_json = true;
     //for (var i = 0; i < jsons.length; i++) {
+    let url = tuple[0];
+    let func = tuple[1];
     let request = new XMLHttpRequest();
     request.open("GET",  tuple[0]);
     request.setRequestHeader('Cache-Control', 'no-cache');
@@ -29,7 +31,7 @@ function loadJson() {
           console.log('--> got ' + tuple[0]);
           console.log('  data:' + request.responseText);
           var data = JSON.parse(request.responseText);
-          window[tuple[1]](data, tuple[0]);
+          window[func](data, url);
         }
       } catch(e) {
         console.error(e)
@@ -80,7 +82,7 @@ function wifistations(data, uri) {
   }
   if (! data["finished"]) {
     countGetWifiStations += 1;
-    setTimeout(getJSON.bind(null, "wifistations", "/wifi/stations.json"), 1000); //Ruft die Callback-Funktion nach 1 Sekunde auf
+    setTimeout(getJSON.bind(null, "/wifi/stations.json", "wifistations"), 1000); //Ruft die Callback-Funktion nach 1 Sekunde auf
     document.getElementById("list_ssid").innerText = "scan in progress..." + countGetWifiStations;
     document.getElementById("list_ssid_info").innerText = "";
     return;
@@ -121,7 +123,7 @@ function getRSSIasQuality(rssi) {
   return quality;
 }
 
-function getJSON(callback, uri) {
+function getJSON(uri, callback) {
   console.log("getJSON add " + callback + " uri: " + uri);
   jsons.push([uri, callback]);
   loadJson();
@@ -168,7 +170,7 @@ function wifistate(data, uri) {
     } else if (data["ssid"].length > 0) {
       countGetWifiState += 1;
       hh += '<label> connecting...' + countGetWifiState + '</label>';
-      setTimeout(getJSON.bind(null, "wifistate", "/wifi/state.json"), 1000);
+      setTimeout(getJSON.bind(null, "/wifi/state.json", "wifistate"), 1000);
     }
   } else {
     hh = "not connected";

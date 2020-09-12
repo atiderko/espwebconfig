@@ -26,6 +26,8 @@ def parse_arguments(args=None):
                         help="Store intermediate minified files next to the originals (i.e. only write to the C header files)")
     parser.add_argument("--gzip", "-z", action="store_true", dest="gzip",
                         help="Generate gzip instead of plain text template in header files.")
+    parser.add_argument("--notminify", "-n", action="store_true", dest="notminify",
+                        help="Do not minify, e.g. for debug")
     args = parser.parse_args(args)
     return args
 
@@ -65,7 +67,7 @@ def perform_gzip(c):
     print("  GZIP data length: %s" % c['gziplen'])
     return c
     
-def perform_minify(c, usegzip=False):
+def perform_minify(c, usegzip=False, notminify=False):
     with open(c['infile']) as infile:
         minifier = {
             'css': cssminify, 
@@ -73,16 +75,16 @@ def perform_minify(c, usegzip=False):
             'html': htmlminify
         }.get(c['ext']) or htmlminify
         print("  Using %s minifier" % c['ext'])
-        c['minidata'] = minifier(infile.read())
+        c['minidata'] = infile.read() if notminify else minifier(infile.read())
     if usegzip:
         return perform_gzip(c)
     return c
 
 
-def process_file(infile, outdir, storemini=False, usegzip=False):
+def process_file(infile, outdir, storemini=False, usegzip=False, notminify=False):
     print("Processing file %s" % infile)
     c = get_context(infile, outdir)
-    c = perform_minify(c, usegzip)
+    c = perform_minify(c, usegzip, notminify=notminify)
     if storemini:
         if c['infile'] == c['minifile']:
             print("  Original file is already minified, refusing to overwrite it")
@@ -99,7 +101,7 @@ def process_file(infile, outdir, storemini=False, usegzip=False):
             outfile.write(TARGET_TEMPLATE.format(**c))
    
         
-def process_dir(sourcedir, outdir, recursive=True, storemini=True, usegzip=False):
+def process_dir(sourcedir, outdir, recursive=True, storemini=True, usegzip=False, notminify=False):
     pattern = r'/*\.(css|js|htm|html)$'
     files = glob(sourcedir + "/**/*", recursive=True)+glob(sourcedir + "/*") if recursive else glob(sourcedir + "/*")
     files_filtered = set(filter(re.compile(pattern).search, files) )
@@ -114,11 +116,11 @@ def process_dir(sourcedir, outdir, recursive=True, storemini=True, usegzip=False
             pass
     for f in files_filtered:
         if not '.min.' in f:
-            process_file(f, outdir, storemini, usegzip)
+            process_file(f, outdir, storemini, usegzip, notminify)
         # elif not os.path.isfile(f.replace(".min.", ".")):
         #     process_file(f, outdir, storemini)
 
-def main(project_dir, storemini=False, usegzip=False):
+def main(project_dir, storemini=False, usegzip=False, notminify=False):
     pdir = project_dir
     web = os.path.realpath(os.path.join(pdir, "web"))
     src  = os.path.realpath(os.path.join(pdir, "src", "generated"))
@@ -128,11 +130,11 @@ def main(project_dir, storemini=False, usegzip=False):
             os.remove(os.path.join(root, name))
         for name in dirs:
             os.rmdir(os.path.join(root, name))
-    process_dir(web, src, recursive = True, storemini=storemini, usegzip=usegzip)
+    process_dir(web, src, recursive = True, storemini=storemini, usegzip=usegzip, notminify=notminify)
 
 if __name__ == "__main__" and "get_ipython" not in dir():
     args = parse_arguments()
     if args.project_dir:
 	    # generate library headers
-        main(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."), args.storemini, args.gzip)
-    main(args.project_dir, args.storemini, args.gzip)
+        main(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."), args.storemini, args.gzip, args.notminify)
+    main(args.project_dir, args.storemini, args.gzip, args.notminify)
