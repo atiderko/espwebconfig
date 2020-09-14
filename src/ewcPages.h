@@ -39,7 +39,11 @@ const char  EWC_PAGE_SUCCESS[] PROGMEM = R"(
   <body style="padding-top:58px;">
     <div id="header"></div>
     <div style="position:absolute;left:-100%;right:-100%;text-align:center;margin:10px auto;font-weight:bold;color:#008000;">
-        {{SUMMERY}}
+        {{SUMMARY}}
+    </div>
+    <br>
+    <div style="padding:10px 10px 10px 10px">
+        {{DETAILS}}
     </div>
     <script src="/js/postload.js"></script>
   </body>
@@ -60,7 +64,11 @@ const char  EWC_PAGE_FAIL[] PROGMEM = R"(
   <body style="padding-top:58px;">
     <div id="header"></div>
     <div style="position:absolute;left:-100%;right:-100%;text-align:center;margin:10px auto;font-weight:bold;color:#c50000;">
-        {{SUMMERY}}
+        {{SUMMARY}}
+    </div>
+    <br>
+    <div style="padding:10px 10px 10px 10px">
+        {{DETAILS}}
     </div>
     <script src="/js/postload.js"></script>
   </body>

@@ -91,8 +91,9 @@ public:
     String& version() { return _version; }
     Config& config() { return _config; }
     AsyncWebServer& webserver() { return _server; }
-    void sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summery);
-    void sendPageFailed(AsyncWebServerRequest *request, String title, String redirectUrl, String summery);
+    void sendContentP(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
+    void sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details="");
+    void sendPageFailed(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details="");
     bool isAuthenticated(AsyncWebServerRequest *request);
 
 private:
@@ -116,7 +117,6 @@ private:
     wifi_status_t _station_status();
     void _sendMenu(AsyncWebServerRequest* request);
     void _sendFileContent(AsyncWebServerRequest* request, const String& filename, const String& contentType);
-    void _sendContentP(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
     void _sendContentNoAuthP(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
     void _onSecurityGet(AsyncWebServerRequest* request);
     void _onSecuritySave(AsyncWebServerRequest* request);
