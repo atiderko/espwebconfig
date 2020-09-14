@@ -109,14 +109,14 @@ void ConfigServer::setup()
     }
     // _server.reset(); why do we need this?
     /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
-    _server.on("/", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);
-    _server.on("/bbs", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_WEB_INDEX, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);
+    _server.on("/", std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);
+    _server.on("/bbs", std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, HTML_WEB_INDEX, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);
     _server.on("/menu", std::bind(&ConfigServer::_sendMenu, this, std::placeholders::_1));
-    _server.on("/css/base.css", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, CSS_WEB_BASE, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
-    _server.on("/css/table.css", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, CSS_WEB_TABLE, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
-    _server.on("/css/wifiicons.css", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, CSS_WEB_WIFIICONS, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
-    _server.on("/js/postload.js", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, JS_WEB_POSTLOAD, FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
-    _server.on("/js/pre.js", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, JS_WEB_PRE, FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
+    _server.on("/css/base.css", std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, CSS_WEB_BASE, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
+    _server.on("/css/table.css", std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, CSS_WEB_TABLE, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
+    _server.on("/css/wifiicons.css", std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, CSS_WEB_WIFIICONS, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
+    _server.on("/js/postload.js", std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, JS_WEB_POSTLOAD, FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
+    _server.on("/js/pre.js", std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, JS_WEB_PRE, FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
     // _server.on("/js/postload.js", HTTP_GET, [](AsyncWebServerRequest *request) {
     //     // if (ESPUI.basicAuth && !request->authenticate(ESPUI.basicAuthUsername, ESPUI.basicAuthPassword))
     //     // {
@@ -127,18 +127,18 @@ void ConfigServer::setup()
     //     I::get().logger() << "finished postload js: " << ESP.getFreeHeap() << endl;
     // });
     _server.rewrite("/wifi", "/wifi/setup");
-    insertMenuCb("WiFi", "/wifi/setup", "menu_wifi", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
+    insertMenuCb("WiFi", "/wifi/setup", "menu_wifi", std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/wifi/connect", std::bind(&ConfigServer::_onWiFiConnect, this, std::placeholders::_1));
-//    _server.on("/wifi/connecting", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_WIFI_CONNECT, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
+//    _server.on("/wifi/connecting", std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, HTML_WIFI_CONNECT, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/wifi/disconnect", std::bind(&ConfigServer::_onWiFiDisconnect, this, std::placeholders::_1));  //.setFilter(ON_AP_FILTER);
     _server.on("/wifi/state.json", std::bind(&ConfigServer::_onWifiState, this, std::placeholders::_1));
     _server.on("/wifi/stations.json", std::bind(&ConfigServer::_onWifiScan, this, std::placeholders::_1));
-    insertMenuCb("Security", "/ewc/security", "menu_security", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_EWC_SECURITY, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
+    insertMenuCb("Security", "/ewc/security", "menu_security", std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, HTML_EWC_SECURITY, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/ewc/security.json", std::bind(&ConfigServer::_onSecurityGet, this, std::placeholders::_1));
     _server.on("/ewc/secsave", std::bind(&ConfigServer::_onSecuritySave, this, std::placeholders::_1));
-    insertMenuCb("Info", "/ewc/info", "menu_info", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_EWC_INFO, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
+    insertMenuCb("Info", "/ewc/info", "menu_info", std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, HTML_EWC_INFO, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/ewc/info.json", std::bind(&ConfigServer::_onGetInfo, this, std::placeholders::_1));
-    _server.on("/fwlink", std::bind(&ConfigServer::_sendContent_P, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
+    _server.on("/fwlink", std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
     _server.on("/favicon.ico", std::bind(&ConfigServer::_sendFileContent, this, std::placeholders::_1, "/favicon.ico", "image/x-icon"));
     _server.onNotFound (std::bind(&ConfigServer::_onNotFound,this,std::placeholders::_1));
     _server.begin(); // Web server start
@@ -239,8 +239,18 @@ void ConfigServer::insertMenu(const char* name, const char* uri, const char* ent
 
 void ConfigServer::insertMenuCb(const char* name, const char* uri, const char* entry_id, ArRequestHandlerFunction onRequest, bool visible, std::size_t position)
 {
-  insertMenu(name, uri, entry_id, visible, position);
-  _server.on(uri, onRequest);
+    insertMenu(name, uri, entry_id, visible, position);
+    _server.on(uri, onRequest);
+}
+
+void ConfigServer::insertMenuP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible, std::size_t position)
+{
+    insertMenuCb(name, uri, entry_id, std::bind(&ConfigServer::_sendContentP, this, std::placeholders::_1, content, contentType), visible, position);
+}
+
+void ConfigServer::insertMenuNoAuthP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible, std::size_t position)
+{
+    insertMenuCb(name, uri, entry_id, std::bind(&ConfigServer::_sendContentNoAuthP, this, std::placeholders::_1, content, contentType), visible, position);
 }
 
 String ConfigServer::_token_WIFI_MODE() {
@@ -288,7 +298,9 @@ String ConfigServer::_toMACAddressString(const uint8_t mac[]) {
 
 void ConfigServer::_onSecurityGet(AsyncWebServerRequest *request)
 {
-    _checkAuth(request);
+    if (isAuthenticated(request)) {
+        return request->requestAuthentication();
+    }
     I::get().logger() << "[EWC CS]: ESP heap: _onSecurityGet: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(512);
     JsonObject json = jsonDoc.to<JsonObject>();
@@ -303,7 +315,9 @@ void ConfigServer::_onSecurityGet(AsyncWebServerRequest *request)
 
 void ConfigServer::_onSecuritySave(AsyncWebServerRequest *request)
 {
-    _checkAuth(request);
+    if (isAuthenticated(request)) {
+        return request->requestAuthentication();
+    }
     I::get().logger() << "[EWC CS]: ESP heap: _onSecuritySave: " << ESP.getFreeHeap() << endl;
     if (request->hasArg("apname")) {
         _config.paramAPName = request->arg("apname");
@@ -329,7 +343,9 @@ void ConfigServer::_onSecuritySave(AsyncWebServerRequest *request)
 
 void ConfigServer::_onGetInfo(AsyncWebServerRequest *request)
 {
-    _checkAuth(request);
+    if (isAuthenticated(request)) {
+        return request->requestAuthentication();
+    }
     I::get().logger() << "[EWC CS]: ESP heap: _onGetInfo: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(512);
     JsonObject json = jsonDoc.to<JsonObject>();
@@ -366,7 +382,9 @@ void ConfigServer::_onGetInfo(AsyncWebServerRequest *request)
 
 void ConfigServer::_onWiFiConnect(AsyncWebServerRequest *request)
 {
-    _checkAuth(request);
+    if (isAuthenticated(request)) {
+        return request->requestAuthentication();
+    }
     I::get().logger() << "[EWC CS]: ESP heap: _onWiFiConnect: " << ESP.getFreeHeap() << endl;
     for (size_t idx = 0; idx < request->args(); idx++) {
         I::get().logger() << "[EWC CS]: " << idx << ": " << request->argName(idx) << request->arg(idx) << endl;
@@ -410,7 +428,9 @@ void ConfigServer::_onWiFiConnect(AsyncWebServerRequest *request)
 
 void ConfigServer::_onWiFiDisconnect(AsyncWebServerRequest *request)
 {
-    _checkAuth(request);
+    if (isAuthenticated(request)) {
+        return request->requestAuthentication();
+    }
     I::get().logger() << "[EWC CS]: ESP heap: _onWiFiDisconnect: " << ESP.getFreeHeap() << endl;
     AsyncWebServerResponse *response = request->beginResponse(302,"text/plain","");
     response->addHeader("Location", "/wifi/setup");
@@ -487,7 +507,9 @@ wifi_status_t ConfigServer::_station_status()
 }
 
 void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
-    _checkAuth(request);
+    if (isAuthenticated(request)) {
+        return request->requestAuthentication();
+    }
     I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(2048);
     JsonObject json = jsonDoc.to<JsonObject>();
@@ -509,7 +531,9 @@ void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
 
 void ConfigServer::_onWifiState(AsyncWebServerRequest *request)
 {
-    _checkAuth(request);
+    if (isAuthenticated(request)) {
+        return request->requestAuthentication();
+    }
     I::get().logger() << "[EWC CS]: ESP heap: _onWifiState: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(2048);
     JsonObject json = jsonDoc.to<JsonObject>();
@@ -533,7 +557,9 @@ void _wiFiState2Json(JsonObject& json, bool finished, bool failed, const char* r
 
 void ConfigServer::_onWifiScan(AsyncWebServerRequest *request)
 {
-    _checkAuth(request);
+    if (isAuthenticated(request)) {
+        return request->requestAuthentication();
+    }
     I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
     _startWiFiScan();
     int n = WiFi.scanComplete();
@@ -650,7 +676,9 @@ void ConfigServer::sendPageFailed(AsyncWebServerRequest *request, String title, 
 
 void ConfigServer::_sendFileContent(AsyncWebServerRequest *request, const String& filename, const String& contentType)
 {
-    _checkAuth(request);
+    if (isAuthenticated(request)) {
+        return request->requestAuthentication();
+    }
     I::get().logger() << F("[EWC CS]: Handle sendFileContent: ") << filename << endl;
     File reqFile = LittleFS.open(filename, "r");
     if (reqFile && reqFile.isFile()) {
@@ -661,9 +689,18 @@ void ConfigServer::_sendFileContent(AsyncWebServerRequest *request, const String
     _onNotFound(request);
 }
 
-void ConfigServer::_sendContent_P(AsyncWebServerRequest *request, PGM_P content, const String& contentType)
+void ConfigServer::_sendContentP(AsyncWebServerRequest *request, PGM_P content, const String& contentType)
 {
-    _checkAuth(request);
+    if (isAuthenticated(request)) {
+        return request->requestAuthentication();
+    }
+    I::get().logger() << "[EWC CS]: send content P" << request->url() << ":" << ESP.getFreeHeap() << endl;
+    request->send_P(200, contentType.c_str(), content);
+    I::get().logger() << "[EWC CS]: finished " << request->url() << ":" << ESP.getFreeHeap() << endl;
+}
+
+void ConfigServer::_sendContentNoAuthP(AsyncWebServerRequest *request, PGM_P content, const String& contentType)
+{
     I::get().logger() << "[EWC CS]: send content P" << request->url() << ":" << ESP.getFreeHeap() << endl;
     request->send_P(200, contentType.c_str(), content);
     I::get().logger() << "[EWC CS]: finished " << request->url() << ":" << ESP.getFreeHeap() << endl;
@@ -714,12 +751,11 @@ void ConfigServer::_startWiFiScan(bool force)
     }
 }
 
-void ConfigServer::_checkAuth(AsyncWebServerRequest *request)
+bool ConfigServer::isAuthenticated(AsyncWebServerRequest *request)
 {
-    if (_config.paramBasicAuth && !request->authenticate(_config.paramHttpUser.c_str(), _config.paramHttpPassword.c_str())) {
-        return request->requestAuthentication();
-    }
+    return ! (_config.paramBasicAuth && !request->authenticate(_config.paramHttpUser.c_str(), _config.paramHttpPassword.c_str()));
 }
+
 //start up config portal callback
 // void ConfigServer::setAPCallback( void (*func)(ConfigServer* myESPAsyncWebConf) ) {
 //   _apcallback = func;

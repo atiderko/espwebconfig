@@ -5,42 +5,145 @@
     <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
     <title>Bewaesserungsteuerung</title>
     <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/bbsicons.css">
   </head>
-
 
   <body style="padding-top:58px;">
     <div id="header"></div>
     <div class="base-panel">
-      <h2 id=title>ESP_1</h2>
-      <span>Version: </span>
+      <br>
+      <span id="bbs_title" style="font-weight: bold; font-size: 2em;">ESP_1</span>
       <span id="version">Unknown</span>
-      <p>
-        <span >Feuchtigkeit: </span>
-        <span>62%</span>
-        <span><br>Kanister: </span>
-        <span style="color: red;">Leer</span>
-        <span><br>Blumenkasten: </span>
-        <span style="color: green;">Voll</span>
-      </p>
 
-      <h3>Pump</h3>
-      <p>
-        <button class="button_pump_now">Pump now</button>
-        <span><br>Status: </span>
-        <span style="color: green;">On</span>
-        <span><br>Time pumped: </span>
-        <span>12 min</span>
-        <span><br>Overall time pumped: </span>
-        <span>2h</span>
-      </p>
-      <p>
-        <button class="button_check">Check Now</button>
-        <span><br>Next Check: </span>
-        <span>2020.08.17|17:08</span>
-      </p>
+      <div id="cycle1_group" class="noorder">
+        <div class="line_named" >cycle1</div>
+        <div style="display: inline-flex;">
+          <div class="img-moisture">
+            <p id="cycle1_moisture" style="margin-top:3px;font-size:120%;"></p>
+          </div>
+          <div class="img-flowerbox">
+            <p id="cycle1_flowerbox" style="margin-bottom:0;padding:52px 0 0 0;font-size:120%;"></p>
+            <p id="cycle1_flowerbox_sensor" style="margin-top:-5px;font-size:60%;"></p>
+          </div>
+          <div class="img-canister">
+            <p id="cycle1_canister" style="margin-bottom:0;padding:42px 0 0 0;font-size:120%;"></p>
+            <p id="cycle1_canister_sensor" style="margin-top:-5px;font-size:60%;"></p>
+          </div>
+        </div>
+        <br>
+        <div style="display: inline-flex;padding:10px 0px 0px 0px;">
+          <div class="img-pump"></div>
+          <div>
+            <div id="cycle1_pump_on" style="display:inline-flex;padding:2px 0 2px;font-size:120%;"></div>
+            <button type="button" class="button_pump_now" style="padding:3px 6px;margin:0px">Pump now</button>
+            <div id="cycle1_pump_duration_last" style="padding:12px 0 2px;font-size:80%;"></div>
+            <div id="cycle1_pump_duration_total" style="padding:2px0 2px;font-size:80%;"></div>
+          </div>
+        </div>
+        <br>
+        <span class="nn" style="display: inline-flex;text-align: left;font-size:80%;">
+          <label for="cycle1_next_check">Nächster check: </label>
+          <div id="cycle1_next_check" style="padding:0px 0 0 6px;"></div>
+        </span>
+        <br>
+        <div id="cycle1_check_info" style="display: inline-flex;padding-top: 12px;color:gray"></div>
+        <br>
+      </div>
+
+      <div id="cycle2_group" class="noorder">
+        <div class="line_named" >cycle2</div>
+        <div style="display: inline-flex;">
+          <div class="img-moisture">
+            <p id="cycle2_moisture" style="padding-top:52px;font-size:120%;"></p>
+          </div>
+          <div class="img-flowerbox">
+            <p id="cycle2_flowerbox" style="margin-bottom:0;padding:52px 0 0 0;font-size:120%;"></p>
+            <p id="cycle2_flowerbox_sensor" style="margin-top:-5px;font-size:60%;"></p>
+          </div>
+          <div class="img-canister">
+            <p id="cycle2_canister" style="margin-bottom:0;padding:42px 0 0 0;font-size:120%;"></p>
+            <p id="cycle2_canister_sensor" style="margin-top:-5px;font-size:60%;"></p>
+          </div>
+        </div>
+        <br>
+        <div style="display: inline-flex;padding:10px 0px 0px 0px;">
+          <div class="img-pump"></div>
+          <div>
+            <div id="cycle2_pump_on" style="display:inline-flex;padding:2px 0 2px;font-size:120%;"></div>
+            <button type="button" class="button_pump_now" style="padding:3px 6px;margin:0px">Pump now</button>
+            <div id="cycle2_pump_duration_last" style="padding:12px 0 2px;font-size:80%;"></div>
+            <div id="cycle2_pump_duration_total" style="padding:2px0 2px;font-size:80%;"></div>
+          </div>
+        </div>
+        <br>
+        <span class="nn" style="display: inline-flex;text-align: left;font-size:80%;">
+          <label for="cycle2_next_check">Nächster check: </label>
+          <div id="cycle2_next_check" style="padding:0px 0 0 6px;"></div>
+        </span>
+        <br>
+        <div id="cycle2_check_info" style="display: inline-flex;padding-top: 12px;color:gray"></div>
+        <br>
+      </div>
+      <br>
+      <button type="button" class="button_check" > Check Now</button>
+
+
     </div>
-    <script>jsons = ["/bbs/state"];</script>    
+    <script>jsons = [ ["/bbs/state.json", "fillBssState"] ];</script>    
     <script src="/js/postload.js"></script>
+    <script type="text/javascript">
+      function setTrueFalse(elname, value, strTrue="Leer", colorTrue="red", strFalse="Voll", colorFalse="green") {
+        element = document.getElementById(elname);
+        if (element == undefined)
+          return;
+        if (value) {
+          element.innerText = strTrue;
+          element.style.color = colorTrue;
+        } else {
+          element.innerText = strFalse;
+          element.style.color = colorFalse;
+        }
+      }
+
+      function sec2str(value) {
+        secs = value;
+        hours = Math.floor(secs / 3600);
+        secs %= 3600;
+        minutes =  Math.floor(secs / 60);
+        secs %= 60;
+        result = '';
+        if (hours > 0) { result += hours + 'h'; }
+        if (minutes > 0) { result += minutes + 'm'; }
+        if (secs > 0) { result += secs + 's'; }
+        return result;
+      }
+
+      function updateCycle(cycle, data) {
+        co = data[cycle];
+        if (co["enabled"]) {
+          document.getElementById(cycle+"_moisture").innerText = co["moisture"] + '%';
+          setTrueFalse(cycle+"_flowerbox", co["flowerbox_empty"]);
+          setTrueFalse(cycle+"_flowerbox_sensor", co["flowerbox_sensor"], "", "red", "no sensor", "gray");
+          setTrueFalse(cycle+"_canister", co["canister_empty"]);
+          setTrueFalse(cycle+"_canister_sensor", co["canister_sensor"], "", "red", "no sensor", "gray");
+          document.getElementById(cycle+"_check_info").innerHTML = "&#128712; " + co["check_info"];
+          setTrueFalse(cycle+"_pump_on", co["pump_on"], "On", "Off");
+          document.getElementById(cycle+"_pump_duration_last").innerHTML = "zuletzt: " + sec2str(co["pump_duration_last"]);
+          document.getElementById(cycle+"_pump_duration_total").innerHTML = "gesamt: " + sec2str(co["pump_duration_total"]);
+          document.getElementById(cycle+"_next_check").innerText = co["next_check"];
+        } else {
+          document.getElementById(cycle+"_group").remove();
+        }
+      }
+
+      function fillBssState(data, url) {
+        document.getElementById("bbs_title").innerText = data["name"];
+        document.getElementById("version").innerText = 'v' + data["version"];
+        updateCycle("cycle1", data);
+        updateCycle("cycle2", data);
+        // setTimeout(getJSON.bind(null, "/bbs/config.json", "fillBbsConfig"), 3000);
+      }
+    </script>
   </body>
 
 </html>

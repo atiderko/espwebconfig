@@ -80,16 +80,20 @@ public:
     ConfigServer(uint16_t port=80);
     void insertMenu(const char* name, const char* uri, const char* entry_id, bool visible=true, std::size_t position=255);
     void insertMenuCb(const char* name, const char* uri, const char* entry_id, ArRequestHandlerFunction onRequest, bool visible=true, std::size_t position=255);
+    void insertMenuP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible=true, std::size_t position=255);
+    void insertMenuNoAuthP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible=true, std::size_t position=255);
     void setup();
     bool isAP() { return _ap_address.isSet(); }
     bool isConnected() { return WiFi.status() == WL_CONNECTED; }
     void loop();
     void setBrand(const char* brand, const char* version="not-set");
+    String& brand() { return _brand; }
     String& version() { return _version; }
     Config& config() { return _config; }
     AsyncWebServer& webserver() { return _server; }
     void sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summery);
     void sendPageFailed(AsyncWebServerRequest *request, String title, String redirectUrl, String summery);
+    bool isAuthenticated(AsyncWebServerRequest *request);
 
 private:
     AsyncWebServer _server;
@@ -112,7 +116,8 @@ private:
     wifi_status_t _station_status();
     void _sendMenu(AsyncWebServerRequest* request);
     void _sendFileContent(AsyncWebServerRequest* request, const String& filename, const String& contentType);
-    void _sendContent_P(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
+    void _sendContentP(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
+    void _sendContentNoAuthP(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
     void _onSecurityGet(AsyncWebServerRequest* request);
     void _onSecuritySave(AsyncWebServerRequest* request);
     void _onGetInfo(AsyncWebServerRequest* request);
@@ -136,7 +141,6 @@ private:
 #endif
     static String _toMACAddressString(const uint8_t mac[]);
     void _startWiFiScan(bool force=false);
-    void _checkAuth(AsyncWebServerRequest *request);
 
     unsigned long _msConnectStart    = 0;
     unsigned long _msWifiScanStart   = 0;

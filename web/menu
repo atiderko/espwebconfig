@@ -2,6 +2,21 @@
   "brand": "ESP WebConfig",
   "elements": [
     {
+      "name": "Status",
+      "id": "menu_device",
+      "href": "/index.html"
+    },
+    {
+      "name": "Device",
+      "id": "menu_device",
+      "href": "/bbs/setup"
+    },
+    {
+      "name": "Mail",
+      "id": "menu_mail",
+      "href": "/mail/setup"
+    },
+    {
       "name": "WiFi",
       "id": "menu_wifi",
       "href": "/wifi/setup"
@@ -10,16 +25,6 @@
       "name": "Security",
       "id": "menu_security",
       "href": "/ewc/security"
-    },
-    {
-      "name": "BBS",
-      "id": "menu_bbs",
-      "href": "/bbs/config"
-    },
-    {
-      "name": "Mail",
-      "id": "menu_mail",
-      "href": "/mail/setup"
     },
     {
       "name": "Info",

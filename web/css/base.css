@@ -71,6 +71,7 @@ input{
     opacity:0;
     z-index:1001
 }
+
 /*
 .noorder,.exp{
     padding:0;
@@ -124,9 +125,19 @@ div .noorder {
 
 .noorder div label[for]{
     display:  inline-block;
-/**    display: table-row; **/
-    width:120px;  /** width of lables **/
+/** display: table-row; **/
+    width:140px;  /** width of lables **/
     text-align: right
+}
+
+div .line_named {
+    text-align:left;
+    font-size:80%;
+    padding-left:6px;
+    padding-bottom:3px;
+    margin:8px 0 16px 0;
+    border-bottom:solid 1px #737271;
+    color:#737271;
 }
 
 /**< balzss/luxbar is licensed under the MIT License https://github.com/balzss/luxbar */
