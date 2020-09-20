@@ -27,6 +27,11 @@
       "href": "/ewc/security"
     },
     {
+      "name": "Time",
+      "id": "menu_time",
+      "href": "/time/setup"
+    },
+    {
       "name": "Info",
       "id": "menu_info",
       "href": "/ewc/info"

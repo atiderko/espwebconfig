@@ -57,8 +57,19 @@ function onTestMail() {
   location.href='/mail/test';
 }
 </script>
-<script src="/js/mail.js"></script>
-<script>jsons = [ ["/mail/config", "mailconfig"] ];</script>
+<script>jsons = [ ["/mail/config.json", "fillMailConfig"] ];</script>
 <script src="/js/postload.js"></script>
+<script type="text/javascript">
+  function fillMailConfig(data, url) {
+    ["on_warning", "on_change","on_event"
+    ].forEach(function(id,idy,arr) {
+      document.getElementById(id).checked = data["mail"][id];
+    });
+    ["receiver","sender","passphrase","smtp","port"
+    ].forEach(function(id,idy,arr) {
+      document.getElementById(id).value = data["mail"][id];
+    });
+  }
+</script>
 </body>
 </html>

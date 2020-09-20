@@ -107,29 +107,18 @@ void ConfigServer::setup()
     } else {
         WiFi.mode(WIFI_OFF);
     }
-    // _server.reset(); why do we need this?
+    // _server.reset(); do we need this?
     /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
     _server.on("/", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);
-    // _server.on("/bbs", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_WEB_INDEX, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);
     _server.on("/menu", std::bind(&ConfigServer::_sendMenu, this, std::placeholders::_1));
     _server.on("/css/base.css", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, CSS_WEB_BASE, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
     _server.on("/css/table.css", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, CSS_WEB_TABLE, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
     _server.on("/css/wifiicons.css", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, CSS_WEB_WIFIICONS, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
     _server.on("/js/postload.js", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, JS_WEB_POSTLOAD, FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
     _server.on("/js/pre.js", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, JS_WEB_PRE, FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
-    // _server.on("/js/postload.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-    //     // if (ESPUI.basicAuth && !request->authenticate(ESPUI.basicAuthUsername, ESPUI.basicAuthPassword))
-    //     // {
-    //     //   return request->requestAuthentication();
-    //     // }
-    //     I::get().logger() << "send postload js: " << ESP.getFreeHeap() << endl;
-    //     request->send_P(200, "application/javascript", JS_POSTLOAD);
-    //     I::get().logger() << "finished postload js: " << ESP.getFreeHeap() << endl;
-    // });
     _server.rewrite("/wifi", "/wifi/setup");
     insertMenuCb("WiFi", "/wifi/setup", "menu_wifi", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/wifi/connect", std::bind(&ConfigServer::_onWiFiConnect, this, std::placeholders::_1));
-//    _server.on("/wifi/connecting", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_WIFI_CONNECT, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/wifi/disconnect", std::bind(&ConfigServer::_onWiFiDisconnect, this, std::placeholders::_1));  //.setFilter(ON_AP_FILTER);
     _server.on("/wifi/state.json", std::bind(&ConfigServer::_onWifiState, this, std::placeholders::_1));
     _server.on("/wifi/stations.json", std::bind(&ConfigServer::_onWifiScan, this, std::placeholders::_1));
@@ -138,6 +127,7 @@ void ConfigServer::setup()
     _server.on("/ewc/secsave", std::bind(&ConfigServer::_onSecuritySave, this, std::placeholders::_1));
     insertMenuCb("Info", "/ewc/info", "menu_info", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_EWC_INFO, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/ewc/info.json", std::bind(&ConfigServer::_onGetInfo, this, std::placeholders::_1));
+    _server.on("/ewc/config", std::bind(&ConfigServer::_sendFileContent, this, std::placeholders::_1, FPSTR(CONFIG_FILENAME), FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
     _server.on("/fwlink", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
     _server.on("/favicon.ico", std::bind(&ConfigServer::_sendFileContent, this, std::placeholders::_1, "/favicon.ico", "image/x-icon"));
     _server.onNotFound (std::bind(&ConfigServer::_onNotFound,this,std::placeholders::_1));
@@ -223,32 +213,38 @@ void ConfigServer::_wifiOnSoftAPModeStationDisconnected(const WiFiEventSoftAPMod
 #else
 // TODO: events for ESP32
 #endif
-void ConfigServer::insertMenu(const char* name, const char* uri, const char* entry_id, bool visible, std::size_t position)
+void ConfigServer::insertMenu(const char* name, const char* uri, const char* entry_id, bool visible, int position)
 {
     MenuItem item;
     item.name = name;
     item.link = uri;
     item.entry_id = entry_id;
     item.visible = visible;
-    if (position == 255 || position >= _menu.size()) {
+    if (position < 0) {
+        position = _menu.size() + position;
+        if (position < 0) {
+            position = 0;
+        }
+    }
+    if (position == 255 || position >= (int)_menu.size()) {
         _menu.push_back(item);
     } else {
         _menu.insert(_menu.begin() + position, item);
     }
 }
 
-void ConfigServer::insertMenuCb(const char* name, const char* uri, const char* entry_id, ArRequestHandlerFunction onRequest, bool visible, std::size_t position)
+void ConfigServer::insertMenuCb(const char* name, const char* uri, const char* entry_id, ArRequestHandlerFunction onRequest, bool visible, int position)
 {
     insertMenu(name, uri, entry_id, visible, position);
     _server.on(uri, onRequest);
 }
 
-void ConfigServer::insertMenuP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible, std::size_t position)
+void ConfigServer::insertMenuP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible, int position)
 {
     insertMenuCb(name, uri, entry_id, std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, content, contentType), visible, position);
 }
 
-void ConfigServer::insertMenuNoAuthP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible, std::size_t position)
+void ConfigServer::insertMenuNoAuthP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible, int position)
 {
     insertMenuCb(name, uri, entry_id, std::bind(&ConfigServer::_sendContentNoAuthP, this, std::placeholders::_1, content, contentType), visible, position);
 }
@@ -304,7 +300,7 @@ void ConfigServer::_onSecurityGet(AsyncWebServerRequest *request)
     I::get().logger() << "[EWC CS]: ESP heap: _onSecurityGet: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(512);
     JsonObject json = jsonDoc.to<JsonObject>();
-    _config.json(jsonDoc);
+    _config.fillJson(jsonDoc);
     I::get().logger() << "[EWC CS]: _onSecurityGet MEMUSAGE: " << json.memoryUsage() << endl;
     I::get().logger() << "[EWC CS]: ESP heap: _onSecurityGet: " << ESP.getFreeHeap() << endl;
     String output;
@@ -657,18 +653,21 @@ void ConfigServer::setBrand(const char* brand, const char* version)
 void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details)
 {
     I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
-    String result(EWC_PAGE_SUCCESS);
+    I::get().logger() << "[EWC CS]: sendPageSuccess " << summary << ":" << details << endl;
+    String result(FPSTR(EWC_PAGE_SUCCESS));
+    I::get().logger() << "[EWC CS]: result " << result << endl;
     result.replace("{{REDIRECT}}", redirectUrl);
     result.replace("{{TITLE}}", title);
     result.replace("{{SUMMARY}}", summary);
     result.replace("{{DETAILS}}", details);
+    I::get().logger() << "[EWC CS]: result " << result << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
     I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
 }
 
 void ConfigServer::sendPageFailed(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details)
 {
-    String result(EWC_PAGE_FAIL);
+    String result(FPSTR(EWC_PAGE_FAIL));
     result.replace("{{REDIRECT}}", redirectUrl);
     result.replace("{{TITLE}}", title);
     result.replace("{{SUMMARY}}", summary);

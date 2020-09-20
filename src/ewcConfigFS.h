@@ -38,7 +38,7 @@ namespace EWC {
 #define RESET_FLAG 0x12121212
 #define RESET_FLAG_CLEAR 0x10000001
 
-const char CONFIG_FILENAME[] PROGMEM = "/etc.json";
+const char CONFIG_FILENAME[] PROGMEM = "/ewc.json";
 
 
 class ConfigFS

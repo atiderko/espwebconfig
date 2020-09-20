@@ -34,8 +34,7 @@
                 <input id="pass-status" type="checkbox" aria-hidden="true" onClick="viewPassword('passphrase', 'pass-status')">
             </div>
             <div>
-                <label id="lbl_dhcp" for="dhcp">Enable DHCP</label>
-                <input id="dhcp" type="checkbox" name="dhcp" value="true" checked onclick="vsw(this.checked);">
+                <input id="dhcp" type="checkbox" name="dhcp" value="true" onclick="vsw(this.checked, 'exp');"> Enable DHCP</input>
             </div>
             <div class="exp">
                 <label id="lbl_staip" for="staip">IP Address</label>
@@ -67,12 +66,9 @@
 window.onload=function(){
   ["staip","gtway","ntmsk","dns1","dns2"].forEach(function(n,o,t){
     io=document.getElementById(n),io.placeholder='0.0.0.0',io.pattern='^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'});
-  vsw(true)};
+  vsw(false, 'exp')};
 function onFocus(e){
   document.getElementById('ssid').value=e,document.getElementById('passphrase').focus()
-}
-function vsw(e){
-  var t;t=e?'none':'block';for(const n of document.getElementsByClassName('exp'))n.style.display=t,n.getElementsByTagName('input')[0].disabled=e;e||document.getElementById('staip').focus()
 }
 function onDisableWiFi() {
     var check = confirm('Disable WiFi? You will need hardware reset to revert this decision!'); 

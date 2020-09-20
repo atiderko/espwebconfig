@@ -102,7 +102,7 @@ void ConfigFS::save()
     DynamicJsonDocument doc(2048);
     for(std::size_t i = 0; i < _cfgInterfaces.size(); ++i) {
         I::get().logger() << F("[EWC ConfigFS]:  add [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
-        _cfgInterfaces[i]->json(doc);
+        _cfgInterfaces[i]->fillJson(doc);
     }
     // Open file for writing
     File file = LittleFS.open(_filename, "w");

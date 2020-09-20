@@ -107,14 +107,6 @@ div .noorder {
     background:#fce4d6
 }
 
-.noorder label[id^="info"]{
-    display: block;
-    color:#818181;
-    font-size: 13px;
-    text-align: left;
-    padding:3px 0px 0px 48px
-}
-
 .noorder div, .exp{
     padding:2px 0px 10px 0px
 }
@@ -123,11 +115,27 @@ div .noorder {
     margin:0px 0 auto
 }
 
+.noorder label[id^="info"]{
+    display: block;
+    color:#818181;
+    font-size: 13px;
+    text-align: left;
+    padding:3px 0px 0px 0px
+}
+/*
 .noorder div label[for]{
     display:  inline-block;
-/** display: table-row; **/
-    width:140px;  /** width of lables **/
-    text-align: right
+    width:140px;
+    text-align: right;
+    font-size:90%;
+}
+*/
+
+.noorder div label[for]{
+    display:  table-row;
+    width:140px;
+    text-align: left;
+    font-size:90%;
 }
 
 div .line_named {

@@ -17,7 +17,7 @@
                 <input id="apname" type="text" name="apname" placeholder="Name">
             </div>
             <div>
-                <label id="lbl_appass" for="appass">Password</label>
+                <label id="lbl_appass" for="appass">AP Password</label>
                 <input id="appass" type="password" name="appass" placeholder="Passphrase">
                 <input id="appass-status" type="checkbox" aria-hidden="true" onClick="viewPassword('appass', 'appass-status')">
             </div>
@@ -26,16 +26,16 @@
               <label id="info_ap_start_always">&#128712; Open AP also while connected to WiFi. </label>
             </div>
             <div>
-              <input id="basic_auth" type="checkbox" name="basic_auth" value="true"> Enable HTTP authentification</input>
+              <input id="basic_auth" type="checkbox" name="basic_auth" value="true" onclick="vsw(this.checked, 'http');"> Enable HTTP authentification</input>
             </div>
-            <div>
+            <div class="http">
                 <label id="lbl_httpuser" for="httpuser">HTTP User</label>
                 <input id="httpuser" type="text" name="httpuser" placeholder="Username">
             </div>
-            <div>
+            <div class="http">
                 <label id="lbl_httppass" for="httppass">HTTP Password</label>
                 <input id="httppass" type="password" name="httppass" placeholder="Passphrase">
-                <input id="httpass-status" type="checkbox" aria-hidden="true" onClick="viewPassword('httppass', 'httpass-status')">
+                <input id="httpass-status" type="checkbox" aria-hidden="false" onClick="viewPassword('httppass', 'httpass-status')"/>
             </div>
           </div>
           <input type="submit" name="apply" value="Apply">
@@ -45,6 +45,7 @@
     <script>var jsons = [ ["/ewc/security.json", "fillsecurity"] ];</script>
     <script src="/js/postload.js"></script>
     <script type="text/javascript">
+      window.onload=function(){vsw(false, 'http');};
       function fillsecurity(data, url) {
         document.getElementById("ap_start_always").checked = data["ewc"]["ap_start_always"];
         document.getElementById("basic_auth").checked = data["ewc"]["basic_auth"];

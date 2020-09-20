@@ -13,3 +13,13 @@ function viewPassword(input, status) {
         // passStatus.className='fa fa-eye';
     }
 }
+
+/** Switch visiblility of elements with given class.
+ * param e: true or false
+ * param cls: the name of the class. **/
+function vsw(e, cls){
+    var t;
+    t=!e?'none':'block';
+    for(const n of document.getElementsByClassName(cls))
+      n.style.display=t,n.getElementsByTagName('input')[0].disabled=!e;
+  }

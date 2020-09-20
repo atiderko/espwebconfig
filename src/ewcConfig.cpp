@@ -40,7 +40,7 @@ Config::~Config()
 {
 }
 
-void Config::setup(JsonDocument& doc, bool resetConfig)
+void Config::setup(JsonDocument& config, bool resetConfig)
 {
     I::get().logger() << F("[EWC Config]: setup EWC config") << endl;
     _bootmodeUtcAddress = I::get().rtc().get();
@@ -70,28 +70,19 @@ void Config::setup(JsonDocument& doc, bool resetConfig)
         I::get().logger() << F("[EWC Config]: reset -> use default configuration") << endl;
         _initParams();
     } else {
-        _fromJson(doc);
+        _fromJson(config);
     }
 }
 
-
-void Config::loop()
+void Config::fillJson(JsonDocument& config)
 {
-}
-
-void Config::json(JsonDocument& doc)
-{
-    JsonVariant etcJson = doc["ewc"];
-    if (etcJson.isNull()) {
-        etcJson = doc.createNestedObject("ewc");
-    }
-    etcJson["apname"] = paramAPName;
-    etcJson["appass"] = _paramAPPass;
-    etcJson["ap_start_always"] = paramAPStartAlways;
-    etcJson["wifi_disabled"] = paramWifiDisabled;
-    etcJson["basic_auth"] = paramBasicAuth;
-    etcJson["httpuser"] = paramHttpUser;
-    etcJson["httppass"] = paramHttpPassword;
+    config["ewc"]["apname"] = paramAPName;
+    config["ewc"]["appass"] = _paramAPPass;
+    config["ewc"]["ap_start_always"] = paramAPStartAlways;
+    config["ewc"]["wifi_disabled"] = paramWifiDisabled;
+    config["ewc"]["basic_auth"] = paramBasicAuth;
+    config["ewc"]["httpuser"] = paramHttpUser;
+    config["ewc"]["httppass"] = paramHttpPassword;
 }
 
 void Config::_fromJson(JsonDocument& doc)

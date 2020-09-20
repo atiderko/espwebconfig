@@ -78,10 +78,10 @@ class ConfigServer
 {
 public:
     ConfigServer(uint16_t port=80);
-    void insertMenu(const char* name, const char* uri, const char* entry_id, bool visible=true, std::size_t position=255);
-    void insertMenuCb(const char* name, const char* uri, const char* entry_id, ArRequestHandlerFunction onRequest, bool visible=true, std::size_t position=255);
-    void insertMenuP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible=true, std::size_t position=255);
-    void insertMenuNoAuthP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible=true, std::size_t position=255);
+    void insertMenu(const char* name, const char* uri, const char* entry_id, bool visible=true, int position=255);
+    void insertMenuCb(const char* name, const char* uri, const char* entry_id, ArRequestHandlerFunction onRequest, bool visible=true, int position=255);
+    void insertMenuP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible=true, int position=255);
+    void insertMenuNoAuthP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible=true, int position=255);
     void setup();
     bool isAP() { return _ap_address.isSet(); }
     bool isConnected() { return WiFi.status() == WL_CONNECTED; }

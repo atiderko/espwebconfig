@@ -46,12 +46,9 @@ public:
     Config();
     ~Config();
 
-    void save();
-
     /** === ConfigInterface Methods === **/    
-    void setup(JsonDocument& doc, bool resetConfig=false);
-    void loop();
-    void json(JsonDocument& doc);
+    void setup(JsonDocument& config, bool resetConfig=false);
+    void fillJson(JsonDocument& config);
 
     /** === BOOT mode handling  === **/
     void setBootMode(BootMode mode);

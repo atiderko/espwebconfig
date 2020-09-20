@@ -35,9 +35,8 @@ class ConfigInterface {
 public:
     ConfigInterface(String name) { _name = name; }
     virtual ~ConfigInterface() {}
-    virtual void setup(JsonDocument& doc, bool resetConfig=false) = 0;
-    virtual void loop() = 0;
-    virtual void json(JsonDocument& doc) = 0;
+    virtual void setup(JsonDocument& config, bool resetConfig=false) = 0;
+    virtual void fillJson(JsonDocument& config) = 0;
 
     const String& name() { return _name; }
     bool operator== (const ConfigInterface &other) { return (_name.compareTo(other._name) == 0); }
