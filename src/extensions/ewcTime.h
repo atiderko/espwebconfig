@@ -32,7 +32,7 @@ limitations under the License.
 
 namespace EWC {
 
-    const float PROGMEM TIMEMAP[82][2] {
+    const float PROGMEM TZMAP[82][2] {
         {0, -12},  // 1 International Date Line West
         {0, -11},  // 2 Midway Island, Samoa
         {0, -10},  // 3 Hawaii
@@ -127,32 +127,41 @@ public:
     void setup(JsonDocument& config, bool resetConfig=false);
     void fillJson(JsonDocument& config);
 
-    /** === Parameter === **/
-    int paramTimezone;
-    bool paramManually;
-    String paramDate;
-    String paramTime;
-    bool paramDndEnabled;
-    String paramDndFrom;
-    String paramDndTo;
-
     void loop();
+    bool ntpAvailable() { return _ntpAvailable; }
     void setLocalTime(String& date, String& time);
-    /** Offset in seconds to now **/
-    String str(long offsetSeconds=0);
+    /** Current time as string.
+     * param offsetSeconds: Offset in seconds to now **/
+    String str(time_t offsetSeconds=0);
     time_t currentTime();
-    bool isDisturb(long offsetSeconds=0);
+    bool dndEnabled();
+    /** Checks if current time (shifted by offsetSeconds) is in Do not Disturb period. **/
+    bool isDisturb(time_t offsetSeconds=0);
+    /** If current time (shifted by offsetSeconds) is in Do not Disturb period
+     * returns the count of seconds until end of DnD period (reduced by offsetSeconds). **/
+    time_t shiftDisturb(time_t offsetSeconds=0);
+    const String& dndTo();
 
 protected:
     bool _ntpAvailable;
     bool _ntpInitialized;
-    void _init_params();
+
+    /** === Parameter === **/
+    int _paramTimezone;
+    bool _paramManually;
+    String _paramDate;
+    String _paramTime;
+    bool _paramDndEnabled;
+    String _paramDndFrom;
+    String _paramDndTo;
+
+    void _initParams();
     void _fromJson(JsonDocument& doc);
     void _callbackTimeSet(void);
     void _onTimeConfig(AsyncWebServerRequest *request);
     void _onTimeSave(AsyncWebServerRequest *request);
 
-    time_t _timeToSec(String& time);
+    time_t _dndToMin(String& hmTime);
 };
 
 };

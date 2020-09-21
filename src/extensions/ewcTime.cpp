@@ -45,7 +45,7 @@ void Time::setup(JsonDocument& config, bool resetConfig)
 {
     settimeofday_cb([this](void) { _callbackTimeSet(); });
     I::get().logger() << "[EWC Time] setup" << endl;
-    _init_params();
+    _initParams();
     _fromJson(config);
     EWC::I::get().server().insertMenuP("Time", "/time/setup", "menu_time", HTML_TIME_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML), true, -1);
     EWC::I::get().server().webserver().on("/time/config.json", std::bind(&Time::_onTimeConfig, this, std::placeholders::_1));
@@ -54,34 +54,34 @@ void Time::setup(JsonDocument& config, bool resetConfig)
 
 void Time::loop()
 {
-    if (!paramManually && !_ntpInitialized && WiFi.status() == WL_CONNECTED) {
+    if (!_paramManually && !_ntpInitialized && WiFi.status() == WL_CONNECTED) {
         // Sync our clock to NTP
-        configTime(TIMEMAP[paramTimezone-1][1] * 3600, TIMEMAP[paramTimezone-1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
+        configTime(TZMAP[_paramTimezone-1][1] * 3600, TZMAP[_paramTimezone-1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
         _ntpInitialized = true;
     }
 }
 
 void Time::fillJson(JsonDocument& config)
 {
-    config["time"]["timezone"] = paramTimezone;
-    config["time"]["manually"] = paramManually;
-    config["time"]["mdate"] = paramDate;
-    config["time"]["mtime"] = paramTime;
-    config["time"]["dnd_enabled"] = paramDndEnabled;
-    config["time"]["dnd_from"] = paramDndFrom;
-    config["time"]["dnd_to"] = paramDndTo;
+    config["time"]["timezone"] = _paramTimezone;
+    config["time"]["manually"] = _paramManually;
+    config["time"]["mdate"] = _paramDate;
+    config["time"]["mtime"] = _paramTime;
+    config["time"]["dnd_enabled"] = _paramDndEnabled;
+    config["time"]["dnd_from"] = _paramDndFrom;
+    config["time"]["dnd_to"] = _paramDndTo;
     config["time"]["current"] = str();
 }
 
-void Time::_init_params()
+void Time::_initParams()
 {
-    paramTimezone = 31;
-    paramManually = false;
-    paramDate = "21.10.2020";
-    paramTime = "21:00";
-    paramDndEnabled = false;
-    paramDndFrom = "22:00";
-    paramDndTo = "06:00";
+    _paramTimezone = 31;
+    _paramManually = false;
+    _paramDate = "21.10.2020";
+    _paramTime = "21:00";
+    _paramDndEnabled = false;
+    _paramDndFrom = "22:00";
+    _paramDndTo = "06:00";
 }
 
 void Time::_fromJson(JsonDocument& doc)
@@ -90,36 +90,36 @@ void Time::_fromJson(JsonDocument& doc)
     if (!jsonTimezone.isNull()) {
         int tz = jsonTimezone.as<int>();
         if (tz > 0 && tz <= 82) {
-            if (paramTimezone != tz) {
-                paramTimezone = tz;
+            if (_paramTimezone != tz) {
+                _paramTimezone = tz;
                 _ntpInitialized = false;
             }
         }
     }
     JsonVariant jsonDate = doc["time"]["mdate"];
     if (!jsonDate.isNull()) {
-        paramDate = jsonDate.as<String>();
+        _paramDate = jsonDate.as<String>();
     }
     JsonVariant jsonTime = doc["time"]["mtime"];
     if (!jsonTime.isNull()) {
-        paramTime = jsonTime.as<String>();
+        _paramTime = jsonTime.as<String>();
     }
     JsonVariant jsonManually = doc["time"]["manually"];
     if (!jsonManually.isNull()) {
-        paramManually = jsonManually.as<bool>();
+        _paramManually = jsonManually.as<bool>();
         // TODO set time
     }
     JsonVariant jsonDndEnabled = doc["time"]["dnd_enabled"];
     if (!jsonDndEnabled.isNull()) {
-        paramDndEnabled = jsonDndEnabled.as<bool>();
+        _paramDndEnabled = jsonDndEnabled.as<bool>();
     }
     JsonVariant jsonDndFrom = doc["time"]["dnd_from"];
     if (!jsonDndFrom.isNull()) {
-        paramDndFrom = jsonDndFrom.as<String>();
+        _paramDndFrom = jsonDndFrom.as<String>();
     }
     JsonVariant jsonDndTo = doc["time"]["dnd_to"];
     if (!jsonDndTo.isNull()) {
-        paramDndTo = jsonDndTo.as<String>();
+        _paramDndTo = jsonDndTo.as<String>();
     }
 }
 
@@ -199,11 +199,11 @@ time_t Time::currentTime()
 {
     time_t rawtime;
     time(&rawtime);
-    rawtime += TIMEMAP[paramTimezone-1][1] * 3600 + TIMEMAP[paramTimezone-1][0] * 3600;
+    rawtime += TZMAP[_paramTimezone-1][1] * 3600 + TZMAP[_paramTimezone-1][0] * 3600;
     return rawtime;
 }
 
-String Time::str(long offsetSeconds)
+String Time::str(time_t offsetSeconds)
 {
     time_t rawtime = currentTime();
     rawtime += offsetSeconds;
@@ -212,27 +212,70 @@ String Time::str(long offsetSeconds)
     return String(buffer);
 }
 
-bool Time::isDisturb(long offsetSeconds)
+bool Time::dndEnabled()
 {
-    if (paramDndEnabled) {
-        time_t ctime = currentTime();
-        time_t timeFrom = _timeToSec(paramDndFrom);
-        time_t timeTo = _timeToSec(paramDndTo);
-        ctime += offsetSeconds;
-        return (timeFrom <= ctime) && (ctime <= timeTo);
+    return _paramDndEnabled;
+}
+
+bool Time::isDisturb(time_t offsetSeconds)
+{
+    if (_paramDndEnabled) {
+        time_t r = shiftDisturb(offsetSeconds);
+        return r != offsetSeconds;
+        // time_t ctime = currentTime();
+        // struct tm * timeinfo;
+        // timeinfo = localtime(&ctime);
+        // time_t cmin = timeinfo->tm_hour * 60 + timeinfo->tm_min;
+        // time_t minFrom = _dndToMin(_paramDndFrom);
+        // time_t minTo = _dndToMin(_paramDndTo);
+        // cmin += offsetSeconds / 60;
+        // if (minFrom > minTo) {
+        //     // overflow on 24:00
+        //     return (cmin >= minFrom) || (cmin <= minTo);
+        // }
+        // return (cmin >= minFrom) && (cmin <= minTo);
     }
     return false;
 }
 
-time_t Time::_timeToSec(String& hmTime)
+time_t Time::shiftDisturb(time_t offsetSeconds)
 {
-    int hour, minute;
-    sscanf(hmTime.c_str(), "%d:%d", &hour, &minute);
-    time_t rawtime;
-    struct tm * timeinfo;
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
-    timeinfo->tm_hour = hour;
-    timeinfo->tm_min = minute;
-    return mktime(timeinfo);
+    if (_paramDndEnabled) {
+        time_t m24 =  24 * 60;
+        time_t ctime = currentTime();
+        struct tm * timeinfo;
+        timeinfo = localtime(&ctime);
+        time_t cmin = timeinfo->tm_hour * 60 + timeinfo->tm_min;
+        time_t minFrom = _dndToMin(_paramDndFrom);
+        time_t minTo = _dndToMin(_paramDndTo);
+        cmin += offsetSeconds / 60;
+        if (cmin > m24) {
+            cmin -= m24;
+        }
+        time_t result = 0;
+        if (minFrom > minTo) {
+            // overflow on 24:00
+            if (cmin >= minFrom) {
+                result = m24 - cmin + minTo;
+            } else if (cmin <= minTo) {
+                result = minTo - cmin;
+            }
+        } else {
+            result = minTo - cmin;
+        }
+        return result * 60;  // back to seconds
+    }
+    return offsetSeconds;
+}
+
+const String& Time::dndTo()
+{
+    return _paramDndTo;
+}
+
+time_t Time::_dndToMin(String& hmTime)
+{
+    int hours, minutes;
+    sscanf(hmTime.c_str(), "%d:%d", &hours, &minutes);
+    return hours * 60 + minutes;
 }
