@@ -138,7 +138,7 @@ public:
     /** Checks if current time (shifted by offsetSeconds) is in Do not Disturb period. **/
     bool isDisturb(time_t offsetSeconds=0);
     /** If current time (shifted by offsetSeconds) is in Do not Disturb period
-     * returns the count of seconds until end of DnD period (reduced by offsetSeconds). **/
+     * returns the count of seconds until end of DnD period (included offsetSeconds). **/
     time_t shiftDisturb(time_t offsetSeconds=0);
     const String& dndTo();
 
@@ -156,7 +156,7 @@ protected:
     String _paramDndTo;
 
     void _initParams();
-    void _fromJson(JsonDocument& doc);
+    void _fromJson(JsonDocument& config);
     void _callbackTimeSet(void);
     void _onTimeConfig(AsyncWebServerRequest *request);
     void _onTimeSave(AsyncWebServerRequest *request);

@@ -92,8 +92,8 @@ public:
     Config& config() { return _config; }
     AsyncWebServer& webserver() { return _server; }
     void sendContentP(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
-    void sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details="");
-    void sendPageFailed(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details="");
+    void sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details="", int timeout=5);
+    void sendPageFailed(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details="", int timeout=5);
     bool isAuthenticated(AsyncWebServerRequest *request);
 
 private:

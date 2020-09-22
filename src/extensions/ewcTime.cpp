@@ -84,9 +84,9 @@ void Time::_initParams()
     _paramDndTo = "06:00";
 }
 
-void Time::_fromJson(JsonDocument& doc)
+void Time::_fromJson(JsonDocument& config)
 {
-    JsonVariant jsonTimezone = doc["time"]["timezone"];
+    JsonVariant jsonTimezone = config["time"]["timezone"];
     if (!jsonTimezone.isNull()) {
         int tz = jsonTimezone.as<int>();
         if (tz > 0 && tz <= 82) {
@@ -96,28 +96,28 @@ void Time::_fromJson(JsonDocument& doc)
             }
         }
     }
-    JsonVariant jsonDate = doc["time"]["mdate"];
+    JsonVariant jsonDate = config["time"]["mdate"];
     if (!jsonDate.isNull()) {
         _paramDate = jsonDate.as<String>();
     }
-    JsonVariant jsonTime = doc["time"]["mtime"];
+    JsonVariant jsonTime = config["time"]["mtime"];
     if (!jsonTime.isNull()) {
         _paramTime = jsonTime.as<String>();
     }
-    JsonVariant jsonManually = doc["time"]["manually"];
+    JsonVariant jsonManually = config["time"]["manually"];
     if (!jsonManually.isNull()) {
         _paramManually = jsonManually.as<bool>();
         // TODO set time
     }
-    JsonVariant jsonDndEnabled = doc["time"]["dnd_enabled"];
+    JsonVariant jsonDndEnabled = config["time"]["dnd_enabled"];
     if (!jsonDndEnabled.isNull()) {
         _paramDndEnabled = jsonDndEnabled.as<bool>();
     }
-    JsonVariant jsonDndFrom = doc["time"]["dnd_from"];
+    JsonVariant jsonDndFrom = config["time"]["dnd_from"];
     if (!jsonDndFrom.isNull()) {
         _paramDndFrom = jsonDndFrom.as<String>();
     }
-    JsonVariant jsonDndTo = doc["time"]["dnd_to"];
+    JsonVariant jsonDndTo = config["time"]["dnd_to"];
     if (!jsonDndTo.isNull()) {
         _paramDndTo = jsonDndTo.as<String>();
     }
@@ -134,7 +134,7 @@ void Time::_onTimeConfig(AsyncWebServerRequest *request)
         return request->requestAuthentication();
     }
     I::get().logger() << "[EWC time]: ESP heap: _onTimeConfig: " << ESP.getFreeHeap() << endl;
-    DynamicJsonDocument jsonDoc(1024);
+    DynamicJsonDocument jsonDoc(512);
     fillJson(jsonDoc);
     String output;
     serializeJson(jsonDoc, output);
@@ -151,7 +151,7 @@ void Time::_onTimeSave(AsyncWebServerRequest *request)
     for (size_t i = 0; i < request->params(); i++) {
         I::get().logger() << "  " << request->argName(i) << ": " << request->arg(i) << endl;
     }
-    DynamicJsonDocument config(1024);
+    DynamicJsonDocument config(512);
     if (request->hasArg("timezone") && !request->arg("timezone").isEmpty()) {
         config["time"]["timezone"] = request->arg("timezone").toInt();
     }
@@ -221,19 +221,7 @@ bool Time::isDisturb(time_t offsetSeconds)
 {
     if (_paramDndEnabled) {
         time_t r = shiftDisturb(offsetSeconds);
-        return r != offsetSeconds;
-        // time_t ctime = currentTime();
-        // struct tm * timeinfo;
-        // timeinfo = localtime(&ctime);
-        // time_t cmin = timeinfo->tm_hour * 60 + timeinfo->tm_min;
-        // time_t minFrom = _dndToMin(_paramDndFrom);
-        // time_t minTo = _dndToMin(_paramDndTo);
-        // cmin += offsetSeconds / 60;
-        // if (minFrom > minTo) {
-        //     // overflow on 24:00
-        //     return (cmin >= minFrom) || (cmin <= minTo);
-        // }
-        // return (cmin >= minFrom) && (cmin <= minTo);
+        return r > offsetSeconds;
     }
     return false;
 }
@@ -263,7 +251,7 @@ time_t Time::shiftDisturb(time_t offsetSeconds)
         } else {
             result = minTo - cmin;
         }
-        return result * 60;  // back to seconds
+        return result * 60 + offsetSeconds;  // back to seconds
     }
     return offsetSeconds;
 }

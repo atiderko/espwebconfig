@@ -32,7 +32,7 @@ const char  EWC_PAGE_SUCCESS[] PROGMEM = R"(
 <html lang="en">
   <head>
     <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
-    <meta http-equiv="refresh" content = "5;url={{REDIRECT}}">
+    <meta http-equiv="refresh" content = "{{TIMEOUT}};url={{REDIRECT}}">
     <title>{{TITLE}}</title>
     <link rel="stylesheet" href="/css/base.css">
   </head>
@@ -57,7 +57,7 @@ const char  EWC_PAGE_FAIL[] PROGMEM = R"(
 <html lang="en">
   <head>
     <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
-    <meta http-equiv="refresh" content = "5;url={{REDIRECT}}">
+    <meta http-equiv="refresh" content = "{{TIMEOUT}};url={{REDIRECT}}">
     <title>{{TITLE}}</title>
     <link rel="stylesheet" href="/css/base.css">
   </head>

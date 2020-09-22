@@ -650,24 +650,24 @@ void ConfigServer::setBrand(const char* brand, const char* version)
     _version = String(version);
 }
 
-void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details)
+void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details, int timeout)
 {
     I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
     I::get().logger() << "[EWC CS]: sendPageSuccess " << summary << ":" << details << endl;
     String result(FPSTR(EWC_PAGE_SUCCESS));
-    I::get().logger() << "[EWC CS]: result " << result << endl;
+    result.replace("{{TIMEOUT}}", String(timeout));
     result.replace("{{REDIRECT}}", redirectUrl);
     result.replace("{{TITLE}}", title);
     result.replace("{{SUMMARY}}", summary);
     result.replace("{{DETAILS}}", details);
-    I::get().logger() << "[EWC CS]: result " << result << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
     I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
 }
 
-void ConfigServer::sendPageFailed(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details)
+void ConfigServer::sendPageFailed(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details, int timeout)
 {
     String result(FPSTR(EWC_PAGE_FAIL));
+    result.replace("{{TIMEOUT}}", String(timeout));
     result.replace("{{REDIRECT}}", redirectUrl);
     result.replace("{{TITLE}}", title);
     result.replace("{{SUMMARY}}", summary);
