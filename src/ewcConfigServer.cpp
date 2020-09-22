@@ -31,6 +31,7 @@ limitations under the License.
 #include "generated/webPreJS.h"
 #include "generated/webTableCSS.h"
 #include "generated/webWifiiconsCSS.h"
+#include "generated/webWifiJS.h"
 #include "generated/wifiConnectHTML.h"
 #include "generated/wifiSetupHTML.h"
 #include "ewcPages.h"
@@ -116,6 +117,7 @@ void ConfigServer::setup()
     _server.on("/css/wifiicons.css", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, CSS_WEB_WIFIICONS, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
     _server.on("/js/postload.js", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, JS_WEB_POSTLOAD, FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
     _server.on("/js/pre.js", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, JS_WEB_PRE, FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
+    _server.on("/js/wifi.js", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, JS_WEB_WIFI, FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
     _server.rewrite("/wifi", "/wifi/setup");
     insertMenuCb("WiFi", "/wifi/setup", "menu_wifi", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/wifi/connect", std::bind(&ConfigServer::_onWiFiConnect, this, std::placeholders::_1));

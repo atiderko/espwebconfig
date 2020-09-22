@@ -13,9 +13,11 @@
           <div id="dbl1" class="dbl-bounce1"></div>
           <div id="dbl2" class="dbl-bounce2"></div>
         </div>
-        <div id="ssid_current" style="position:absolute;left:-100%;right:-100%;text-align:center;margin:10px auto;font-weight:bold;color:#0b0b33;">connecting..</div>
+        <br>
+        <div id="ssid_current" style="position:absolute;left:-100%;right:-100%;text-align:center;margin:30px auto;font-weight:bold;color:#0b0b33;">connecting..</div>
     </div>
     <script>var jsons = [ ["/wifi/state.json", "wifistate"] ];</script>
+    <script src="/js/wifi.js"></script>
     <script src="/js/postload.js"></script>
   </body>
 </html>

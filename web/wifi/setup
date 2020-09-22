@@ -78,6 +78,7 @@ function onDisableWiFi() {
 }
 </script>
 <script>jsons = [ ["/wifi/state.json", "wifistate"], ["/wifi/stations.json", "wifistations"] ];</script>
+<script src="/js/wifi.js"></script>
 <script src="/js/postload.js"></script>
 </body>
 </html>
