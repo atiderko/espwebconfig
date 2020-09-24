@@ -18,11 +18,17 @@
                 <div id="dbl1" class="dbl-bounce1"></div>
                 <div id="dbl2" class="dbl-bounce2"></div>
               </div>
-              <div id="ssid_current" style="position:absolute;left:-100%;right:-100%;text-align:center;margin:0px auto;font-weight:bold;color:#0b0b33;">requesting current state...</div>
+              <div id="ssid_current" style="position:absolute;left:-120%;right:-120%;text-align:center;margin:0px auto;font-weight:bold;color:#0b0b33;">
+                <label id="lbl_reqcurstate">requesting current state...</label>
+              </div>
           </div>
           <div style="text-align:center;padding-bottom: 3px;margin:16px 0 16px 0;border-bottom:solid 1px #263238;"></div>
-          <div id="list_ssid"></div>
-          <div id="list_ssid_info" style="margin:16px 0 8px 0;border-bottom:solid 1px #263238;">Load WiFi stations... </div>
+          <div id="list_ssid">
+             <label id="lbl_list_ssid_scan">scan in progress...</label>
+             <label id="lbl_list_ssid_scan_count"></label>
+             <label id="lbl_list_ssid_failed" style="color:red;"></label>
+          </div>
+          <div id="list_ssid_info" style="margin:16px 0 8px 0;border-bottom:solid 1px #263238;"></div>
           <div class="noorder">
             <div>
                 <label id="lbl_ssid" for="ssid">SSID</label>
@@ -34,7 +40,7 @@
                 <input id="pass-status" type="checkbox" aria-hidden="true" onClick="viewPassword('passphrase', 'pass-status')">
             </div>
             <div>
-                <input id="dhcp" type="checkbox" name="dhcp" value="true" onclick="vsw(this.checked, 'exp');"> Enable DHCP</input>
+                <input id="dhcp" type="checkbox" name="dhcp" value="true" checked onclick="vsw(!this.checked, 'exp');">Enable DHCP</input>
             </div>
             <div class="exp">
                 <label id="lbl_staip" for="staip">IP Address</label>
@@ -56,11 +62,11 @@
                 <label id="lbl_dns2" for="dns2">DNS2</label>
                 <input id="dns2" type="text" name="dns2" value="">
             </div>
-            <div><input type="submit" name="apply" value="Apply"></div>
+            <div><input id="npt_apply" type="submit" name="apply" value="Apply"></div>
+            <div><input id="btn_disable_wifi" type="button" style="background:red;width:auto;padding:8px 20px 8px 20px" onClick="onDisableWiFi();" value="Disable WiFi"></div>
         </div>
         </form>
     </div>
-    <input id="btn_disable_wifi" type="button" style="margin:12px 5px 15px 20px;width:9em; background: red;" onClick="onDisableWiFi();" value="Disable WiFi">
 
 <script type="text/javascript">
 window.onload=function(){

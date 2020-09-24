@@ -20,6 +20,11 @@ function viewPassword(input, status) {
 function vsw(e, cls){
     var t;
     t=!e?'none':'block';
-    for(const n of document.getElementsByClassName(cls))
-      n.style.display=t,n.getElementsByTagName('input')[0].disabled=!e;
-  }
+    for(const n of document.getElementsByClassName(cls)) {
+      n.style.display=t;
+      input = n.getElementsByTagName('input')[0];
+      if (input != undefined) {
+        input.disabled=!e;
+      }
+    }
+}

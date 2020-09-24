@@ -1,9 +1,10 @@
 {
   "brand": "ESP WebConfig",
+  "language": "de",
   "elements": [
     {
       "name": "Status",
-      "id": "menu_device",
+      "id": "menu_status",
       "href": "/index.html"
     },
     {

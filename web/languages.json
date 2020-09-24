@@ -1,0 +1,53 @@
+{
+    "lbl_current": {
+        "en": "Current Time",
+        "de": "Aktuelle Zeit"
+    },
+    "lbl_timezone": {
+        "de": "Zeitzone"
+    },
+    "lbl_manually": {
+        "de": "Manuelle Zeit"
+    },
+    "info_manually": {
+        "de": "&#128712; Die Zeit muss dann nach jedem Start neu eingestellt werden!"
+    },
+    "lbl_dnd_enabled": {
+        "de": "Nicht stören in der Zeit"
+    },
+    "lbl_dnd_from": {
+        "de": "Von"
+    },
+    "lbl_dnd_to": {
+        "de": "Bis"
+    },
+    "npt_apply": {
+        "de": "Übernehmen"
+    },
+    "btn_disable_wifi": {
+        "de": "Deaktiviere WLAN"
+    },
+    "lbl_reqcurstate": {
+        "de": "aktualisiere den Status..."
+    },
+    "lbl_connecting": {
+        "de": "verbinden..."
+    },
+    "lbl_connected": {
+        "de": "verbunden"
+    },
+    "lbl_list_ssid_scan": {
+        "de": "suche nach WLAN AP's..."
+    },
+    "lbl_list_ssid_failed": {
+        "de": "Suche nach WLAN AP's fehlgeschlagen!"
+    },
+    "btn_disconnect": {
+        "de": "trennen"
+    },
+    "menu_security": {
+        "de": "Sicherheit"
+    }
+    
+    
+}

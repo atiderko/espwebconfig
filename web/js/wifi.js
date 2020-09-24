@@ -4,15 +4,20 @@ let countGetWifiState = 0;
 function wifistations(data, uri) {
   console.log("add stations", uri);
   if (data["failed"]) {
-    document.getElementById("list_ssid").innerHTML = '<div style="color:red;">scan for WiFi stations failed!</div>';
+    ih = '<label id="lbl_list_ssid_failed" style="color:red;">scan for WiFi stations failed!</label>';
+    document.getElementById("list_ssid").innerHTML = ih;
     document.getElementById("list_ssid_info").innerText = "";
+    updateLanguageKeys(["lbl_list_ssid_failed"]);
     return;
   }
   if (! data["finished"]) {
     countGetWifiStations += 1;
     setTimeout(getJSON.bind(null, "/wifi/stations.json", "wifistations"), 1000); //Ruft die Callback-Funktion nach 1 Sekunde auf
-    document.getElementById("list_ssid").innerText = "scan in progress..." + countGetWifiStations;
+    ih = '<label id="lbl_list_ssid_scan">scan in progress...</label>';
+    ih += '<label id="lbl_list_ssid_scan_count">' + countGetWifiStations + '</label>';
+    document.getElementById("list_ssid").innerHTML = ih;
     document.getElementById("list_ssid_info").innerText = "";
+    updateLanguageKeys(["lbl_list_ssid_scan"]);
     return;
   }
   networks = data["networks"];
@@ -34,7 +39,11 @@ function wifistations(data, uri) {
 
   console.log(hh);
   document.getElementById("list_ssid").innerHTML = hh;
-  document.getElementById("list_ssid_info").innerText = "Total: " + networks.length + " Hidden: " + hiddenCount;
+  il = '<label id="lbl_total">Total:</label>';
+  il += " " + networks.length + " ";
+  il += '<label id="lbl_hidden">Hidden:</label>';
+  il += " " + hiddenCount;
+  document.getElementById("list_ssid_info").innerHTML = il;
 }
 
 function getRSSIasQuality(rssi) {
@@ -54,7 +63,7 @@ function wifistate(data, uri) {
     hh = '<label style="color:black;">' + data["ssid"] + ': </label>';
     if (data["ssid"].length > 0) {
       if (data["connected"]) {
-        hh += '<label style="color:green;">connected </label>';
+        hh += '<label id="lbl_connected" style="color:green;">connected </label>';
         hh += '<input id="btn_disconnect" type="button" style="padding:3px; width:9em; background: #FF8C00;" onClick="location.href=\'/wifi/disconnect\'" value="disconnect">';
         dbl = document.getElementById("dbl");
         if (dbl != null) {
@@ -74,12 +83,14 @@ function wifistate(data, uri) {
         }
       } else if (data["ssid"].length > 0) {
         countGetWifiState += 1;
-        hh += '<label> connecting...' + countGetWifiState + '</label>';
+        hh += '<label id="lbl_connecting">connecting...</label>';
+        hh += '<label id="lbl_connecting_count">' + countGetWifiState + '</label>';
         setTimeout(getJSON.bind(null, "/wifi/state.json", "wifistate"), 1000);
       }
     } else {
       hh = "not connected";
     }
     document.getElementById("ssid_current").innerHTML = hh;
+    updateLanguageKeys(["btn_disconnect", "lbl_connected", "lbl_connecting"]);
   }
   

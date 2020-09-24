@@ -22,11 +22,11 @@
                 <input id="appass-status" type="checkbox" aria-hidden="true" onClick="viewPassword('appass', 'appass-status')">
             </div>
             <div>
-              <input id="ap_start_always" type="checkbox" name="ap_start_always" value="true" checked> AP start always</input>
+              <input id="ap_start_always" type="checkbox" name="ap_start_always" value="true" checked>AP start always</input>
               <label id="info_ap_start_always">&#128712; Open AP also while connected to WiFi. </label>
             </div>
             <div>
-              <input id="basic_auth" type="checkbox" name="basic_auth" value="true" onclick="vsw(this.checked, 'http');"> Enable HTTP authentification</input>
+              <input id="basic_auth" type="checkbox" name="basic_auth" value="true" onclick="vsw(this.checked, 'http');">Enable HTTP authentification</input>
             </div>
             <div class="http">
                 <label id="lbl_httpuser" for="httpuser">HTTP User</label>

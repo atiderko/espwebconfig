@@ -93,7 +93,8 @@ div .noorder {
 }
 .noorder input[type=checkbox]{
     -moz-appearance:checkbox;
-    -webkit-appearance:checkbox
+    -webkit-appearance:checkbox;
+    margin-right: 8px
 }
 .noorder input[type=radio]{
     margin-right:0.5em;
@@ -148,7 +149,7 @@ div .line_named {
     color:#737271;
 }
 
-/**< balzss/luxbar is licensed under the MIT License https://github.com/balzss/luxbar */
+/** balzss/luxbar is licensed under the MIT License https://github.com/balzss/luxbar */
 .lb-fixed{
     width:100%;
     position:fixed;
