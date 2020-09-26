@@ -154,7 +154,7 @@ void Config::setAPPass(String pass)
 
 void Config::_initParams()
 {
-    paramAPName = String("ewc-") + String(getChipId());
+    paramAPName = String("ewc-") + getChipId();
     _paramAPPass = "";
     paramAPStartAlways = false;
     paramWifiDisabled = false;
@@ -162,15 +162,16 @@ void Config::_initParams()
     paramHttpUser = DEFAULT_HTTP_USER;
     paramHttpPassword = DEFAULT_HTTP_PASSWORD;
     paramHostname = paramAPName;
-    paramLanguage = 'en';
+    paramLanguage = "en";
 }
 
-uint32_t Config::getChipId() {
+String Config::getChipId() {
+    String id = "";
 #if defined(ARDUINO_ARCH_ESP8266)
-  return ESP.getChipId();
+    id = String(ESP.getChipId(), HEX);
 #elif defined(ARDUINO_ARCH_ESP32)
-  uint64_t  chipId;
-  chipId = ESP.getEfuseMac();
-  return (uint32_t)(chipId >> 32);
+    id = String((uint32_t)ESP.getEfuseMac(), HEX);
 #endif
+    id.toUpperCase();
+    return id;
 }

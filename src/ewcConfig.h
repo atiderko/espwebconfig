@@ -66,7 +66,7 @@ public:
     String paramHttpPassword;
     String paramHostname;
     String paramLanguage;
-    uint32_t getChipId();
+    String getChipId();
 
 protected:
     uint8_t _bootmodeUtcAddress;

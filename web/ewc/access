@@ -10,7 +10,7 @@
   <body style="padding-top:58px;">
     <div id="header"></div>
     <div class="base-panel">
-        <form action="/ewc/secsave" method="post">
+        <form action="/ewc/accesssave" method="post">
           <div class="noorder">
             <div>
                 <label id="lbl_apname" for="apname">AP Name</label>
@@ -23,7 +23,7 @@
             </div>
             <div>
               <input id="ap_start_always" type="checkbox" name="ap_start_always" value="true" checked>AP start always</input>
-              <label id="info_ap_start_always">&#128712; Open AP also while connected to WiFi. </label>
+              <label id="info_ap_start_always">Open AP also while connected to WiFi. </label>
             </div>
             <div>
                 <label id="lbl_hostname" for="hostname">Hostname</label>

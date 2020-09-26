@@ -142,7 +142,7 @@ void ConfigServer::setup()
     _server.on("/wifi/stations.json", std::bind(&ConfigServer::_onWifiScan, this, std::placeholders::_1));
     insertMenuCb("Access", "/ewc/access", "menu_access", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_EWC_ACCESS, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/ewc/access.json", std::bind(&ConfigServer::_onAccessGet, this, std::placeholders::_1));
-    _server.on("/ewc/secsave", std::bind(&ConfigServer::_onAccessSave, this, std::placeholders::_1));
+    _server.on("/ewc/accesssave", std::bind(&ConfigServer::_onAccessSave, this, std::placeholders::_1));
     insertMenuCb("Info", "/ewc/info", "menu_info", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_EWC_INFO, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/ewc/info.json", std::bind(&ConfigServer::_onGetInfo, this, std::placeholders::_1));
     _server.on("/ewc/config", std::bind(&ConfigServer::_sendFileContent, this, std::placeholders::_1, FPSTR(CONFIG_FILENAME), FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
@@ -151,40 +151,6 @@ void ConfigServer::setup()
     _server.onNotFound (std::bind(&ConfigServer::_onNotFound,this,std::placeholders::_1));
     _server.begin(); // Web server start
 }
-
-/**
- * https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266httpUpdate
-#include <Update.h>
-UPDATE
-  server.on("/update", HTTP_POST, []() {
-    server.sendHeader("Connection", "close");
-    server.send(200, "text/plain", (Update.hasError()) ? "NOK" : "OK");
-    delay(1000);
-    ESP.restart();
-  }, []() {
-    HTTPUpload& upload = server.upload();
-    if (upload.status == UPLOAD_FILE_START) {
-      Serial.setDebugOutput(true);
-      Serial.printf("Update: %s\n", upload.filename.c_str());
-      uint32_t maxSketchSpace = (1048576 - 0x1000) & 0xFFFFF000;
-      if (!Update.begin(maxSketchSpace)) { //start with max available size
-        Update.printError(Serial);
-      }
-    } else if (upload.status == UPLOAD_FILE_WRITE) {
-      if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
-        Update.printError(Serial);
-      }
-    } else if (upload.status == UPLOAD_FILE_END) {
-      if (Update.end(true)) { //true to set the size to the current progress
-        Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
-      } else {
-        Update.printError(Serial);
-      }
-      Serial.setDebugOutput(false);
-    }
-    yield();
-  });
-*/
 
 void ConfigServer::_startAP() {
     // Start ticker with AP_STA
@@ -205,7 +171,7 @@ void ConfigServer::_startAP() {
     delay(500); // Without delay I've seen the IP address blank
     _ap_address = WiFi.softAPIP();
     I::get().logger() << F("[EWC CS]: AP IP address: ") << _ap_address << endl;
-    /* Setup the DNS server redirecting all the domains to the apIP */
+    // Setup the DNS server redirecting all the domains to the apIP
     _dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     _dnsServer.start(DNS_PORT, "*", _ap_address);
     I::get().logger() << F("[EWC CS]: HTTP server started") << endl;
@@ -271,6 +237,7 @@ void ConfigServer::_wifiOnSoftAPModeStationDisconnected(const WiFiEventSoftAPMod
 #else
 // TODO: events for ESP32
 #endif
+
 void ConfigServer::insertMenu(const char* name, const char* uri, const char* entry_id, bool visible, int position)
 {
     MenuItem item;
@@ -294,7 +261,7 @@ void ConfigServer::insertMenu(const char* name, const char* uri, const char* ent
 void ConfigServer::insertMenuCb(const char* name, const char* uri, const char* entry_id, ArRequestHandlerFunction onRequest, bool visible, int position)
 {
     insertMenu(name, uri, entry_id, visible, position);
-    _server.on(uri, onRequest);
+    _server.on(uri, HTTP_GET, onRequest);
 }
 
 void ConfigServer::insertMenuP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible, int position)
@@ -395,7 +362,7 @@ void ConfigServer::_onAccessSave(AsyncWebServerRequest *request)
         _config.paramHostname = request->arg("hostname");
     }
     I::get().logger() << "[EWC CS]: ESP heap: _onAccessSave: " << ESP.getFreeHeap() << endl;
-    sendPageSuccess(request, "Security save", "/ewc/security", "Save success! Please, restart to apply AP changes!");
+    sendPageSuccess(request, "Security save", "/ewc/access", "Save success! Please, restart to apply AP changes!");
 }
 
 void ConfigServer::_onGetInfo(AsyncWebServerRequest *request)
@@ -477,10 +444,6 @@ void ConfigServer::_onWiFiConnect(AsyncWebServerRequest *request)
     I::get().logger() << "[EWC CS]: ESP heap: _onWiFiConnect: " << ESP.getFreeHeap() << endl;
     request->send_P(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_CONNECT);
     _connect(ssid, pass);
-    //HTML_WIFI_CONNECT, FPSTR(PROGMEM_CONFIG_TEXT_HTML)
-    // AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
-    // response->addHeader("Location", "/wifi/connecting");
-    // request->send ( response);
 }
 
 void ConfigServer::_onWiFiDisconnect(AsyncWebServerRequest *request)

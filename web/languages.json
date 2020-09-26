@@ -9,7 +9,7 @@
         "de": "Manuelle Zeit"
     },
     "info_manually": {
-        "de": "&#128712; Die Zeit muss dann nach jedem Start neu eingestellt werden!"
+        "de": "Die Zeit muss dann nach jedem Start neu eingestellt werden!"
     },
     "lbl_dnd_enabled": {
         "de": "Nicht stören in der Zeit"
@@ -38,6 +38,12 @@
     "lbl_list_ssid_scan": {
         "de": "suche nach WLAN AP's..."
     },
+    "lbl_total": {
+        "de": "Gesamt:"
+    },
+    "lbl_hidden": {
+        "de": "Unsichtbar:"
+    },
     "lbl_list_ssid_failed": {
         "de": "Suche nach WLAN AP's fehlgeschlagen!"
     },
@@ -46,7 +52,8 @@
     },
     "menu_access": {
         "de": "Zugriff"
-    }
-    
-    
+    },
+    "menu_time": {
+        "de": "Zeit"
+    }    
 }

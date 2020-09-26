@@ -12,6 +12,7 @@ function viewPassword(input, status) {
         passwordInput.type='password';
         // passStatus.className='fa fa-eye';
     }
+    passwordInput.focus();
 }
 
 /** Switch visiblility of elements with given class.

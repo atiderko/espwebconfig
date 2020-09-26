@@ -15,11 +15,11 @@
           <div class="noorder">
             <div>
               <input id="on_warning" type="checkbox" name="on_warning" value="true" checked>Send on warning</input>
-              <label id="info_on_warning">&#128712; Sned only warnings, e.g. no water</label>
+              <label id="info_on_warning">Sned only warnings, e.g. no water</label>
             </div>
             <div>
               <input id="on_change" type="checkbox" name="on_change" value="true" checked>Send on change</input>
-              <label id="info_on_change">&#128712; Send on state changes, e.g. flower are dry</label>
+              <label id="info_on_change">Send on state changes, e.g. flower are dry</label>
             </div>
             <div>
               <input id="on_event" type="checkbox" name="on_event" value="false">Send on each event</input>
@@ -27,7 +27,7 @@
             <div>
                 <label id="lbl_receiver" for="receiver">Receiver:</label>
                 <input id="receiver" type="text" name="receiver" placeholder="receiver@mail.de" pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}'>
-                <label id="info_receiver">&#128712; E-Mail address to receive notifications.</label>
+                <label id="info_receiver">E-Mail address to receive notifications.</label>
             </div>
             <div>
                 <label id="lbl_sender" for="sender">Sender:</label>

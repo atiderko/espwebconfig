@@ -44,6 +44,7 @@ function wifistations(data, uri) {
   il += '<label id="lbl_hidden">Hidden:</label>';
   il += " " + hiddenCount;
   document.getElementById("list_ssid_info").innerHTML = il;
+  updateLanguageKeys(["lbl_total", "lbl_hidden"]);
 }
 
 function getRSSIasQuality(rssi) {

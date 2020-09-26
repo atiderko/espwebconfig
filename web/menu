@@ -28,6 +28,11 @@
       "href": "/ewc/access"
     },
     {
+      "name": "Update",
+      "id": "menu_update",
+      "href": "/ewc/update"
+    },
+    {
       "name": "Time",
       "id": "menu_time",
       "href": "/time/setup"

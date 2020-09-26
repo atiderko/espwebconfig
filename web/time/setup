@@ -106,7 +106,7 @@
             </div>
             <div>
                 <input id="manually" type="checkbox" name="manually" value="true" onclick="vswe(this.checked);"><label id="lbl_manually">Manually time</label></input>
-                <label id="info_manually">&#128712; You need to setup manually time after each restart!</label>
+                <label id="info_manually">You need to setup manually time after each restart!</label>
             </div>
             <div class="exp">
                 <label id="lbl_date" for="date">Date</label>
