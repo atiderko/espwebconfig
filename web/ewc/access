@@ -19,7 +19,7 @@
             <div>
                 <label id="lbl_appass" for="appass">AP Password</label>
                 <input id="appass" type="password" name="appass" placeholder="Passphrase">
-                <input id="appass-status" type="checkbox" aria-hidden="true" onClick="viewPassword('appass', 'appass-status')">
+                <input id="appass-status" class="pwdcb" type="checkbox" aria-hidden="true" onClick="viewPassword('appass', 'appass-status')">
             </div>
             <div>
               <input id="ap_start_always" type="checkbox" name="ap_start_always" value="true" checked>AP start always</input>
@@ -39,7 +39,7 @@
             <div class="http">
                 <label id="lbl_httppass" for="httppass">HTTP Password</label>
                 <input id="httppass" type="password" name="httppass" placeholder="Passphrase">
-                <input id="httpass-status" type="checkbox" aria-hidden="false" onClick="viewPassword('httppass', 'httpass-status')"/>
+                <input id="httpass-status" class="pwdcb" type="checkbox" aria-hidden="false" onClick="viewPassword('httppass', 'httpass-status')"/>
             </div>
           </div>
           <input type="submit" name="apply" value="Apply">

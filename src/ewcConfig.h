@@ -65,6 +65,7 @@ public:
     String paramHttpUser;
     String paramHttpPassword;
     String paramHostname;
+    String paramLanguage;
     uint32_t getChipId();
 
 protected:

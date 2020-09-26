@@ -14,15 +14,15 @@
         <form action="/mail/save" method="post">
           <div class="noorder">
             <div>
-              <input id="on_warning" type="checkbox" name="on_warning" value="true" checked> Send on warning</input>
+              <input id="on_warning" type="checkbox" name="on_warning" value="true" checked>Send on warning</input>
               <label id="info_on_warning">&#128712; Sned only warnings, e.g. no water</label>
             </div>
             <div>
-              <input id="on_change" type="checkbox" name="on_change" value="true" checked> Send on change</input>
+              <input id="on_change" type="checkbox" name="on_change" value="true" checked>Send on change</input>
               <label id="info_on_change">&#128712; Send on state changes, e.g. flower are dry</label>
             </div>
             <div>
-              <input id="on_event" type="checkbox" name="on_event" value="false"> Send on each event</input>
+              <input id="on_event" type="checkbox" name="on_event" value="false">Send on each event</input>
             </div>
             <div>
                 <label id="lbl_receiver" for="receiver">Receiver:</label>
@@ -44,7 +44,7 @@
             <div>
                 <label id="lbl_passphrase" for="passphrase">Password</label>
                 <input id="passphrase" type="password" name="passphrase" placeholder="Passphrase">
-                <input id="httpass-status" type="checkbox" aria-hidden="true" onClick="viewPassword('passphrase', '')">
+                <input id="httpass-status" class="pwdcb" type="checkbox" aria-hidden="true" onClick="viewPassword('passphrase', '')">
             </div>
           </div>
           <input type="submit" name="apply" value="Apply">

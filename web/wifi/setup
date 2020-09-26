@@ -37,7 +37,7 @@
             <div>
                 <label id="lbl_passphrase" for="passphrase">Passphrase</label>
                 <input id="passphrase" type="password" name="passphrase" placeholder="Passphrase">
-                <input id="pass-status" type="checkbox" aria-hidden="true" onClick="viewPassword('passphrase', 'pass-status')">
+                <input id="pass-status" class="pwdcb" type="checkbox" aria-hidden="true" onClick="viewPassword('passphrase', 'pass-status')">
             </div>
             <div>
                 <input id="dhcp" type="checkbox" name="dhcp" value="true" checked onclick="vsw(!this.checked, 'exp');">Enable DHCP</input>

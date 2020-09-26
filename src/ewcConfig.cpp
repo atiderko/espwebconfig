@@ -162,6 +162,7 @@ void Config::_initParams()
     paramHttpUser = DEFAULT_HTTP_USER;
     paramHttpPassword = DEFAULT_HTTP_PASSWORD;
     paramHostname = paramAPName;
+    paramLanguage = 'en';
 }
 
 uint32_t Config::getChipId() {

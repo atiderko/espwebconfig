@@ -70,8 +70,9 @@ def perform_gzip(c):
 def perform_minify(c, usegzip=False, notminify=False):
     with open(c['infile']) as infile:
         minifier = {
-            'css': cssminify, 
-            'js': jsminify, 
+            'css': cssminify,
+            'js': jsminify,
+            'json': jsminify,
             'html': htmlminify
         }.get(c['ext']) or htmlminify
         print("  Using %s minifier" % c['ext'])
@@ -102,7 +103,7 @@ def process_file(infile, outdir, storemini=False, usegzip=False, notminify=False
    
         
 def process_dir(sourcedir, outdir, recursive=True, storemini=True, usegzip=False, notminify=False):
-    pattern = r'/*\.(css|js|htm|html)$'
+    pattern = r'/*\.(css|js|json|htm|html)$'
     files = glob(sourcedir + "/**/*", recursive=True)+glob(sourcedir + "/*") if recursive else glob(sourcedir + "/*")
     files_filtered = set(filter(re.compile(pattern).search, files) )
     # search for HTML files without extension (for simple local testing of web structure)

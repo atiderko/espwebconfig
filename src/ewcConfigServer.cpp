@@ -571,6 +571,7 @@ void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
     DynamicJsonDocument jsonDoc(2048);
     JsonObject json = jsonDoc.to<JsonObject>();
     json["brand"] = _brand;
+    json["language"] = _config.paramLanguage;
     JsonArray elements = json.createNestedArray("elements");
     std::vector<MenuItem>::iterator it;
     for (it = _menu.begin(); it != _menu.end(); it++) {
