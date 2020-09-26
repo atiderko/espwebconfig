@@ -24,7 +24,7 @@ limitations under the License.
 #include <LittleFS.h>
 #include "ewcInterface.h"
 #include "generated/ewcInfoHTML.h"
-#include "generated/ewcSecurityHTML.h"
+#include "generated/ewcAccessHTML.h"
 #include "generated/webBaseCSS.h"
 #include "generated/webIndexHTML.h"
 #include "generated/webPostloadJS.h"
@@ -95,8 +95,8 @@ void ConfigServer::setup()
         WiFi.disconnect(true);
     }
     // Set host name
-    if (_config.paramAPName.length())
-        SET_HOSTNAME(_config.paramAPName.c_str());
+    if (_config.paramHostname.length())
+        SET_HOSTNAME(_config.paramHostname.c_str());
 
     I::get().logger() << F("[EWC CS]: setup wifi events") << endl;
 #if defined(ESP8266)
@@ -140,9 +140,9 @@ void ConfigServer::setup()
     _server.on("/wifi/disconnect", std::bind(&ConfigServer::_onWiFiDisconnect, this, std::placeholders::_1));  //.setFilter(ON_AP_FILTER);
     _server.on("/wifi/state.json", std::bind(&ConfigServer::_onWifiState, this, std::placeholders::_1));
     _server.on("/wifi/stations.json", std::bind(&ConfigServer::_onWifiScan, this, std::placeholders::_1));
-    insertMenuCb("Security", "/ewc/security", "menu_security", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_EWC_SECURITY, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
-    _server.on("/ewc/security.json", std::bind(&ConfigServer::_onSecurityGet, this, std::placeholders::_1));
-    _server.on("/ewc/secsave", std::bind(&ConfigServer::_onSecuritySave, this, std::placeholders::_1));
+    insertMenuCb("Access", "/ewc/access", "menu_access", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_EWC_ACCESS, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
+    _server.on("/ewc/access.json", std::bind(&ConfigServer::_onAccessGet, this, std::placeholders::_1));
+    _server.on("/ewc/secsave", std::bind(&ConfigServer::_onAccessSave, this, std::placeholders::_1));
     insertMenuCb("Info", "/ewc/info", "menu_info", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_EWC_INFO, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/ewc/info.json", std::bind(&ConfigServer::_onGetInfo, this, std::placeholders::_1));
     _server.on("/ewc/config", std::bind(&ConfigServer::_sendFileContent, this, std::placeholders::_1, FPSTR(CONFIG_FILENAME), FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
@@ -350,29 +350,29 @@ String ConfigServer::_toMACAddressString(const uint8_t mac[]) {
   return macAddr;
 }
 
-void ConfigServer::_onSecurityGet(AsyncWebServerRequest *request)
+void ConfigServer::_onAccessGet(AsyncWebServerRequest *request)
 {
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _onSecurityGet: " << ESP.getFreeHeap() << endl;
+    I::get().logger() << "[EWC CS]: ESP heap: _onAccessGet: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(512);
     JsonObject json = jsonDoc.to<JsonObject>();
     _config.fillJson(jsonDoc);
-    I::get().logger() << "[EWC CS]: _onSecurityGet MEMUSAGE: " << json.memoryUsage() << endl;
-    I::get().logger() << "[EWC CS]: ESP heap: _onSecurityGet: " << ESP.getFreeHeap() << endl;
+    I::get().logger() << "[EWC CS]: _onAccessGet MEMUSAGE: " << json.memoryUsage() << endl;
+    I::get().logger() << "[EWC CS]: ESP heap: _onAccessGet: " << ESP.getFreeHeap() << endl;
     String output;
     serializeJson(json, output);
-    I::get().logger() << "[EWC CS]: ESP heap: _onSecurityGet: " << ESP.getFreeHeap() << endl;
+    I::get().logger() << "[EWC CS]: ESP heap: _onAccessGet: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
-void ConfigServer::_onSecuritySave(AsyncWebServerRequest *request)
+void ConfigServer::_onAccessSave(AsyncWebServerRequest *request)
 {
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _onSecuritySave: " << ESP.getFreeHeap() << endl;
+    I::get().logger() << "[EWC CS]: ESP heap: _onAccessSave: " << ESP.getFreeHeap() << endl;
     if (request->hasArg("apname")) {
         _config.paramAPName = request->arg("apname");
     }
@@ -391,7 +391,10 @@ void ConfigServer::_onSecuritySave(AsyncWebServerRequest *request)
     if (request->hasArg("httppass")) {
         _config.paramHttpPassword = request->arg("httppass");
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _onSecuritySave: " << ESP.getFreeHeap() << endl;
+    if (request->hasArg("hostname")) {
+        _config.paramHostname = request->arg("hostname");
+    }
+    I::get().logger() << "[EWC CS]: ESP heap: _onAccessSave: " << ESP.getFreeHeap() << endl;
     sendPageSuccess(request, "Security save", "/ewc/security", "Save success! Please, restart to apply AP changes!");
 }
 

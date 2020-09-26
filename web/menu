@@ -23,9 +23,9 @@
       "href": "/wifi/setup"
     },
     {
-      "name": "Security",
-      "id": "menu_security",
-      "href": "/ewc/security"
+      "name": "Access",
+      "id": "menu_access",
+      "href": "/ewc/access"
     },
     {
       "name": "Time",

@@ -83,37 +83,42 @@ void Config::fillJson(JsonDocument& config)
     config["ewc"]["basic_auth"] = paramBasicAuth;
     config["ewc"]["httpuser"] = paramHttpUser;
     config["ewc"]["httppass"] = paramHttpPassword;
+    config["ewc"]["hostname"] = paramHostname;
 }
 
 void Config::_fromJson(JsonDocument& doc)
 {
-    JsonVariant jsonWifiDisabled = doc["ewc"]["wifi_disabled"];
-    if (!jsonWifiDisabled.isNull()) {
-        paramWifiDisabled = jsonWifiDisabled.as<bool>();
+    JsonVariant jv = doc["ewc"]["wifi_disabled"];
+    if (!jv.isNull()) {
+        paramWifiDisabled = jv.as<bool>();
     }
-    JsonVariant jsonApName = doc["ewc"]["apname"];
-    if (!jsonApName.isNull()) {
-        paramAPName = jsonApName.as<String>();
+    jv = doc["ewc"]["apname"];
+    if (!jv.isNull()) {
+        paramAPName = jv.as<String>();
     }
-    JsonVariant jsonApPass = doc["ewc"]["appass"];
-    if (!jsonApPass.isNull()) {
-        setAPPass(jsonApPass.as<String>());
+    jv = doc["ewc"]["appass"];
+    if (!jv.isNull()) {
+        setAPPass(jv.as<String>());
     }
-    JsonVariant jsonApStartAlways = doc["ewc"]["ap_start_always"];
-    if (!jsonApStartAlways.isNull()) {
-        paramAPStartAlways = jsonApStartAlways.as<bool>();
+    jv = doc["ewc"]["ap_start_always"];
+    if (!jv.isNull()) {
+        paramAPStartAlways = jv.as<bool>();
     }
-    JsonVariant jsonBasicAuth = doc["ewc"]["basic_auth"];
-    if (!jsonBasicAuth.isNull()) {
-        paramBasicAuth = jsonBasicAuth.as<bool>();
+    jv = doc["ewc"]["basic_auth"];
+    if (!jv.isNull()) {
+        paramBasicAuth = jv.as<bool>();
     }
-    JsonVariant jsonHttpUser = doc["ewc"]["httpuser"];
-    if (!jsonHttpUser.isNull()) {
-        paramHttpUser = jsonHttpUser.as<String>();
+    jv = doc["ewc"]["httpuser"];
+    if (!jv.isNull()) {
+        paramHttpUser = jv.as<String>();
     }
-    JsonVariant jsonHttpPass = doc["ewc"]["httppass"];
-    if (!jsonHttpPass.isNull()) {
-        paramHttpPassword = jsonHttpPass.as<String>();
+    jv = doc["ewc"]["httppass"];
+    if (!jv.isNull()) {
+        paramHttpPassword = jv.as<String>();
+    }
+    jv = doc["ewc"]["hostname"];
+    if (!jv.isNull()) {
+        paramHostname = jv.as<String>();
     }
 }
 
@@ -156,6 +161,7 @@ void Config::_initParams()
     paramBasicAuth = false;
     paramHttpUser = DEFAULT_HTTP_USER;
     paramHttpPassword = DEFAULT_HTTP_PASSWORD;
+    paramHostname = paramAPName;
 }
 
 uint32_t Config::getChipId() {

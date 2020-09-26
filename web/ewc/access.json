@@ -5,6 +5,7 @@
         "ap_always_on": false,
         "basic_auth": false,
         "httpuser": "admin",
-        "httppass": "admin"
+        "httppass": "admin",
+        "hostname": ""
     }
 }

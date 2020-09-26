@@ -64,6 +64,7 @@ public:
     bool paramBasicAuth;
     String paramHttpUser;
     String paramHttpPassword;
+    String paramHostname;
     uint32_t getChipId();
 
 protected:

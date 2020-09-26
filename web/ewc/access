@@ -3,7 +3,7 @@
 
   <head>
     <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
-    <title>Security</title>
+    <title>Access Settings</title>
     <link rel="stylesheet" href="/css/base.css">
     <script src="/js/pre.js"></script>
   </head>
@@ -26,6 +26,10 @@
               <label id="info_ap_start_always">&#128712; Open AP also while connected to WiFi. </label>
             </div>
             <div>
+                <label id="lbl_hostname" for="hostname">Hostname</label>
+                <input id="hostname" type="text" name="hostname" placeholder="Name">
+            </div>
+            <div>
               <input id="basic_auth" type="checkbox" name="basic_auth" value="true" onclick="vsw(this.checked, 'http');">Enable HTTP authentification</input>
             </div>
             <div class="http">
@@ -42,18 +46,18 @@
         </form>
     </div>
 
-    <script>var jsons = [ ["/ewc/security.json", "fillsecurity"] ];</script>
+    <script>var jsons = [ ["/ewc/access.json", "fillaccess"] ];</script>
     <script src="/js/postload.js"></script>
     <script type="text/javascript">
       window.onload=function(){vsw(false, 'http');};
-      function fillsecurity(data, url) {
+      function fillaccess(data, url) {
         document.getElementById("ap_start_always").checked = data["ewc"]["ap_start_always"];
         document.getElementById("basic_auth").checked = data["ewc"]["basic_auth"];
         ["apname","appass","httpuser",
-        "httppass"].forEach(function(id,idy,arr) {
+        "httppass", "hostname"].forEach(function(id,idy,arr) {
           document.getElementById(id).value = data["ewc"][id];
         });
-        // setTimeout(getJSON.bind(null, "/ewc/security.json", "fillsecurity"), 3000);
+        // setTimeout(getJSON.bind(null, "/ewc/access.json", "fillaccess"), 3000);
       }
     </script>
   </body>

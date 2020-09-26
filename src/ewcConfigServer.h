@@ -120,8 +120,8 @@ private:
     void _sendMenu(AsyncWebServerRequest* request);
     void _sendFileContent(AsyncWebServerRequest* request, const String& filename, const String& contentType);
     void _sendContentNoAuthP(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
-    void _onSecurityGet(AsyncWebServerRequest* request);
-    void _onSecuritySave(AsyncWebServerRequest* request);
+    void _onAccessGet(AsyncWebServerRequest* request);
+    void _onAccessSave(AsyncWebServerRequest* request);
     void _onGetInfo(AsyncWebServerRequest* request);
     void _onWiFiConnect(AsyncWebServerRequest* request);
     void _onWiFiDisconnect(AsyncWebServerRequest* request);
