@@ -41,6 +41,7 @@ typedef ESPAsyncDNSServer DNSServer;
 #include "ewcLogger.h"
 #include "ewcRTC.h"
 #include "ewcConfig.h"
+#include "ewcTickerLED.h"
 #include "ewcInterface.h"
 
 namespace EWC {
@@ -102,6 +103,7 @@ private:
     ConfigFS _configFS;
     Logger _logger;
     RTC _rtc;
+    TickerLed _led;
     Config _config;
     String _brand;
     String _version;

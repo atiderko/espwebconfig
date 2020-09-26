@@ -36,6 +36,17 @@ limitations under the License.
 #include "generated/wifiSetupHTML.h"
 #include "ewcPages.h"
 
+/**
+ *  An actual reset function dependent on the architecture
+ */
+#if defined(ARDUINO_ARCH_ESP8266)
+#define SOFT_RESET()  ESP.reset()
+#define SET_HOSTNAME(x) do { WiFi.hostname(x); } while(0)
+#elif defined(ARDUINO_ARCH_ESP32)
+#define SOFT_RESET()  ESP.restart()
+#define	SET_HOSTNAME(x)	do { WiFi.setHostname(x); } while(0)
+#endif
+
 using namespace EWC;
 
 InterfaceData I::_interface;  // need to define the static variable
@@ -72,6 +83,7 @@ ConfigServer::ConfigServer(uint16_t port)
     I::get()._configFS = &_configFS;
     I::get()._logger = &_logger;
     I::get()._rtc = &_rtc;
+    I::get()._led = &_led;
     _configFS.addConfig(_config);
 }
 
@@ -82,6 +94,10 @@ void ConfigServer::setup()
     if (_configFS.resetDetected()) {
         WiFi.disconnect(true);
     }
+    // Set host name
+    if (_config.paramAPName.length())
+        SET_HOSTNAME(_config.paramAPName.c_str());
+
     I::get().logger() << F("[EWC CS]: setup wifi events") << endl;
 #if defined(ESP8266)
     p1 = WiFi.onStationModeConnected(std::bind(&ConfigServer::_wifiOnStationModeConnected, this, std::placeholders::_1));
@@ -136,7 +152,43 @@ void ConfigServer::setup()
     _server.begin(); // Web server start
 }
 
+/**
+ * https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266httpUpdate
+#include <Update.h>
+UPDATE
+  server.on("/update", HTTP_POST, []() {
+    server.sendHeader("Connection", "close");
+    server.send(200, "text/plain", (Update.hasError()) ? "NOK" : "OK");
+    delay(1000);
+    ESP.restart();
+  }, []() {
+    HTTPUpload& upload = server.upload();
+    if (upload.status == UPLOAD_FILE_START) {
+      Serial.setDebugOutput(true);
+      Serial.printf("Update: %s\n", upload.filename.c_str());
+      uint32_t maxSketchSpace = (1048576 - 0x1000) & 0xFFFFF000;
+      if (!Update.begin(maxSketchSpace)) { //start with max available size
+        Update.printError(Serial);
+      }
+    } else if (upload.status == UPLOAD_FILE_WRITE) {
+      if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+        Update.printError(Serial);
+      }
+    } else if (upload.status == UPLOAD_FILE_END) {
+      if (Update.end(true)) { //true to set the size to the current progress
+        Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+      } else {
+        Update.printError(Serial);
+      }
+      Serial.setDebugOutput(false);
+    }
+    yield();
+  });
+*/
+
 void ConfigServer::_startAP() {
+    // Start ticker with AP_STA
+    _led.start(1000, 96);
     I::get().logger() << endl;
     _msConfigPortalStart = millis();
     I::get().logger() << F("[EWC CS]: Configuring access point... ") << _config.paramAPName << endl;
@@ -177,6 +229,10 @@ void ConfigServer::_connect(const char* ssid, const char* pass)
     } else {
         I::get().logger() << F("[EWC CS]: Try to connect with saved credentials for SSID: ") << WiFi.SSID() << endl;
         WiFi.begin();
+    }
+    // Start Ticker according to the WiFi condition with Ticker is available.
+    if (WiFi.status() != WL_CONNECTED) {
+        _led.start(1000, 16);
     }
 }
 
@@ -642,6 +698,9 @@ void ConfigServer::loop()
                 WiFi.mode(WIFI_AP_STA);
                 _startAP();
             }
+        } else {
+            // Stop LED Ticker.
+            _led.stop();
         }
     }
 }

@@ -21,6 +21,11 @@
       "name": "ArduinoJson",
       "authors": "Benoit Blanchon",
       "frameworks": "arduino"
+    },
+    {
+      "name": "Ticker",
+      "authors": "Stefan Staub",
+      "frameworks": "arduino"
     }
   ],
   "version": "0.1.0",

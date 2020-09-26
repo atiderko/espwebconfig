@@ -29,6 +29,7 @@ namespace EWC {
 class ConfigServer;
 class ConfigFS;
 class RTC;
+class TickerLed;
 
 class InterfaceData {
   friend ConfigServer;
@@ -40,12 +41,14 @@ class InterfaceData {
     ConfigFS& configFS() { return *_configFS; }
     Logger& logger() { return *_logger; }
     RTC& rtc() { return *_rtc; }
+    TickerLed& led() { return *_led; }
 
   private:
     ConfigServer* _server;
     ConfigFS* _configFS;
     Logger* _logger;
     RTC* _rtc;
+    TickerLed* _led;
 };
 
 
