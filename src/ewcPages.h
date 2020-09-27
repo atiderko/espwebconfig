@@ -42,7 +42,7 @@ const char  EWC_PAGE_SUCCESS[] PROGMEM = R"(
         {{SUMMARY}}
     </div>
     <br>
-    <div style="text-align:center;padding:10px 10px 10px 10px">
+    <div style="text-align:left;padding:10px 10px 10px 10px">
         {{DETAILS}}
     </div>
     <script src="/js/postload.js"></script>

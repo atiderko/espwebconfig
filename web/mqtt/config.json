@@ -1,0 +1,10 @@
+{
+    "mqtt": {
+        "enabled": false,
+        "server": "odroid",
+        "port": 1883,
+        "user": "odroid",
+        "pass": "",
+        "topic": "/ewc"
+    }
+}

@@ -145,6 +145,7 @@ public:
 protected:
     bool _ntpAvailable;
     bool _ntpInitialized;
+    time_t _manuallOffset;  //< used for manually time
 
     /** === Parameter === **/
     int _paramTimezone;

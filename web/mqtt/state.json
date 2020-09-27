@@ -1,0 +1,9 @@
+{
+    "enabled": false,
+    "connecting": false,
+    "connected": false,
+    "failed": true,
+    "reason": "Timeout",
+    "server": "odroid",
+    "port": "1883"
+}

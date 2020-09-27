@@ -35,6 +35,7 @@ Time::Time() : ConfigInterface("time")
 {
     _ntpAvailable = false;
     _ntpInitialized = false;
+    _manuallOffset = 0;
 }
 
 Time::~Time()
@@ -86,9 +87,9 @@ void Time::_initParams()
 
 void Time::_fromJson(JsonDocument& config)
 {
-    JsonVariant jsonTimezone = config["time"]["timezone"];
-    if (!jsonTimezone.isNull()) {
-        int tz = jsonTimezone.as<int>();
+    JsonVariant jv = config["time"]["timezone"];
+    if (!jv.isNull()) {
+        int tz = jv.as<int>();
         if (tz > 0 && tz <= 82) {
             if (_paramTimezone != tz) {
                 _paramTimezone = tz;
@@ -96,30 +97,31 @@ void Time::_fromJson(JsonDocument& config)
             }
         }
     }
-    JsonVariant jsonDate = config["time"]["mdate"];
-    if (!jsonDate.isNull()) {
-        _paramDate = jsonDate.as<String>();
+    jv = config["time"]["mdate"];
+    if (!jv.isNull()) {
+        _paramDate = jv.as<String>();
     }
-    JsonVariant jsonTime = config["time"]["mtime"];
-    if (!jsonTime.isNull()) {
-        _paramTime = jsonTime.as<String>();
+    jv = config["time"]["mtime"];
+    if (!jv.isNull()) {
+        _paramTime = jv.as<String>();
     }
-    JsonVariant jsonManually = config["time"]["manually"];
-    if (!jsonManually.isNull()) {
-        _paramManually = jsonManually.as<bool>();
-        // TODO set time
+    jv = config["time"]["manually"];
+    if (!jv.isNull()) {
+        _paramManually = jv.as<bool>();
+        // set time
+        setLocalTime(_paramDate, _paramTime);
     }
-    JsonVariant jsonDndEnabled = config["time"]["dnd_enabled"];
-    if (!jsonDndEnabled.isNull()) {
-        _paramDndEnabled = jsonDndEnabled.as<bool>();
+    jv = config["time"]["dnd_enabled"];
+    if (!jv.isNull()) {
+        _paramDndEnabled = jv.as<bool>();
     }
-    JsonVariant jsonDndFrom = config["time"]["dnd_from"];
-    if (!jsonDndFrom.isNull()) {
-        _paramDndFrom = jsonDndFrom.as<String>();
+    jv = config["time"]["dnd_from"];
+    if (!jv.isNull()) {
+        _paramDndFrom = jv.as<String>();
     }
-    JsonVariant jsonDndTo = config["time"]["dnd_to"];
-    if (!jsonDndTo.isNull()) {
-        _paramDndTo = jsonDndTo.as<String>();
+    jv = config["time"]["dnd_to"];
+    if (!jv.isNull()) {
+        _paramDndTo = jv.as<String>();
     }
 }
 
@@ -148,9 +150,6 @@ void Time::_onTimeSave(AsyncWebServerRequest *request)
         return request->requestAuthentication();
     }
     I::get().logger() << "[EWC time]: ESP heap: _onTimeSave: " << ESP.getFreeHeap() << endl;
-    for (size_t i = 0; i < request->params(); i++) {
-        I::get().logger() << "  " << request->argName(i) << ": " << request->arg(i) << endl;
-    }
     DynamicJsonDocument config(512);
     if (request->hasArg("timezone") && !request->arg("timezone").isEmpty()) {
         config["time"]["timezone"] = request->arg("timezone").toInt();
@@ -190,13 +189,18 @@ void Time::_onTimeSave(AsyncWebServerRequest *request)
 
 
 void Time::setLocalTime(String& date, String& time) {
-    // TODO
-    // setTime(hour, minute, second, day, month, year);
-    // RTC.set(now());
+    struct tm ti;
+    sscanf(date.c_str(), "%d.%d.%d", &ti.tm_mday, &ti.tm_mon, &ti.tm_year);
+    sscanf(time.c_str(), "%d:%d", &ti.tm_hour, &ti.tm_min);
+    time_t t = mktime(&ti);
+    _manuallOffset = t - millis() / 1000;
 }
 
 time_t Time::currentTime()
 {
+    if (_paramManually) {
+        return millis() / 1000 - _manuallOffset;
+    }
     time_t rawtime;
     time(&rawtime);
     rawtime += TZMAP[_paramTimezone-1][1] * 3600 + TZMAP[_paramTimezone-1][0] * 3600;

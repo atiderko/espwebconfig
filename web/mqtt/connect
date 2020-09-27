@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <title>MQTT connect state</title>
+    <link rel="stylesheet" href="/css/base.css">
+  </head>
+  <body style="padding-top:58px;">
+    <div id="header"></div>
+    <div class="spinner">
+        <div id="dbl">
+          <div id="dbl1" class="dbl-bounce1"></div>
+          <div id="dbl2" class="dbl-bounce2"></div>
+        </div>
+        <br>
+        <div id="mqtt_state" style="position:absolute;left:-100%;right:-100%;text-align:center;margin:30px auto;font-weight:bold;color:#0b0b33;">
+        </div>
+    </div>
+    <script>var jsons = [ ["/mqtt/state.json", "mqttState"] ];</script>
+    <script src="/js/postload.js"></script>
+    <script>
+      function mqttState(data, uri) {
+          console.log("load mqtt state " + uri);
+          hh = '<label id="mqtt_server" style="color:black;">Server: ' + data["server"] + ":" + data["port"] + ' </label>';
+          if (data["enabled"]) {
+            if (data["connecting"]) {
+              hh += '<label id="lbl_connecting" style="color:black;">connecting... </label>';
+              setTimeout(redirect.bind(null, "/mqtt/connect"), 1000);
+            } else if (data["connected"]) {
+              hh += '<label id="lbl_connected" style="color:green;">connected </label>';
+              dbl = document.getElementById("dbl").remove();
+              setTimeout(redirect.bind(null, "/"), 5000);
+            } else if (data["failed"]) {
+              hh += '<label id="mqtt_failed" style="color:red;">failed</label>';
+              if ( data["reason"].length > 0) {
+                hh += '<label style="color:red;">: ' + data["reason"] + '</label>';
+              }
+              dbl = document.getElementById("dbl").remove();
+              setTimeout(redirect.bind(null, "/mqtt/setup"), 5000);
+            }
+          } else {
+            dbl = document.getElementById("dbl").remove();
+            hh = '<label id="mqtt_disabled" style="color:orange;">MQTT disabled</label>';
+          }
+          document.getElementById("mqtt_state").innerHTML = hh;
+          updateLanguageKeys(["mqtt_disabled", "lbl_connecting", "lbl_connected", "mqtt_failed"]);
+        }
+    </script>
+  </body>
+</html>

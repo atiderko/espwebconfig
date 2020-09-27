@@ -13,6 +13,11 @@
       "href": "/bbs/setup"
     },
     {
+      "name": "MQTT",
+      "id": "menu_mqtt",
+      "href": "/mqtt/setup"
+    },
+    {
       "name": "Mail",
       "id": "menu_mail",
       "href": "/mail/setup"

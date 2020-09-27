@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <title>MQTT Setup</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <script src="/js/pre.js"></script>
+  </head>
+
+  <body style="padding-top:58px;">
+    <div id="header"></div>
+    <div class="base-panel">
+        <form action="/mqtt/save" method="post">
+          <div class="noorder">
+            <div>
+              <input id="mqtt_enabled" type="checkbox" name="mqtt_enabled" value="true" onclick="vsw(this.checked, 'exp');">Enable MQTT</input>
+            </div>
+            <div class="exp">
+              <div>
+                  <label id="lbl_mqtt_server" for="mqtt_server">Server</label>
+                  <input id="mqtt_server" type="text" name="mqtt_server" placeholder="address">
+              </div>
+              <div>
+                  <label id="lbl_mqtt_port" for="mqtt_port">Port</label>
+                  <input id="mqtt_port" type="text" name="mqtt_port" pattern='[0-9._%+-]{2,5}' placeholder="1883">
+              </div>
+              <div>
+                  <label id="lbl_user" for="mqtt_user">User</label>
+                  <input id="mqtt_user" type="text" name="mqtt_user" placeholder="user">
+              </div>
+              <div>
+                  <label id="lbl_passphrase" for="mqtt_pass">Password</label>
+                  <input id="mqtt_pass" type="password" name="mqtt_pass" placeholder="passphrase">
+                  <input id="httpass-status" class="pwdcb" type="checkbox" aria-hidden="true" onClick="viewPassword('mqtt_pass', '')">
+              </div>
+              <div>
+                  <label id="lbl_mqtt_topic" for="mqtt_topic">Base topic</label>
+                  <input id="mqtt_topic" type="text" name="mqtt_topic" placeholder="/home">
+                  <!--label id="info_mqtt_topic">Optional: </label-->
+              </div>
+            </div>
+          </div>
+          <input type="submit" name="apply" value="Apply">
+        </form>
+    </div>
+
+<script type="text/javascript">
+  window.onload=function(){vsw(false, 'exp')};
+
+  function fillMqttConfig(data, url) {
+    ["enabled"].forEach(function(id,idy,arr) {
+      document.getElementById("mqtt_" + id).checked = data["mqtt"][id];
+      vsw(data["mqtt"][id], 'exp')
+    });
+    ["server","port","user", "pass","topic"
+    ].forEach(function(id,idy,arr) {
+      document.getElementById("mqtt_" + id).value = data["mqtt"][id];
+    });
+  }
+</script>
+<script>jsons = [ ["/mqtt/config.json", "fillMqttConfig"] ];</script>
+<script src="/js/postload.js"></script>
+</body>
+</html>

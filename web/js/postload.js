@@ -96,14 +96,17 @@ function applyLanguage(data, uri) {
 
 /** Replaces the text of one documentElement with given id by current language. **/
 function updateLanguageKey(id) {
-  value = langmap[id][language];
-  if (value != undefined) {
-    item = document.getElementById(id)
-    if (item != undefined) {
-      if (item.value) {
-        item.value = value;
-      } else {
-        item.innerHTML = value;
+  element = langmap[id];
+  if (element != undefined) {
+    value = element[language];
+    if (value != undefined) {
+      item = document.getElementById(id)
+      if (item != undefined) {
+        if (item.value) {
+          item.value = value;
+        } else {
+          item.innerHTML = value;
+        }
       }
     }
   }
