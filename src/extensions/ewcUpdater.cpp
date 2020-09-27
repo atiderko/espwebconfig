@@ -85,10 +85,12 @@ void Updater::_onUpdate(AsyncWebServerRequest *request)
         return request->requestAuthentication();
     }
     _shouldReboot = !Update.hasError();
-    I::get().logger() << "[EWC Updater] _onUpdate " << _shouldReboot << endl;
-    AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", _shouldReboot? "OK":"FAIL");
-    response->addHeader("Connection", "close");
-    request->send(response);
+    I::get().logger() << "[EWC Updater] should restart after update: " << _shouldReboot << endl;
+    if (_shouldReboot) {
+        I::get().server().sendPageSuccess(request, "Update successful", "Update successful!", "/ewc/update", "restarting device...");
+    } else {
+        I::get().server().sendPageFailed(request, "Update Failed", "Update Failed with error " + String(Update.getError()), "/ewc/update");
+    }
 }
 
 void Updater::_onUpdateUpload(AsyncWebServerRequest* request, String filename, size_t index, uint8_t *data, size_t len, bool final)
@@ -98,22 +100,18 @@ void Updater::_onUpdateUpload(AsyncWebServerRequest* request, String filename, s
         Update.runAsync(true);
         if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
             I::get().logger() << "✘ [EWC Updater] update error: " << Update.getError() << endl;
-            I::get().server().sendPageFailed(request, "Update Failed", "/ewc/update", "Update start failed!");
         }
     }
     if (!Update.hasError()) {
         if (Update.write(data, len) != len){
             I::get().logger() << "✘ [EWC Updater] update error: " << Update.getError() << endl;
-            I::get().server().sendPageFailed(request, "Update Failed", "/ewc/update", "Update Failed with error " + String(Update.getError()));
         }
     }
     if (final) {
         if (Update.end(true)) {
-            I::get().logger() << "[EWC Updater] Update Success: " << index+len << "B" << endl;
-            I::get().server().sendPageSuccess(request, "Update successful", "/ewc/update", "Update successful!", "restarting device...");
+            I::get().logger() << "✔ [EWC Updater] Update Success: " << index+len << "B" << endl;
         } else {
             I::get().logger() << "✘ [EWC Updater] update error: " << Update.getError() << endl;
-            I::get().server().sendPageFailed(request, "Update Failed", "/ewc/update", "Update Failed with error " + String(Update.getError()));
         }
     }
 }

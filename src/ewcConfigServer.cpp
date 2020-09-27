@@ -25,6 +25,8 @@ limitations under the License.
 #include "ewcInterface.h"
 #include "generated/ewcInfoHTML.h"
 #include "generated/ewcAccessHTML.h"
+#include "generated/ewcFailHTML.h"
+#include "generated/ewcSuccessHTML.h"
 #include "generated/webBaseCSS.h"
 #include "generated/webIndexHTML.h"
 #include "generated/webPostloadJS.h"
@@ -34,7 +36,7 @@ limitations under the License.
 #include "generated/webWifiJS.h"
 #include "generated/wifiConnectHTML.h"
 #include "generated/wifiSetupHTML.h"
-#include "ewcPages.h"
+//#include "ewcPages.h"
 
 /**
  *  An actual reset function dependent on the architecture
@@ -362,7 +364,7 @@ void ConfigServer::_onAccessSave(AsyncWebServerRequest *request)
         _config.paramHostname = request->arg("hostname");
     }
     I::get().logger() << "[EWC CS]: ESP heap: _onAccessSave: " << ESP.getFreeHeap() << endl;
-    sendPageSuccess(request, "Security save", "/ewc/access", "Save success! Please, restart to apply AP changes!");
+    sendPageSuccess(request, "Security save", "Save success! Please, restart to apply AP changes!", "/ewc/access");
 }
 
 void ConfigServer::_onGetInfo(AsyncWebServerRequest *request)
@@ -678,28 +680,32 @@ void ConfigServer::setBrand(const char* brand, const char* version)
     _version = String(version);
 }
 
-void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details, int timeout)
+void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details, String nameBack, String urlForward, String nameForward)
 {
     I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
     I::get().logger() << "[EWC CS]: sendPageSuccess " << summary << ":" << details << endl;
-    String result(FPSTR(EWC_PAGE_SUCCESS));
-    result.replace("{{TIMEOUT}}", String(timeout));
-    result.replace("{{REDIRECT}}", redirectUrl);
+    String result(FPSTR(HTML_EWC_SUCCESS));
     result.replace("{{TITLE}}", title);
     result.replace("{{SUMMARY}}", summary);
     result.replace("{{DETAILS}}", details);
+    result.replace("{{BACK}}", urlBack);
+    result.replace("{{BACK_NAME}}", nameBack);
+    result.replace("{{FORWARD}}", urlForward);
+    result.replace("{{FWD_NAME}}", nameForward);
     request->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
     I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
 }
 
-void ConfigServer::sendPageFailed(AsyncWebServerRequest *request, String title, String redirectUrl, String summary, String details, int timeout)
+void ConfigServer::sendPageFailed(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details, String nameBack,  String urlForward, String nameForward)
 {
-    String result(FPSTR(EWC_PAGE_FAIL));
-    result.replace("{{TIMEOUT}}", String(timeout));
-    result.replace("{{REDIRECT}}", redirectUrl);
+    String result(FPSTR(HTML_EWC_FAIL));
     result.replace("{{TITLE}}", title);
     result.replace("{{SUMMARY}}", summary);
     result.replace("{{DETAILS}}", details);
+    result.replace("{{BACK}}", urlBack);
+    result.replace("{{BACK_NAME}}", nameBack);
+    result.replace("{{FORWARD}}", urlForward);
+    result.replace("{{FWD_NAME}}", nameForward);
     request->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
 }
 

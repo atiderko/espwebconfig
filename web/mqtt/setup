@@ -13,6 +13,10 @@
     <div class="base-panel">
         <form action="/mqtt/save" method="post">
           <div class="noorder">
+            <div class="line_named" id="lbl_status">Status</div>
+            <div id="mqtt_state">
+            </div>
+            <div class="line_named" id="lbl_settings">Settings</div>
             <div>
               <input id="mqtt_enabled" type="checkbox" name="mqtt_enabled" value="true" onclick="vsw(this.checked, 'exp');">Enable MQTT</input>
             </div>
@@ -45,21 +49,43 @@
         </form>
     </div>
 
-<script type="text/javascript">
-  window.onload=function(){vsw(false, 'exp')};
+    <script type="text/javascript">
+      window.onload=function(){vsw(false, 'exp')};
 
-  function fillMqttConfig(data, url) {
-    ["enabled"].forEach(function(id,idy,arr) {
-      document.getElementById("mqtt_" + id).checked = data["mqtt"][id];
-      vsw(data["mqtt"][id], 'exp')
-    });
-    ["server","port","user", "pass","topic"
-    ].forEach(function(id,idy,arr) {
-      document.getElementById("mqtt_" + id).value = data["mqtt"][id];
-    });
-  }
-</script>
-<script>jsons = [ ["/mqtt/config.json", "fillMqttConfig"] ];</script>
-<script src="/js/postload.js"></script>
-</body>
+      function fillMqttConfig(data, url) {
+        ["enabled"].forEach(function(id,idy,arr) {
+          document.getElementById("mqtt_" + id).checked = data["mqtt"][id];
+          vsw(data["mqtt"][id], 'exp')
+        });
+        ["server","port","user", "pass","topic"
+        ].forEach(function(id,idy,arr) {
+          document.getElementById("mqtt_" + id).value = data["mqtt"][id];
+        });
+      }
+    </script>
+    <script>jsons = [ ["/mqtt/state.json", "mqttState"], ["/mqtt/config.json", "fillMqttConfig"] ];</script>
+    <script src="/js/postload.js"></script>
+    <script>
+      function mqttState(data, uri) {
+          console.log("load mqtt state " + uri);
+          hh = '<label id="mqtt_server" style="color:black;">[' + data["server"] + ":" + data["port"] + ']: </label>';
+          if (data["enabled"]) {
+            if (data["connecting"]) {
+              hh += '<label id="lbl_connecting" style="color:black;">connecting... </label>';
+            } else if (data["connected"]) {
+              hh += '<label id="lbl_connected" style="color:green;">connected </label>';
+            } else if (data["failed"]) {
+              hh += '<label id="mqtt_failed" style="color:red;">failed</label>';
+              if ( data["reason"].length > 0) {
+                hh += '<label style="color:red;"> - ' + data["reason"] + '</label>';
+              }
+            }
+          } else {
+            hh = '<label id="mqtt_disabled" style="color:orange;">MQTT disabled</label>';
+          }
+          document.getElementById("mqtt_state").innerHTML = hh;
+          updateLanguageKeys(["mqtt_disabled", "lbl_connecting", "lbl_connected", "mqtt_failed"]);
+        }
+    </script>
+  </body>
 </html>

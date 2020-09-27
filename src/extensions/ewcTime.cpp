@@ -184,7 +184,7 @@ void Time::_onTimeSave(AsyncWebServerRequest *request)
     I::get().configFS().save();
     String details;
     serializeJsonPretty(config["time"], details);
-    I::get().server().sendPageSuccess(request, "EWC Time save", "/", "Save success!", "<pre id=\"json\">" + details + "</pre>");
+    I::get().server().sendPageSuccess(request, "EWC Time save", "Save successful!", "/time/setup", "<pre id=\"json\">" + details + "</pre>");
 }
 
 

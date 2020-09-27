@@ -177,7 +177,7 @@ void Mqtt::_onMqttSave(AsyncWebServerRequest *request)
     I::get().configFS().save();
     String details;
     serializeJsonPretty(config["mqtt"], details);
-    I::get().server().sendPageSuccess(request, "EWC MQTT save", "/mqtt/connect", "Save successful!", "<pre id=\"json\">" + details + "</pre>");
+    I::get().server().sendPageSuccess(request, "EWC MQTT save", "Save successful!", "/mqtt/setup", "<pre id=\"json\">" + details + "</pre>", "Back", "/mqtt/connect", "MQTT State");
 }
 
 void Mqtt::_onMqttState(AsyncWebServerRequest *request)

@@ -1,8 +1,8 @@
 {
-    "enabled": false,
+    "enabled": true,
     "connecting": false,
-    "connected": false,
-    "failed": true,
+    "connected": true,
+    "failed": false,
     "reason": "Timeout",
     "server": "odroid",
     "port": "1883"
