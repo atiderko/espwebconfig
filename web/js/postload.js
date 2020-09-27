@@ -61,7 +61,7 @@ function menu(data, uri) {
   hh += '<div class="lb-menu lb-menu-right lb-menu-material">';
   hh += '  <ul class="lb-navigation">';
   hh += '    <li class="lb-header">';
-  hh += '      <a href="/" class="lb-brand">' + data["brand"] + '</a>';
+  hh += '      <a href="' + data["branduri"] + '" class="lb-brand">' + data["brand"] + '</a>';
   hh += '      <label class="lb-burger lb-burger-dblspin" id="lb-burger" for="lb-cb"><span></span></label>';
   hh += '    </li>'
   elements = data["elements"];
@@ -70,9 +70,9 @@ function menu(data, uri) {
   }
   hh += '  </ul>';
   hh += '</div>';
-  hh += '<div class="lap" id="rdlg"><a href="#reset" class="overlap"></a>';
-  hh += '    <div class="modal_button"><h2><a href="/reset" class="modal_button">RESET</a></h2></div>';
-  hh += '</div>';
+  //hh += '<div class="lap" id="rdlg"><a href="#reset" class="overlap"></a>';
+  //hh += '    <div class="modal_button"><h2><a href="/reset" class="modal_button">RESET</a></h2></div>';
+  //hh += '</div>';
   hh += '</header>';
   console.log(hh);
   document.getElementById("header").innerHTML = hh;

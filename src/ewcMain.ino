@@ -20,17 +20,35 @@ limitations under the License.
 **************************************************************/
 #include <Arduino.h>
 #include "ewcConfigServer.h"
+#include "extensions/ewcUpdater.h"
+#include "extensions/ewcTime.h"
+#include "extensions/ewcMqtt.h"
 
 EWC::ConfigServer server;
+EWC::Updater updater_;
+EWC::Time time_;
+EWC::Mqtt mqtt_;
 
 void setup() {
     Serial.begin(115200);
     Serial.println();
+    // optional: add page for OTA updates
+    EWC::I::get().configFS().addConfig(updater_);
+    // optional: add page to setup time
+    EWC::I::get().configFS().addConfig(time_);
+    // optional: add page for MQTT settings and async client
+    EWC::I::get().configFS().addConfig(mqtt_);
+    // optional: update brand and version
+    server.setBrand("EWC", "1.0.1");
+    // optional: enable LED for wifi state
+    EWC::I::get().led().enable(true, LED_BUILTIN, LOW);
+    // start webserver
 	server.setup();
 }
 
 
 void loop() {
+    // process dns requests and connection state
     server.loop();
     delay(1);
 }

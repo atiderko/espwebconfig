@@ -86,6 +86,8 @@ ConfigServer::ConfigServer(uint16_t port)
     I::get()._logger = &_logger;
     I::get()._rtc = &_rtc;
     I::get()._led = &_led;
+    _publicConfig = true;
+    _branduri = "/";
     _configFS.addConfig(_config);
 }
 
@@ -147,7 +149,9 @@ void ConfigServer::setup()
     _server.on("/ewc/accesssave", std::bind(&ConfigServer::_onAccessSave, this, std::placeholders::_1));
     insertMenuCb("Info", "/ewc/info", "menu_info", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_EWC_INFO, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
     _server.on("/ewc/info.json", std::bind(&ConfigServer::_onGetInfo, this, std::placeholders::_1));
-    _server.on("/ewc/config", std::bind(&ConfigServer::_sendFileContent, this, std::placeholders::_1, FPSTR(CONFIG_FILENAME), FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
+    if (_publicConfig) {
+        _server.on("/ewc/config", std::bind(&ConfigServer::_sendFileContent, this, std::placeholders::_1, FPSTR(CONFIG_FILENAME), FPSTR(PROGMEM_CONFIG_APPLICATION_JS)));
+    }
     _server.on("/fwlink", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
     _server.on("/favicon.ico", std::bind(&ConfigServer::_sendFileContent, this, std::placeholders::_1, "/favicon.ico", "image/x-icon"));
     _server.onNotFound (std::bind(&ConfigServer::_onNotFound,this,std::placeholders::_1));
@@ -419,7 +423,6 @@ void ConfigServer::_onWiFiConnect(AsyncWebServerRequest *request)
     const char* pass = request->arg("passphrase").c_str();
     if (request->hasArg("staip")) {
         I::get().logger() << F("[EWC CS]: static ip: ") << request->arg("staip") << endl;
-        //_sta_static_ip.fromString(request->arg("ip"));
         String ip = request->arg("staip");
         _optionalIPFromString(&_sta_static_ip, ip.c_str());
     }
@@ -536,6 +539,7 @@ void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
     DynamicJsonDocument jsonDoc(2048);
     JsonObject json = jsonDoc.to<JsonObject>();
     json["brand"] = _brand;
+    json["branduri"] = _branduri;
     json["language"] = _config.paramLanguage;
     JsonArray elements = json.createNestedArray("elements");
     std::vector<MenuItem>::iterator it;

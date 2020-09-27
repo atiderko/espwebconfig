@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <title>{{TITLE}}</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <script src="/js/pre.js"></script>
+  </head>
+  <body style="padding-top:58px;">
+    <div id="header"></div>
+    <div class="noorder">
+      <div style="display:flex;justify-content:center;margin:10px auto;font-weight:bold;color:#008000;">
+          {{SUMMARY}}
+      </div>
+      <div style="display:flex;justify-content:center;margin:10px auto;padding:10px auto">
+          {{DETAILS}}
+      </div>
+      <div style="display: flex; justify-content: center;">
+        <button id="btn_back" type="button" name="btn_back" value="BACK" onclick="redirect('{{BACK}}')">{{BACK_NAME}}</button>
+        <button id="btn_forward" type="button" name="btn_forward" value="FORWARD" onclick="redirect('{{FORWARD}}')">{{FWD_NAME}}</button>
+      </div>
+    </div>
+    <script src="/js/postload.js"></script>
+    <script>
+      function redirect(url) {
+        location.href = url;
+      }      
+    </script>
+  </body>
+</html>

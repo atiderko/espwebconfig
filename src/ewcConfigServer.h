@@ -88,6 +88,7 @@ public:
     bool isConnected() { return WiFi.status() == WL_CONNECTED; }
     void loop();
     void setBrand(const char* brand, const char* version="not-set");
+    void setBrandUri(const char* uri) { _branduri = uri; }
     String& brand() { return _brand; }
     String& version() { return _version; }
     Config& config() { return _config; }
@@ -96,6 +97,7 @@ public:
     void sendPageSuccess(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
     void sendPageFailed(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
     bool isAuthenticated(AsyncWebServerRequest *request);
+    void disabledConfigUri() { _publicConfig = false; }
 
 private:
     AsyncWebServer _server;
@@ -110,6 +112,8 @@ private:
     std::vector<MenuItem> _menu;
     IPAddress _ap_address;
     static PGM_P wlStatusSymbols[];
+    bool _publicConfig;
+    String _branduri;
 
     void _startAP();
     void _connect(const char* ssid=nullptr, const char* pass=nullptr);
@@ -150,9 +154,9 @@ private:
     unsigned long _msConfigPortalTimeout  = 300000;
     unsigned long _msConnectTimeout       = 60000;
 
-    IPAddress     _ap_static_ip;
-    IPAddress     _ap_static_gw;
-    IPAddress     _ap_static_sn;
+    // IPAddress     _ap_static_ip;
+    // IPAddress     _ap_static_gw;
+    // IPAddress     _ap_static_sn;
     IPAddress     _sta_static_ip;
     IPAddress     _sta_static_gw;
     IPAddress     _sta_static_sn;
