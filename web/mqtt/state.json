@@ -4,6 +4,6 @@
     "connected": true,
     "failed": false,
     "reason": "Timeout",
-    "server": "odroid",
+    "server": "brocker",
     "port": "1883"
 }

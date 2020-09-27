@@ -22,7 +22,7 @@
                 <label id="lbl_reqcurstate">requesting current state...</label>
               </div>
           </div>
-          <div style="text-align:center;padding-bottom: 3px;margin:16px 0 16px 0;border-bottom:solid 1px #263238;"></div>
+          <div style="text-align:center;padding-bottom: 20px;margin:16px 0 16px 0;border-bottom:solid 1px #263238;"></div>
           <div id="list_ssid">
              <label id="lbl_list_ssid_scan">scan in progress...</label>
              <label id="lbl_list_ssid_scan_count"></label>

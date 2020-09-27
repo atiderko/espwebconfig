@@ -4,7 +4,7 @@
     "reason": "",
     "networks": [
     {
-        "ssid": "atid",
+        "ssid": "myssid",
         "rssi": -65,
         "encrypted": true,
         "channel": 6,
@@ -12,12 +12,20 @@
         "hidden": false
     },
     {
-        "ssid": "atidg",
+        "ssid": "myssid_h",
         "rssi": -56,
         "encrypted": true,
         "channel": 6,
         "bssid": "00:23:AB:23:24:23",
         "hidden": true
+    },
+    {
+        "ssid": "other",
+        "rssi": -78,
+        "encrypted": true,
+        "channel": 1,
+        "bssid": "00:23:AB:23:24:23",
+        "hidden": false
     }
   ]
 }

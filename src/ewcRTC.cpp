@@ -47,10 +47,10 @@ uint8_t RTC::get()
     if (_idxCurrent < _max) {
         uint8_t result = _idxCurrent;
         _idxCurrent++; 
-        I::get().logger() << "[EWC RTC] get new index: " << result << endl;
+        I::get().logger() << F("[EWC RTC] get new index: ") << result << endl;
         return result;
     }
-    I::get().logger() << "✘ [EWC RTC] failed create new index, maximum reached!" << endl;
+    I::get().logger() << F("✘ [EWC RTC] failed create new index, maximum reached!") << endl;
     return 0;
 }
 
@@ -59,9 +59,9 @@ uint32_t RTC::read(uint8_t address)
     uint32_t read_flag;
     if (address >= _min && address < _max) {
         ESP.rtcUserMemoryRead(address, &read_flag, sizeof(read_flag));
-        I::get().logger() << "[EWC RTC] read " << read_flag <<  " from " << address << endl;
+        I::get().logger() << F("[EWC RTC] read ") << read_flag <<  " from " << address << endl;
     } else {
-        I::get().logger() << "✘ [EWC RTC] read from invalid address " << address << endl;
+        I::get().logger() << F("✘ [EWC RTC] read from invalid address ") << address << endl;
     }
     return read_flag;
 }
@@ -69,9 +69,9 @@ uint32_t RTC::read(uint8_t address)
 void RTC::write(uint8_t address, uint32_t flag)
 {
     if (address >= _min && address < _max) {
-        I::get().logger() << "[EWC RTC] write " << flag <<  " to " << address << endl;
+        I::get().logger() << F("[EWC RTC] write ") << flag <<  " to " << address << endl;
         ESP.rtcUserMemoryWrite(address, &flag, sizeof(flag));
     } else {
-        I::get().logger() << "✘ [EWC RTC] write invalid address " << address << endl;
+        I::get().logger() << F("✘ [EWC RTC] write invalid address ") << address << endl;
     }
 }

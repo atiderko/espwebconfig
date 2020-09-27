@@ -1,11 +1,11 @@
 {
     "ewc": {
-        "apname": "etc-1234567",
+        "apname": "ewc-123ABC",
         "appass": "",
         "ap_always_on": false,
         "basic_auth": false,
         "httpuser": "admin",
         "httppass": "admin",
-        "hostname": ""
+        "hostname": "ewc-123ABC"
     }
 }

@@ -49,9 +49,9 @@
                   <option timeZoneId="27" gmtAdjustment="GMT-01:00" useDaylightTime="0" value="27">(GMT-01:00) Cape Verde Is.</option>
                   <option timeZoneId="28" gmtAdjustment="GMT-01:00" useDaylightTime="1" value="28">(GMT-01:00) Azores</option>
                   <option timeZoneId="29" gmtAdjustment="GMT+00:00" useDaylightTime="0" value=29">(GMT+00:00) Casablanca, Monrovia, Reykjavik</option>
-                  <option timeZoneId="30" gmtAdjustment="GMT+00:00" useDaylightTime="1" value="30">(GMT+00:00) Greenwich Mean Time : Dublin, Edinburgh, Lisbon, London</option>
-                  <option timeZoneId="31" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="31" selected>(GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna</option>
-                  <option timeZoneId="32" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="32">(GMT+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague</option>
+                  <option timeZoneId="30" gmtAdjustment="GMT+00:00" useDaylightTime="1" value="30">(GMT+00:00) Greenwich Mean Time: Dublin, London</option>
+                  <option timeZoneId="31" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="31" selected>(GMT+01:00) Amsterdam, Berlin</option>
+                  <option timeZoneId="32" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="32">(GMT+01:00) Belgrade, Budapest, Prague</option>
                   <option timeZoneId="33" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="33">(GMT+01:00) Brussels, Copenhagen, Madrid, Paris</option>
                   <option timeZoneId="34" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="34">(GMT+01:00) Sarajevo, Skopje, Warsaw, Zagreb</option>
                   <option timeZoneId="35" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="35">(GMT+01:00) West Central Africa</option>

@@ -1,23 +1,51 @@
-Configuration class to setup WiFi settings using
-AsyncWiFiManager [https://github.com/alanswx/ESPAsyncWiFiManager].
-It is also possible to reset the configuration by double press
-on reset. The idea is based on
-https://github.com/datacute/DoubleResetDetector
+# ESP8266/ESP32 Web Configuration
 
-IoTWebConf [https://github.com/prampec/IotWebConf].
+Yet another library web configuration library for ESP8266.
 
-Homie
-AutoConnect
+## Why another
 
-ConfigServer is a library for the ESP8266/Arduino platform
-(https://github.com/esp8266/Arduino) to enable easy
-configuration and reconfiguration of WiFi credentials using a Captive Portal
-inspired by:
-http://www.esp8266.com/viewtopic.php?f=29&t=2520
-https://github.com/chriscook8/esp-arduino-apboot
-https://github.com/esp8266/Arduino/tree/esp8266/hardware/esp8266com/esp8266/libraries/DNSServer/examples/CaptivePortalAdvanced
-Built by AlexT https://github.com/tzapu
-Ported to Async Web ConfigServer by https://github.com/alanswx
-Licensed under MIT license
+There are already many cool web-based configuration libraries out there, but I haven't found one that suits all my needs. Some of these libraries are [AutoConnect](https://github.com/Hieromon/AutoConnect), [ESPAsyncWiFiManager](https://github.com/alanswx/ESPAsyncWiFiManager), [Homie](https://github.com/homieiot/homie-esp8266), [IoTWebConf](https://github.com/prampec/IotWebConf),  [JeeUI](https://github.com/jeecrypt/JeeUIFramework), [JeeUI2](https://github.com/jeecrypt/JeeUI2) or [WiFiManager](https://github.com/tzapu/WiFiManager). The restrictions caused by blocking the startup process, the number of user-defined parameters, customizing websites or heap hunger are reasons for the development of this library.
 
-/** from homie Logget.hpp and StreamingOperator.hpp */
+## Features
+
+- Modern web design |> _based on [AutoConnect](https://github.com/Hieromon/AutoConnect)_
+- Simple integration into your sketch
+- No blocking, even if not yet connected
+- Pages are created on the client site by JavaScript
+- Logging using __<<-operator__ |> _based on [Homie](https://github.com/homieiot/homie-esp8266)_
+- Reset configuration by double press on reset button |> _based on https://github.com/datacute/DoubleResetDetector_
+- Interface to store runtime data in RTC memory.
+- Option to add translation.
+- Extensions for __OTA Update__, __MQTT__ or __Time__ setup pages.
+
+## Integration
+
+Below you see the simplest sketch with full functionality.
+
+```cpp
+#include <Arduino.h>
+#include <ewcConfigServer.h>
+
+EWC::ConfigServer server;
+
+void setup() {
+    Serial.begin(115200);
+    // start webserver
+	server.setup();
+}
+
+
+void loop() {
+    // process dns requests and connection state AP/STA
+    server.loop();
+    if (WiFi.status() == WL_CONNECTED) {
+        // do your stuff if connected
+    } else {
+        // or if not yet connected
+    }
+    delay(1);
+}
+```
+On first start it creates a captive portal where you can enter your credentials to connect to your WiFi. The credentials are stored by Arduino WiFi library.
+
+<img src="docs/images/wifi_not_connected.png" width="200">&emsp;<img src="docs/images/wifi_connected.png" width="200">&emsp;<img src="docs/images/access.png" width="200">&emsp;<img src="docs/images/info.png" width="200">

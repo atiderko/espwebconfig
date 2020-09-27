@@ -1,6 +1,6 @@
 {
-    "ssid": "atid",
-    "connected": false,
+    "ssid": "myssid",
+    "connected": true,
     "failed": false,
     "reason": "WRONG_PASSWORD"
 }

@@ -109,11 +109,11 @@ private:
     Config _config;
     String _brand;
     String _version;
+    String _branduri;
     std::vector<MenuItem> _menu;
     IPAddress _ap_address;
     static PGM_P wlStatusSymbols[];
     bool _publicConfig;
-    String _branduri;
 
     void _startAP();
     void _connect(const char* ssid=nullptr, const char* pass=nullptr);
