@@ -71,7 +71,7 @@ function wifistate(data, uri) {
           dbl.remove();
         }
         if (document.getElementById("list_ssid") == null) {
-          setTimeout(redirect.bind(null, "/ewc/info"), 2000);
+          setTimeout(redirect.bind(null, "/ewc/info"), 3000);
         }
       } else if (data["failed"]) {
         hh += '<label style="color:red;">' + data["reason"] + '</label>';
@@ -80,7 +80,7 @@ function wifistate(data, uri) {
           dbl.remove();
         }
         if (document.getElementById("list_ssid") == null) {
-          setTimeout(redirect.bind(null, "/ewc/info"), 2000);
+          setTimeout(redirect.bind(null, "/wifi/setup"), 3000);
         }
       } else if (data["ssid"].length > 0) {
         countGetWifiState += 1;

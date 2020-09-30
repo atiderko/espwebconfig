@@ -85,7 +85,7 @@ void Updater::_onUpdate(AsyncWebServerRequest *request)
         return request->requestAuthentication();
     }
     _shouldReboot = !Update.hasError();
-    I::get().logger() << "[EWC Updater] should restart after update: " << _shouldReboot << endl;
+    I::get().logger() << F("[EWC Updater] should restart after update: ") << _shouldReboot << endl;
     if (_shouldReboot) {
         I::get().server().sendPageSuccess(request, "Update successful", "Update successful!", "/ewc/update", "restarting device...");
     } else {
@@ -96,22 +96,22 @@ void Updater::_onUpdate(AsyncWebServerRequest *request)
 void Updater::_onUpdateUpload(AsyncWebServerRequest* request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
     if (!index){
-        I::get().logger() << "[EWC Updater] Update Start: " << filename << endl;
+        I::get().logger() << F("[EWC Updater] Update Start: ") << filename << endl;
         Update.runAsync(true);
         if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
-            I::get().logger() << "✘ [EWC Updater] update error: " << Update.getError() << endl;
+            I::get().logger() << F("✘ [EWC Updater] update error: ") << Update.getError() << endl;
         }
     }
     if (!Update.hasError()) {
         if (Update.write(data, len) != len){
-            I::get().logger() << "✘ [EWC Updater] update error: " << Update.getError() << endl;
+            I::get().logger() << F("✘ [EWC Updater] update error: ") << Update.getError() << endl;
         }
     }
     if (final) {
         if (Update.end(true)) {
-            I::get().logger() << "✔ [EWC Updater] Update Success: " << index+len << "B" << endl;
+            I::get().logger() << F("✔ [EWC Updater] Update Success: ") << index+len << "B" << endl;
         } else {
-            I::get().logger() << "✘ [EWC Updater] update error: " << Update.getError() << endl;
+            I::get().logger() << F("✘ [EWC Updater] update error: ") << Update.getError() << endl;
         }
     }
 }
@@ -121,12 +121,12 @@ void Updater::_onUpdateInfo(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC time]: ESP heap: _onUpdateInfo: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC time]: ESP heap: _onUpdateInfo: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(512);
     fillJson(jsonDoc);
     jsonDoc["update"]["version"] = I::get().server().version();
     String output;
     serializeJson(jsonDoc, output);
-    I::get().logger() << "[EWC time]: ESP heap: _onUpdateInfo: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC time]: ESP heap: _onUpdateInfo: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }

@@ -98,6 +98,8 @@ public:
     void sendPageFailed(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
     bool isAuthenticated(AsyncWebServerRequest *request);
     void disabledConfigUri() { _publicConfig = false; }
+    void setTimeoutConfigPortal(uint32_t seconds) { _msConfigPortalTimeout = seconds * 1000; }
+    void setTimeoutForAp(uint32_t seconds) { _msConnectTimeout = seconds * 1000; }
 
 private:
     AsyncWebServer _server;
@@ -114,13 +116,14 @@ private:
     IPAddress _ap_address;
     static PGM_P wlStatusSymbols[];
     bool _publicConfig;
+    bool _connected_wifi;
+    uint8_t _disconnect_state;
+    String _disconnect_reason;
 
     void _startAP();
     void _connect(const char* ssid=nullptr, const char* pass=nullptr);
     /** === web handler === **/
     String _token_WIFI_MODE();
-    String _token_STATION_STATUS(bool failedOnly);
-    wifi_status_t _station_status();
     void _sendMenu(AsyncWebServerRequest* request);
     void _sendFileContent(AsyncWebServerRequest* request, const String& filename, const String& contentType);
     void _sendContentNoAuthP(AsyncWebServerRequest* request, PGM_P content, const String& contentType);

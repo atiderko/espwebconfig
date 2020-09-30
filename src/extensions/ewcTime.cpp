@@ -34,7 +34,6 @@ using namespace EWC;
 Time::Time() : ConfigInterface("time")
 {
     _ntpAvailable = false;
-    _ntpInitialized = false;
     _manuallOffset = 0;
 }
 
@@ -44,21 +43,18 @@ Time::~Time()
 
 void Time::setup(JsonDocument& config, bool resetConfig)
 {
-    settimeofday_cb([this](void) { _callbackTimeSet(); });
+    settimeofday_cb(std::bind(&Time::_callbackTimeSet, this));
     I::get().logger() << "[EWC Time] setup" << endl;
     _initParams();
     _fromJson(config);
     EWC::I::get().server().insertMenuP("Time", "/time/setup", "menu_time", HTML_TIME_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML), true, 0);
     EWC::I::get().server().webserver().on("/time/config.json", std::bind(&Time::_onTimeConfig, this, std::placeholders::_1));
     EWC::I::get().server().webserver().on("/time/save", std::bind(&Time::_onTimeSave, this, std::placeholders::_1));
-}
-
-void Time::loop()
-{
-    if (!_paramManually && !_ntpInitialized && WiFi.status() == WL_CONNECTED) {
+    I::get().logger() << "[EWC Time] current time: " << str() << endl;
+    if (!_paramManually) {
         // Sync our clock to NTP
+        I::get().logger() << "[EWC Time] sync to ntp server..." << endl;
         configTime(TZMAP[_paramTimezone-1][1] * 3600, TZMAP[_paramTimezone-1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
-        _ntpInitialized = true;
     }
 }
 
@@ -93,7 +89,6 @@ void Time::_fromJson(JsonDocument& config)
         if (tz > 0 && tz <= 82) {
             if (_paramTimezone != tz) {
                 _paramTimezone = tz;
-                _ntpInitialized = false;
             }
         }
     }
@@ -123,10 +118,16 @@ void Time::_fromJson(JsonDocument& config)
     if (!jv.isNull()) {
         _paramDndTo = jv.as<String>();
     }
+    if (!_paramManually) {
+        // Sync our clock to NTP
+        I::get().logger() << "[EWC Time] sync to ntp server..." << endl;
+        configTime(TZMAP[_paramTimezone-1][1] * 3600, TZMAP[_paramTimezone-1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
+    }
 }
 
 void Time::_callbackTimeSet(void)
 {
+    I::get().logger() << "[EWC Time] ntp time set to " << str() << endl;
     _ntpAvailable = true;
 }
 
@@ -135,12 +136,10 @@ void Time::_onTimeConfig(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC time]: ESP heap: _onTimeConfig: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(512);
     fillJson(jsonDoc);
     String output;
     serializeJson(jsonDoc, output);
-    I::get().logger() << "[EWC time]: ESP heap: _onTimeConfig: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
@@ -149,7 +148,6 @@ void Time::_onTimeSave(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC time]: ESP heap: _onTimeSave: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument config(512);
     if (request->hasArg("timezone") && !request->arg("timezone").isEmpty()) {
         config["time"]["timezone"] = request->arg("timezone").toInt();
@@ -179,14 +177,12 @@ void Time::_onTimeSave(AsyncWebServerRequest *request)
             }
         }
     }
-    I::get().logger() << "[EWC time]: ESP heap: _onBbsState: " << ESP.getFreeHeap() << endl;
     _fromJson(config);
     I::get().configFS().save();
     String details;
     serializeJsonPretty(config["time"], details);
     I::get().server().sendPageSuccess(request, "EWC Time save", "Save successful!", "/time/setup", "<pre id=\"json\">" + details + "</pre>");
 }
-
 
 void Time::setLocalTime(String& date, String& time) {
     struct tm ti;

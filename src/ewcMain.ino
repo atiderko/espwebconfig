@@ -18,6 +18,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 **************************************************************/
+/**
 #include <Arduino.h>
 #include "ewcConfigServer.h"
 #include "extensions/ewcUpdater.h"
@@ -51,4 +52,41 @@ void loop() {
     // process dns requests and connection state
     server.loop();
     delay(1);
+}
+**/
+
+#include <Arduino.h>
+#include <ewcConfigServer.h>
+#include <ewcLogger.h>
+#include <extensions/ewcTime.h>
+
+using namespace EWC;
+ConfigServer server;
+Time ewcTime;
+bool timePrinted = false;
+
+void setup() {
+    Serial.begin(115200);
+    // add time configuration
+    I::get().configFS().addConfig(ewcTime);
+    // start webserver
+	server.setup();
+}
+
+
+void loop() {
+    // process dns requests and connection state AP/STA
+    server.loop();
+    if (WiFi.status() == WL_CONNECTED) {
+        if (ewcTime.ntpAvailable() && !timePrinted) {
+            timePrinted = true;
+            // print current time
+            I::get().logger() << "Current time:" << ewcTime.str() << endl;
+            // or current time in seconds
+            I::get().logger() << "  as seconds:" << ewcTime.currentTime() << endl;
+        }
+    } else {
+        // or if not yet connected
+    }
+    delay(1000);
 }

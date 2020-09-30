@@ -88,6 +88,9 @@ ConfigServer::ConfigServer(uint16_t port)
     I::get()._led = &_led;
     _publicConfig = true;
     _branduri = "/";
+    _connected_wifi = false;
+    _disconnect_state = 0;
+    _disconnect_reason = "";
     _configFS.addConfig(_config);
 }
 
@@ -187,6 +190,8 @@ void ConfigServer::_connect(const char* ssid, const char* pass)
 {
     I::get().logger() << F("[EWC CS]: Connecting as wifi client... ssid: '") << ssid << "', pass: '" << pass << "'" << endl;
     _msConnectStart = millis();
+    _disconnect_state = 0;
+    _disconnect_reason = "";
     // check if we've got static_ip settings, if we do, use those.
     if (_sta_static_ip) {
         I::get().logger() << F("[EWC CS]: Custom STA IP/GW/Subnet/DNS") << endl;
@@ -217,7 +222,26 @@ void ConfigServer::_wifiOnStationModeConnected(const WiFiEventStationModeConnect
 
 void ConfigServer::_wifiOnStationModeDisconnected(const WiFiEventStationModeDisconnected& event)
 {
-    I::get().logger() << F("✘ [EWC CS]: _wifiOnStationModeDisconnected: ") << event.ssid << endl;
+    I::get().logger() << F("✘ [EWC CS]: _wifiOnStationModeDisconnected: ") << event.ssid  << ", code: " << event.reason << endl;
+    switch (event.reason) {
+        case WIFI_DISCONNECT_REASON_NO_AP_FOUND: {
+            _disconnect_state = event.reason;
+            _disconnect_reason = "No AP found";
+            break;
+        }
+        case WIFI_DISCONNECT_REASON_AUTH_EXPIRE:
+        case WIFI_DISCONNECT_REASON_AUTH_FAIL: {
+            _disconnect_state = event.reason;
+            _disconnect_reason = "Authentification failed";
+            break;
+        }
+        default: {
+            _disconnect_state = event.reason;
+            if (event.reason > 0) {
+                _disconnect_reason = "Failed, error: " + String(event.reason);
+            }
+        }
+    }
 }
 
 void ConfigServer::_wifiOnStationModeAuthModeChanged(const WiFiEventStationModeAuthModeChanged& event)
@@ -328,15 +352,15 @@ void ConfigServer::_onAccessGet(AsyncWebServerRequest *request)
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _onAccessGet: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _onAccessGet: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(512);
     JsonObject json = jsonDoc.to<JsonObject>();
     _config.fillJson(jsonDoc);
-    I::get().logger() << "[EWC CS]: _onAccessGet MEMUSAGE: " << json.memoryUsage() << endl;
-    I::get().logger() << "[EWC CS]: ESP heap: _onAccessGet: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: _onAccessGet MEMUSAGE: " << json.memoryUsage() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _onAccessGet: " << ESP.getFreeHeap() << endl;
     String output;
     serializeJson(json, output);
-    I::get().logger() << "[EWC CS]: ESP heap: _onAccessGet: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _onAccessGet: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
@@ -345,7 +369,7 @@ void ConfigServer::_onAccessSave(AsyncWebServerRequest *request)
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _onAccessSave: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _onAccessSave: " << ESP.getFreeHeap() << endl;
     if (request->hasArg("apname")) {
         _config.paramAPName = request->arg("apname");
     }
@@ -367,7 +391,7 @@ void ConfigServer::_onAccessSave(AsyncWebServerRequest *request)
     if (request->hasArg("hostname")) {
         _config.paramHostname = request->arg("hostname");
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _onAccessSave: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _onAccessSave: " << ESP.getFreeHeap() << endl;
     sendPageSuccess(request, "Security save", "Save success! Please, restart to apply AP changes!", "/ewc/access");
 }
 
@@ -376,7 +400,7 @@ void ConfigServer::_onGetInfo(AsyncWebServerRequest *request)
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _onGetInfo: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _onGetInfo: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(512);
     JsonObject json = jsonDoc.to<JsonObject>();
     json["version"] = _version;
@@ -403,10 +427,10 @@ void ConfigServer::_onGetInfo(AsyncWebServerRequest *request)
     json["flash_size"] = String(spi_flash_get_chip_size());
 #endif
 	json["free_heap"] = String(ESP.getFreeHeap());
-    I::get().logger() << "[EWC CS]: _onGetInfo MEMUSAGE: " << json.memoryUsage() << endl;
+//    I::get().logger() << "[EWC CS]: _onGetInfo MEMUSAGE: " << json.memoryUsage() << endl;
     String output;
     serializeJson(json, output);
-    I::get().logger() << "[EWC CS]: ESP heap: _onGetInfo: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _onGetInfo: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
@@ -415,7 +439,7 @@ void ConfigServer::_onWiFiConnect(AsyncWebServerRequest *request)
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiConnect: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiConnect: " << ESP.getFreeHeap() << endl;
     for (size_t idx = 0; idx < request->args(); idx++) {
         I::get().logger() << "[EWC CS]: " << idx << ": " << request->argName(idx) << request->arg(idx) << endl;
     }
@@ -446,7 +470,7 @@ void ConfigServer::_onWiFiConnect(AsyncWebServerRequest *request)
         String dns2 = request->arg("dns2");
         _optionalIPFromString(&_sta_static_dns2, dns2.c_str());
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiConnect: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiConnect: " << ESP.getFreeHeap() << endl;
     request->send_P(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_CONNECT);
     _connect(ssid, pass);
 }
@@ -456,86 +480,19 @@ void ConfigServer::_onWiFiDisconnect(AsyncWebServerRequest *request)
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiDisconnect: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiDisconnect: " << ESP.getFreeHeap() << endl;
     AsyncWebServerResponse *response = request->beginResponse(302,"text/plain","");
     response->addHeader("Location", "/wifi/setup");
     request->send ( response);
-    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiDisconnect: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiDisconnect: " << ESP.getFreeHeap() << endl;
     WiFi.disconnect(false);
-}
-
-
-String ConfigServer::_token_STATION_STATUS(bool failedOnly)
-{
-    wifi_status_t result = _station_status();
-    _logger << F("[EWC CS]: Station status for token: ") << result << endl;
-    PGM_P wlStatusSymbol = "";
-    if (!failedOnly || result > EWC_STATION_GOT_IP) {
-        wlStatusSymbol = wlStatusSymbols[result];
-    }
-    return String(FPSTR(wlStatusSymbol));
-}
-
-wifi_status_t ConfigServer::_station_status()
-{
-    wifi_status_t result = EWC_STATION_IDLE;
-#if defined(ARDUINO_ARCH_ESP8266)
-    station_status_t status = wifi_station_get_connect_status();
-    switch (status) {
-        case STATION_IDLE:
-            result = EWC_STATION_IDLE;
-            break;
-        case STATION_CONNECTING:
-            result = EWC_STATION_CONNECTING;
-            break;
-        case STATION_WRONG_PASSWORD:
-            result = EWC_STATION_WRONG_PASSWORD;
-            break;
-        case STATION_NO_AP_FOUND:
-            result = EWC_STATION_NO_AP_FOUND;
-            break;
-        case STATION_CONNECT_FAIL:
-            result = EWC_STATION_CONNECT_FAIL;
-            break;
-        case STATION_GOT_IP:
-            result = EWC_STATION_GOT_IP;
-            break;
-#elif defined(ARDUINO_ARCH_ESP32)
-    switch (WiFi.status()) {
-        case WL_IDLE_STATUS:
-            result = EWC_STATION_IDLE;
-            break;
-        case WL_NO_SSID_AVAIL:
-            result = EWC_STATION_NO_AP_FOUND;
-            break;
-        case WL_SCAN_COMPLETED:
-            result = EWC_STATION_SCAN_COMPLETED;
-            break;
-        case WL_CONNECTED:
-            result = EWC_STATION_CONNECTED;
-            break;
-        case WL_CONNECT_FAILED:
-            result = EWC_STATION_CONNECT_FAIL;
-            break;
-        case WL_CONNECTION_LOST:
-            result = EWC_STATION_CONNECTION_LOST;
-            break;
-        case WL_DISCONNECTED:
-            result = EWC_STATION_DISCONNECTED;
-            break;
-        case WL_NO_SHIELD:
-            result = EWC_NO_SHIELD;
-            break;
-#endif
-    }
-    return result;
 }
 
 void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(2048);
     JsonObject json = jsonDoc.to<JsonObject>();
     json["brand"] = _brand;
@@ -552,7 +509,7 @@ void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
     }
     String output;
     serializeJson(json, output);
-    I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
@@ -561,17 +518,15 @@ void ConfigServer::_onWifiState(AsyncWebServerRequest *request)
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _onWifiState: " << ESP.getFreeHeap() << endl;
-    DynamicJsonDocument jsonDoc(2048);
+    I::get().logger() << "[EWC CS]: report WifiState, connected: " << (WiFi.status() == WL_CONNECTED) << endl;
+    DynamicJsonDocument jsonDoc(256);
     JsonObject json = jsonDoc.to<JsonObject>();
     json["ssid"] = WiFi.SSID();
     json["connected"] = WiFi.status() == WL_CONNECTED;
-    String reason = _token_STATION_STATUS(true);
-    json["failed"] = reason.length() > 0;
-    json["reason"] = reason;
+    json["failed"] = _disconnect_state > 0;
+    json["reason"] = _disconnect_reason;
     String output;
     serializeJson(json, output);
-    I::get().logger() << "[EWC CS]: ESP heap: _onWifiState: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
@@ -587,7 +542,7 @@ void ConfigServer::_onWifiScan(AsyncWebServerRequest *request)
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
     _startWiFiScan();
     int n = WiFi.scanComplete();
     DynamicJsonDocument jsonDoc(2048);
@@ -633,9 +588,9 @@ void ConfigServer::_onWifiScan(AsyncWebServerRequest *request)
         }
         String output;
         serializeJson(json, output);
-        I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
+  //      I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
         request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
-        I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
+    //    I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
         //WiFi.scanDelete();
         return;
     } else if (n == -2) {
@@ -644,7 +599,7 @@ void ConfigServer::_onWifiScan(AsyncWebServerRequest *request)
     }
     String output;
     serializeJson(json, output);
-    I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
+    //I::get().logger() << "[EWC CS]: ESP heap: _onWifiScan: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
@@ -655,14 +610,14 @@ void ConfigServer::loop()
 #endif
     if (!_config.paramWifiDisabled) {
         if (WiFi.status() != WL_CONNECTED) {
+            _connected_wifi = false;
             bool startAP = false;
             // check for timeout
             if (millis() - _msConnectStart > _msConnectTimeout) {
                 startAP = true;
             } else {
                 // check for errors
-                wifi_status_t st = _station_status();
-                if (st == 0 || st > EWC_STATION_GOT_IP) {
+                if (_disconnect_state > 0) {
                     startAP = true;
                 }
             }
@@ -672,8 +627,13 @@ void ConfigServer::loop()
                 _startAP();
             }
         } else {
+            if (!_connected_wifi) {
+                _connected_wifi = true;
+                I::get().logger() << F("[EWC CS]: connected IP: ") << WiFi.localIP().toString() << endl;
+            }
             // Stop LED Ticker.
             _led.stop();
+
         }
     }
 }
@@ -686,8 +646,8 @@ void ConfigServer::setBrand(const char* brand, const char* version)
 
 void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details, String nameBack, String urlForward, String nameForward)
 {
-    I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
-    I::get().logger() << "[EWC CS]: sendPageSuccess " << summary << ":" << details << endl;
+//    I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: sendPageSuccess " << summary << ":" << details << endl;
     String result(FPSTR(HTML_EWC_SUCCESS));
     result.replace("{{TITLE}}", title);
     result.replace("{{SUMMARY}}", summary);
@@ -697,7 +657,7 @@ void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title,
     result.replace("{{FORWARD}}", urlForward);
     result.replace("{{FWD_NAME}}", nameForward);
     request->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
-    I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
 }
 
 void ConfigServer::sendPageFailed(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details, String nameBack,  String urlForward, String nameForward)
@@ -733,16 +693,16 @@ void ConfigServer::sendContentP(AsyncWebServerRequest *request, PGM_P content, c
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    I::get().logger() << "[EWC CS]: send content P" << request->url() << ":" << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: send content P" << request->url() << ":" << ESP.getFreeHeap() << endl;
     request->send_P(200, contentType.c_str(), content);
-    I::get().logger() << "[EWC CS]: finished " << request->url() << ":" << ESP.getFreeHeap() << endl;
+//    I::get().logger() << "[EWC CS]: finished " << request->url() << ":" << ESP.getFreeHeap() << endl;
 }
 
 void ConfigServer::_sendContentNoAuthP(AsyncWebServerRequest *request, PGM_P content, const String& contentType)
 {
-    I::get().logger() << "[EWC CS]: send content P" << request->url() << ":" << ESP.getFreeHeap() << endl;
+ //   I::get().logger() << "[EWC CS]: send content P" << request->url() << ":" << ESP.getFreeHeap() << endl;
     request->send_P(200, contentType.c_str(), content);
-    I::get().logger() << "[EWC CS]: finished " << request->url() << ":" << ESP.getFreeHeap() << endl;
+   // I::get().logger() << "[EWC CS]: finished " << request->url() << ":" << ESP.getFreeHeap() << endl;
 }
 
 void ConfigServer::_onNotFound(AsyncWebServerRequest *request) {

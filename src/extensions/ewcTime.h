@@ -127,7 +127,6 @@ public:
     void setup(JsonDocument& config, bool resetConfig=false);
     void fillJson(JsonDocument& config);
 
-    void loop();
     bool ntpAvailable() { return _ntpAvailable; }
     void setLocalTime(String& date, String& time);
     /** Current time as string.
@@ -144,7 +143,6 @@ public:
 
 protected:
     bool _ntpAvailable;
-    bool _ntpInitialized;
     time_t _manuallOffset;  //< used for manually time
 
     /** === Parameter === **/
