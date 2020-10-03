@@ -52,11 +52,11 @@ class TickerLed {
   void onPeriod(Callback_ft cb) { _callback = cb ;}
 
  protected:
-  Ticker    _period;        /**< Ticker for flicking cycle */
-  Ticker    _pulse;         /**< Ticker for pulse width generating */
-  uint32_t  _cycle;         /**< Cycle time in [ms] */
-  uint32_t  _duration;      /**< Pulse width in [ms] */
-  bool _enabled;            /**< True if enabled by enable(...) */
+  Ticker    _period;        //< Ticker for flicking cycle
+  Ticker    _pulse;         //< Ticker for pulse width generating
+  uint32_t  _cycle;         //< Cycle time in [ms]
+  uint32_t  _duration;      //< Pulse width in [ms]
+  bool _enabled;            //< True if enabled by enable(...)
   void setCycle(const uint32_t cycle) { _cycle = cycle; }
   void setDuration(const uint32_t duration) { _duration = duration <= _cycle ? duration : _duration; }
   void start(void);
@@ -64,11 +64,11 @@ class TickerLed {
  private:
   static void _onPeriod(TickerLed* t);
   static void _onPulse(TickerLed* t);
-  bool _active;             /**< True if ticker was started, false if stopped */
-  uint8_t     _port;        /**< Port to output signal */
-  uint8_t     _turnOn;      /**< Signal to turn on */
-  Callback_ft _callback;    /**< An exit by every cycle */
+  bool _active;             //< True if ticker was started, false if stopped
+  uint8_t     _port;        //< Port to output signal
+  uint8_t     _turnOn;      //< Signal to turn on
+  Callback_ft _callback;    //< An exit by every cycle
 };
 
 }
-#endif // !EWC_TICKER_H
+#endif

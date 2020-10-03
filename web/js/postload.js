@@ -2,7 +2,7 @@
 if (typeof jsons === "undefined") {
   var jsons = [];
 }
-jsons.push(["/menu", "menu"]);
+jsons.push(["/menu.json", "menu"]);
 
 let language = "en";
 let langmap = {};

@@ -28,7 +28,6 @@ limitations under the License.
 #include "generated/ewcFailHTML.h"
 #include "generated/ewcSuccessHTML.h"
 #include "generated/webBaseCSS.h"
-#include "generated/webIndexHTML.h"
 #include "generated/webPostloadJS.h"
 #include "generated/webPreJS.h"
 #include "generated/webTableCSS.h"
@@ -36,7 +35,6 @@ limitations under the License.
 #include "generated/webWifiJS.h"
 #include "generated/wifiConnectHTML.h"
 #include "generated/wifiSetupHTML.h"
-//#include "ewcPages.h"
 
 /**
  *  An actual reset function dependent on the architecture
@@ -86,11 +84,13 @@ ConfigServer::ConfigServer(uint16_t port)
     I::get()._logger = &_logger;
     I::get()._rtc = &_rtc;
     I::get()._led = &_led;
-    _publicConfig = true;
+    _publicConfig = false;
     _branduri = "/";
     _connected_wifi = false;
+    _ap_disabled_after_timeout = false;
     _disconnect_state = 0;
     _disconnect_reason = "";
+    _softAPClientCount = 0;
     _configFS.addConfig(_config);
 }
 
@@ -134,7 +134,7 @@ void ConfigServer::setup()
     // _server.reset(); do we need this?
     /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
     _server.on("/", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, HTML_WIFI_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML))).setFilter(ON_AP_FILTER);
-    _server.on("/menu", std::bind(&ConfigServer::_sendMenu, this, std::placeholders::_1));
+    _server.on("/menu.json", std::bind(&ConfigServer::_sendMenu, this, std::placeholders::_1));
     _server.on("/css/base.css", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, CSS_WEB_BASE, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
     _server.on("/css/table.css", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, CSS_WEB_TABLE, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
     _server.on("/css/wifiicons.css", std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, CSS_WEB_WIFIICONS, FPSTR(PROGMEM_CONFIG_TEXT_CSS)));
@@ -163,9 +163,9 @@ void ConfigServer::setup()
 
 void ConfigServer::_startAP() {
     // Start ticker with AP_STA
-    _led.start(1000, 96);
+    _led.start(1000, 16);
     I::get().logger() << endl;
-    _msConfigPortalStart = millis();
+    _msConfigPortalStart = _config.paramAPStartAlways ? 0 : millis();
     I::get().logger() << F("[EWC CS]: Configuring access point... ") << _config.paramAPName << endl;
     //optional soft ip config
     // if (_ap_static_ip) {
@@ -209,7 +209,7 @@ void ConfigServer::_connect(const char* ssid, const char* pass)
     }
     // Start Ticker according to the WiFi condition with Ticker is available.
     if (WiFi.status() != WL_CONNECTED) {
-        _led.start(1000, 16);
+        _led.start(1000, 256);
     }
 }
 
@@ -218,6 +218,7 @@ void ConfigServer::_wifiOnStationModeConnected(const WiFiEventStationModeConnect
 {
     I::get().logger() << F("[EWC CS]: _wifiOnStationModeConnected: ") << event.ssid << endl;
     _config.setBootMode(BootMode::NORMAL);
+    _ap_disabled_after_timeout = false;
 }
 
 void ConfigServer::_wifiOnStationModeDisconnected(const WiFiEventStationModeDisconnected& event)
@@ -259,10 +260,16 @@ void ConfigServer::_wifiOnStationModeDHCPTimeout()
 void ConfigServer::_wifiOnSoftAPModeStationConnected(const WiFiEventSoftAPModeStationConnected& event)
 {
     I::get().logger() << F("[EWC CS]: _wifiOnSoftAPModeStationConnected: ") << endl;
+    _softAPClientCount++;
 }
 void ConfigServer::_wifiOnSoftAPModeStationDisconnected(const WiFiEventSoftAPModeStationDisconnected& event)
 {
     I::get().logger() << F("[EWC CS]: _wifiOnSoftAPModeStationDisconnected: ") << endl;
+    _softAPClientCount--;
+    if (WiFi.status() == WL_CONNECTED && !_config.paramAPStartAlways) {
+        I::get().logger() << F("[EWC CS]: disable AP after successfully connected") << endl;
+        WiFi.mode(WIFI_STA);
+    }
 }
 #else
 // TODO: events for ESP32
@@ -392,7 +399,7 @@ void ConfigServer::_onAccessSave(AsyncWebServerRequest *request)
         _config.paramHostname = request->arg("hostname");
     }
 //    I::get().logger() << "[EWC CS]: ESP heap: _onAccessSave: " << ESP.getFreeHeap() << endl;
-    sendPageSuccess(request, "Security save", "Save success! Please, restart to apply AP changes!", "/ewc/access");
+    sendPageSuccess(request, "Security save", "Save successful! Please, restart to apply AP changes!", "/ewc/access");
 }
 
 void ConfigServer::_onGetInfo(AsyncWebServerRequest *request)
@@ -610,21 +617,42 @@ void ConfigServer::loop()
 #endif
     if (!_config.paramWifiDisabled) {
         if (WiFi.status() != WL_CONNECTED) {
-            _connected_wifi = false;
-            bool startAP = false;
-            // check for timeout
-            if (millis() - _msConnectStart > _msConnectTimeout) {
-                startAP = true;
-            } else {
-                // check for errors
-                if (_disconnect_state > 0) {
+            // after _msConfigPortalTimeout the portal will be disbaled
+            // this can be enabled after restart or successful connect
+            if (!_ap_disabled_after_timeout) {
+                _connected_wifi = false;
+                bool startAP = false;
+                // check for timeout
+                if (millis() - _msConnectStart > _msConnectTimeout) {
                     startAP = true;
+                } else {
+                    // check for errors
+                    if (_disconnect_state > 0) {
+                        startAP = true;
+                    } else if (WiFi.SSID().length() == 0) {
+                        // check for valid WiFi credentials
+                        startAP = true;
+                    }
                 }
-            }
-            if  (startAP && !isAP()) {
-                // start AP
-                WiFi.mode(WIFI_AP_STA);
-                _startAP();
+                if  (startAP && !isAP()) {
+                    // start AP
+                    I::get().logger() << F("[EWC CS]: change WiFi mode to AP_STA") << endl;
+                    WiFi.mode(WIFI_AP_STA);
+                    _startAP();
+                } else if (_msConfigPortalTimeout > 0 && millis() - _msConfigPortalStart > _msConfigPortalTimeout) {
+                    if (_softAPClientCount <= 0) {
+                        _ap_disabled_after_timeout = true;
+                        if (WiFi.SSID().length() == 0) {
+                            I::get().logger() << F("✘ [EWC CS]: config portal timeout: disable WiFi, since no valid SSID available") << endl;
+                            WiFi.mode(WIFI_OFF);
+                            _led.stop();
+                        } else {
+                            I::get().logger() << F("✘ [EWC CS]: config portal timeout: disable AP") << endl;
+                            WiFi.mode(WIFI_STA);
+                            _led.start(1000, 256);
+                        }
+                    }
+                }
             }
         } else {
             if (!_connected_wifi) {
@@ -644,10 +672,16 @@ void ConfigServer::setBrand(const char* brand, const char* version)
     _version = String(version);
 }
 
+void ConfigServer::sendContentP(AsyncWebServerRequest *request, PGM_P content, const String& contentType)
+{
+    if (!isAuthenticated(request)) {
+        return request->requestAuthentication();
+    }
+    request->send_P(200, contentType.c_str(), content);
+}
+
 void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details, String nameBack, String urlForward, String nameForward)
 {
-//    I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
-//    I::get().logger() << "[EWC CS]: sendPageSuccess " << summary << ":" << details << endl;
     String result(FPSTR(HTML_EWC_SUCCESS));
     result.replace("{{TITLE}}", title);
     result.replace("{{SUMMARY}}", summary);
@@ -657,7 +691,6 @@ void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title,
     result.replace("{{FORWARD}}", urlForward);
     result.replace("{{FWD_NAME}}", nameForward);
     request->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
-//    I::get().logger() << "[EWC CS]: sendPageSuccess " << request->url() << ":" << ESP.getFreeHeap() << endl;
 }
 
 void ConfigServer::sendPageFailed(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details, String nameBack,  String urlForward, String nameForward)
@@ -688,26 +721,15 @@ void ConfigServer::_sendFileContent(AsyncWebServerRequest *request, const String
     _onNotFound(request);
 }
 
-void ConfigServer::sendContentP(AsyncWebServerRequest *request, PGM_P content, const String& contentType)
-{
-    if (!isAuthenticated(request)) {
-        return request->requestAuthentication();
-    }
-//    I::get().logger() << "[EWC CS]: send content P" << request->url() << ":" << ESP.getFreeHeap() << endl;
-    request->send_P(200, contentType.c_str(), content);
-//    I::get().logger() << "[EWC CS]: finished " << request->url() << ":" << ESP.getFreeHeap() << endl;
-}
 
 void ConfigServer::_sendContentNoAuthP(AsyncWebServerRequest *request, PGM_P content, const String& contentType)
 {
- //   I::get().logger() << "[EWC CS]: send content P" << request->url() << ":" << ESP.getFreeHeap() << endl;
     request->send_P(200, contentType.c_str(), content);
-   // I::get().logger() << "[EWC CS]: finished " << request->url() << ":" << ESP.getFreeHeap() << endl;
 }
 
 void ConfigServer::_onNotFound(AsyncWebServerRequest *request) {
     I::get().logger() << F("[EWC CS]: Handle not found") << endl;
-    if (captivePortal(request)) { // If captive portal redirect instead of displaying the error page.
+    if (_captivePortal(request)) { // If captive portal redirect instead of displaying the error page.
         return;
     }
     String message = "File Not Found\n\n";
@@ -729,13 +751,13 @@ void ConfigServer::_onNotFound(AsyncWebServerRequest *request) {
 }
 
 /** Redirect to captive portal if we got a request for another domain. Return true in that case so the page handler do not try to handle the request again. */
-bool ConfigServer::captivePortal(AsyncWebServerRequest *request)
+bool ConfigServer::_captivePortal(AsyncWebServerRequest *request)
 {
-    if (!isIp(request->host()) ) {
+    if (!_isIp(request->host()) ) {
         I::get().logger() << F("[EWC CS]: Request host is not an IP: ") << request->host() << endl;
-        I::get().logger() << F("[EWC CS]: Request redirected to captive portal: ") << toStringIp(request->client()->localIP()) << endl;
+        I::get().logger() << F("[EWC CS]: Request redirected to captive portal: ") << _toStringIp(request->client()->localIP()) << endl;
         AsyncWebServerResponse *response = request->beginResponse(302,"text/plain","");
-        response->addHeader("Location", String("http://") + toStringIp(request->client()->localIP()));
+        response->addHeader("Location", String("http://") + _toStringIp(request->client()->localIP()));
         request->send ( response);
         return true;
     }
@@ -755,19 +777,8 @@ bool ConfigServer::isAuthenticated(AsyncWebServerRequest *request)
     return ! (_config.paramBasicAuth && !request->authenticate(_config.paramHttpUser.c_str(), _config.paramHttpPassword.c_str()));
 }
 
-//start up config portal callback
-// void ConfigServer::setAPCallback( void (*func)(ConfigServer* myESPAsyncWebConf) ) {
-//   _apcallback = func;
-// }
-
-//start up save config callback
-// void ConfigServer::setSaveConfigCallback( void (*func)(void) ) {
-//   _savecallback = func;
-// }
-
-
 /** Is this an IP? */
-bool ConfigServer::isIp(const String& str)
+bool ConfigServer::_isIp(const String& str)
 {
     for (unsigned int i = 0; i < str.length(); i++) {
         int c = str.charAt(i);
@@ -779,7 +790,7 @@ bool ConfigServer::isIp(const String& str)
 }
 
 /** IP to String? */
-String ConfigServer::toStringIp(const IPAddress& ip)
+String ConfigServer::_toStringIp(const IPAddress& ip)
 {
     String res = "";
     for (int i = 0; i < 3; i++) {

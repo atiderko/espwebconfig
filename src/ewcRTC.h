@@ -25,20 +25,26 @@ limitations under the License.
 
 namespace EWC {
 
+/** Organize the storage in RTC memory. **/
 class RTC {
+
 public:
     RTC(uint8_t start=33, uint8_t max=127);
     ~RTC();
+    /** Writes given flag to all addresses between start and max. **/
     void reset(uint32_t flag=0);
-    /** Returns free address if available. 0 and 255 are invalid values. **/
+    /** Returns a next free address if available. 0 and 255 are invalid values.
+     * Use this method to reserve the address for your usage. **/
     uint8_t get();
+    /** Read value from given address. **/
     uint32_t read(uint8_t address);
+    /** Write value to given address. **/
     void write(uint8_t address, uint32_t flag);
 
 protected:
-    uint8_t _min;
-    uint8_t _max;
-    uint8_t _idxCurrent;
+    uint8_t _min;  //< minimal address initialized in consructor
+    uint8_t _max;  //< maximal address initialized in consructor
+    uint8_t _idxCurrent;  //< current free address
 };
 }; // namespace
 

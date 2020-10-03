@@ -31,6 +31,8 @@ class ConfigFS;
 class RTC;
 class TickerLed;
 
+/** The objects of the interface are initialized by ConfigServer.
+ * The interface is globally reachable through I::get(). **/
 class InterfaceData {
   friend ConfigServer;
 

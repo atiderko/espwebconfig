@@ -19,6 +19,41 @@ There are already many cool web-based configuration libraries out there, but I h
 - Extensions for __OTA Update__, __MQTT__ or __Time__ setup pages.
 - Create you own pages and test the functionality with a webserver of your choice. Include the HTML, CSS and JS file as auto generated header files // _based on [ESPUI](https://github.com/s00500/ESPUI)_
 
+## Installation
+
+This library was written using [PlatfromIO](https://platformio.org/) in [Visual Studio Code](https://code.visualstudio.com/).
+
+Extend your _platromio.ini_ with:
+```ini
+[env:d1_mini]
+platform = espressif8266
+board = d1_mini
+framework = arduino
+upload_speed = 115200
+monitor_speed = 115200
+build_flags = -D PIO_FRAMEWORK_ARDUINO_LWIP2_LOW_MEMORY
+board_build.filesystem = littlefs
+lib_deps =
+    ArduinoJson
+    AsyncMqttClient
+    ESP Async WebServer
+    Ticker
+    ESPWebConfig=https://github.com/atiderko/espwebconfig.git
+```
+
+If you want add your own pages you need to put the html file into __web__ folder.
+For header generation while build extend your _platromio.ini_ with:
+```ini
+extra_scripts = pre:pre_build.py
+```
+and add the script file __pre_build.py__ with:
+```python
+Import("env")
+env.Execute("python $PROJECT_DIR/.pio/libdeps/d1_mini/espwebconfig/scripts/generate_headers.py -p $PROJECT_DIR -n")
+```
+
+See [BBS](https://github.com/atiderko/bbs) project for example integration.
+
 ## Integration
 
 Below you see the simplest sketch with full functionality.
@@ -47,47 +82,21 @@ void loop() {
     delay(1);
 }
 ```
-On first start it creates a captive portal where you can enter your credentials to connect to your WiFi. The credentials are stored by Arduino WiFi library.
+On first start it creates a captive portal where you can enter your credentials to connect to your WiFi. The credentials are stored by Arduino WiFi library. WiFi setup URI: __/wifi/setup__
 
 <img src="docs/images/wifi_not_connected.png" width="200">&emsp;<img src="docs/images/wifi_connected.png" width="200">
 
-Default _Info_ and _Access-Configuration_ pages:
+Default _Info_ (/ewc/info) and _Access-Configuration_ (/ewc/access) pages:
 
 <img src="docs/images/info.png" width="200">&emsp;<img src="docs/images/access.png" width="200">
 
-## Add _Time_ extension
-```cpp
-#include <Arduino.h>
-#include <ewcConfigServer.h>
-#include <extensions/ewcTime.h>
+## Extensions
 
-EWC::ConfigServer server;
-EWC::Time ewcTime;
-bool timePrinted = false;
+<img src="docs/images/time.png" width="200">&emsp;<img src="docs/images/updater.png" width="200">&emsp;<img src="docs/images/mqtt.png" width="200">
 
-void setup() {
-    Serial.begin(115200);
-    // add time configuration
-    EWC::I::get().configFS().addConfig(ewcTime);
-    // start webserver
-	server.setup();
-}
+- [Time integration](docs/time.md)
+- [Updater integration](docs/updater.md)
 
+## Favicon.ico
 
-void loop() {
-    // process dns requests and connection state AP/STA
-    server.loop();
-    if (WiFi.status() == WL_CONNECTED) {
-        if (ewcTime.ntpAvailable() && !timePrinted) {
-            timePrinted = true;
-            // print current time
-            EWC::I::get().logger() << "Current time:" << ewc.str() << endl;
-            // or current time in seconds
-            EWC::I::get().logger() << "  as seconds:" << ewcTime.currentTime() << endl;
-        }
-    } else {
-        // or if not yet connected
-    }
-    delay(1);
-}
-```
+Upload a __favicon.ico__ with ```pio run --target uploadfs```

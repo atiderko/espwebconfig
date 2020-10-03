@@ -78,7 +78,6 @@ void Updater::_fromJson(JsonDocument& config)
 {
 }
 
-
 void Updater::_onUpdate(AsyncWebServerRequest *request)
 {
     if (!I::get().server().isAuthenticated(request)) {
@@ -121,12 +120,10 @@ void Updater::_onUpdateInfo(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-//    I::get().logger() << "[EWC time]: ESP heap: _onUpdateInfo: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(512);
     fillJson(jsonDoc);
     jsonDoc["update"]["version"] = I::get().server().version();
     String output;
     serializeJson(jsonDoc, output);
-//    I::get().logger() << "[EWC time]: ESP heap: _onUpdateInfo: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }

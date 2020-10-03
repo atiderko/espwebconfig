@@ -70,6 +70,7 @@ void setup() {
     // add time configuration
     I::get().configFS().addConfig(ewcTime);
     // start webserver
+    server.led().enable(true);
 	server.setup();
 }
 

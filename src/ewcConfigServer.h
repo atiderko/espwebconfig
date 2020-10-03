@@ -79,29 +79,54 @@ class ConfigServer
 {
 public:
     ConfigServer(uint16_t port=80);
+    /** Add your own pages to menu. 
+     * @param name: displayed name in menu
+     * @param uri:  called if menu was clicked
+     * @param entry_id: the html element id, is used for translation
+     * @param visible: true, if menu item is visible
+     * @param position: use negativ or positiv value to shift this menu item on insert. It is only relative to previous inserted items.
+     * @param onRequest: callback on menu item
+     * @param content: send content on menu item **/
     void insertMenu(const char* name, const char* uri, const char* entry_id, bool visible=true, int position=255);
     void insertMenuCb(const char* name, const char* uri, const char* entry_id, ArRequestHandlerFunction onRequest, bool visible=true, int position=255);
     void insertMenuP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible=true, int position=255);
     void insertMenuNoAuthP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible=true, int position=255);
-    void setup();
-    bool isAP() { return _ap_address.isSet(); }
-    bool isConnected() { return WiFi.status() == WL_CONNECTED; }
-    void loop();
+    /** Grands access to configuration under "/ewc/config". The result is a JSON object.
+     * Call enableConfigUri() before setup to enabled access. **/
+    void enableConfigUri() { _publicConfig = true; }
+    /** The configuration portal (AP) will be disabled after (Default: 5 Minutes).
+     * You can increase the timeout with setTimeoutPortal() or disable the shutdown
+     * of AP with disablePortalTimeout(). **/
+    void disablePortalTimeout() { setTimeoutPortal(0); }
+    void setTimeoutPortal(uint32_t seconds) { _msConfigPortalTimeout = seconds * 1000; }
+    /** After connect timeout a configuration portal will be open. **/
+    void setTimeoutConnect(uint32_t seconds) { _msConnectTimeout = seconds * 1000; }
+    /** Sets brand and version of the firmware.
+     * Brand is description on the left side in the menu. **/
     void setBrand(const char* brand, const char* version="not-set");
     void setBrandUri(const char* uri) { _branduri = uri; }
     String& brand() { return _brand; }
     String& version() { return _version; }
-    Config& config() { return _config; }
-    AsyncWebServer& webserver() { return _server; }
-    void sendContentP(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
-    void sendPageSuccess(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
-    void sendPageFailed(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
-    bool isAuthenticated(AsyncWebServerRequest *request);
-    void disabledConfigUri() { _publicConfig = false; }
-    void setTimeoutConfigPortal(uint32_t seconds) { _msConfigPortalTimeout = seconds * 1000; }
-    void setTimeoutForAp(uint32_t seconds) { _msConnectTimeout = seconds * 1000; }
 
-private:
+    void setup();
+    void loop();
+    /** Returns true if AP is enabled and IP of the AP is valid. **/
+    bool isAP() { return _ap_address.isSet(); }
+    /** Returns true if device is connected to an AP. **/
+    bool isConnected() { return WiFi.status() == WL_CONNECTED; }
+    Config& config() { return _config; }
+    TickerLed& led() { return _led; }
+    AsyncWebServer& webserver() { return _server; }
+    /** Sends content to the client. The authentication is carried out before send depending on the configuration. **/
+    void sendContentP(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
+    /** Creates a page with successfull result.**/
+    void sendPageSuccess(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
+    /** Creates a page with failed result. **/
+    void sendPageFailed(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
+    /** Returns true if the client is authenticated. **/
+    bool isAuthenticated(AsyncWebServerRequest *request);
+
+protected:
     AsyncWebServer _server;
     DNSServer _dnsServer;
     ConfigFS _configFS;
@@ -117,11 +142,33 @@ private:
     static PGM_P wlStatusSymbols[];
     bool _publicConfig;
     bool _connected_wifi;
+    bool _ap_disabled_after_timeout;  //< once disabled the portal will open only after reboot or error after successful connect
+    int _softAPClientCount;  //< do not disabled Config Portal if one is connected
     uint8_t _disconnect_state;
     String _disconnect_reason;
 
-    void _startAP();
+    unsigned long _msConnectStart    = 0;
+    unsigned long _msWifiScanStart   = 0;
+    unsigned long _msConfigPortalStart    = 0;
+    unsigned long _msConfigPortalTimeout  = 300000;
+    unsigned long _msConnectTimeout       = 60000;
+
+    // IPAddress _ap_static_ip;
+    // IPAddress _ap_static_gw;
+    // IPAddress _ap_static_sn;
+    IPAddress _sta_static_ip;
+    IPAddress _sta_static_gw;
+    IPAddress _sta_static_sn;
+    IPAddress _sta_static_dns1= (uint32_t)0x00000000;
+    IPAddress _sta_static_dns2= (uint32_t)0x00000000;
+
+    // DNS server
+    const byte    DNS_PORT = 53;
+
+    bool _captivePortal(AsyncWebServerRequest*);
     void _connect(const char* ssid=nullptr, const char* pass=nullptr);
+    void _startAP();
+    void _startWiFiScan(bool force=false);
     /** === web handler === **/
     String _token_WIFI_MODE();
     void _sendMenu(AsyncWebServerRequest* request);
@@ -148,30 +195,10 @@ private:
 #else
 // TODO: events for ESP32
 #endif
-    static String _toMACAddressString(const uint8_t mac[]);
-    void _startWiFiScan(bool force=false);
-
-    unsigned long _msConnectStart    = 0;
-    unsigned long _msWifiScanStart   = 0;
-    unsigned long _msConfigPortalStart    = 0;
-    unsigned long _msConfigPortalTimeout  = 300000;
-    unsigned long _msConnectTimeout       = 60000;
-
-    // IPAddress     _ap_static_ip;
-    // IPAddress     _ap_static_gw;
-    // IPAddress     _ap_static_sn;
-    IPAddress     _sta_static_ip;
-    IPAddress     _sta_static_gw;
-    IPAddress     _sta_static_sn;
-    IPAddress     _sta_static_dns1= (uint32_t)0x00000000;
-    IPAddress     _sta_static_dns2= (uint32_t)0x00000000;
-    bool       captivePortal(AsyncWebServerRequest*);
-
-    // DNS server
-    const byte    DNS_PORT = 53;
     //helpers
-    bool isIp(const String& str);
-    String        toStringIp(const IPAddress& ip);
+    static String _toMACAddressString(const uint8_t mac[]);
+    bool _isIp(const String& str);
+    String _toStringIp(const IPAddress& ip);
 
     template <class T>
     auto _optionalIPFromString(T* obj, const char* s) -> decltype(  obj->fromString(s)  ) {

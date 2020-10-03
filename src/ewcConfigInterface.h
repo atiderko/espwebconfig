@@ -35,9 +35,12 @@ class ConfigInterface {
 public:
     ConfigInterface(String name) { _name = name; }
     virtual ~ConfigInterface() {}
+    /** This method is called on setup config server. **/
     virtual void setup(JsonDocument& config, bool resetConfig=false) = 0;
+    /** On configuration save the ConfigFS requests each ConfigInterafe to fill the JSON object with parameter to save. **/
     virtual void fillJson(JsonDocument& config) = 0;
 
+    /** Name of this configuration interface. Currently only used for comparisation configuration interfaces. **/
     const String& name() { return _name; }
     bool operator== (const ConfigInterface &other) { return (_name.compareTo(other._name) == 0); }
 
