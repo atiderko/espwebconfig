@@ -487,11 +487,9 @@ void ConfigServer::_onWiFiDisconnect(AsyncWebServerRequest *request)
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-//    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiDisconnect: " << ESP.getFreeHeap() << endl;
     AsyncWebServerResponse *response = request->beginResponse(302,"text/plain","");
     response->addHeader("Location", "/wifi/setup");
     request->send ( response);
-//    I::get().logger() << "[EWC CS]: ESP heap: _onWiFiDisconnect: " << ESP.getFreeHeap() << endl;
     WiFi.disconnect(false);
 }
 
@@ -704,6 +702,17 @@ void ConfigServer::sendPageFailed(AsyncWebServerRequest *request, String title, 
     result.replace("{{FORWARD}}", urlForward);
     result.replace("{{FWD_NAME}}", nameForward);
     request->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
+}
+
+void ConfigServer::sendRedirect(AsyncWebServerRequest *request, String url, uint32_t timeout)
+{
+    AsyncWebServerResponse *response = request->beginResponse(302,"text/plain","");
+    if (timeout == 0) {
+        response->addHeader("Location", url);
+    } else {
+        response->addHeader("Location", "refresh:" + String(timeout) + ";url=" + url);
+    }
+    request->send ( response);
 }
 
 void ConfigServer::_sendFileContent(AsyncWebServerRequest *request, const String& filename, const String& contentType)
