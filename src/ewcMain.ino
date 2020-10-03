@@ -18,7 +18,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 **************************************************************/
-/**
+
 #include <Arduino.h>
 #include "ewcConfigServer.h"
 #include "extensions/ewcUpdater.h"
@@ -29,6 +29,8 @@ EWC::ConfigServer server;
 EWC::Updater updater_;
 EWC::Time time_;
 EWC::Mqtt mqtt_;
+bool timePrinted;
+using namespace EWC;
 
 void setup() {
     Serial.begin(115200);
@@ -49,45 +51,18 @@ void setup() {
 
 
 void loop() {
-    // process dns requests and connection state
-    server.loop();
-    delay(1);
-}
-**/
-
-#include <Arduino.h>
-#include <ewcConfigServer.h>
-#include <ewcLogger.h>
-#include <extensions/ewcTime.h>
-
-using namespace EWC;
-ConfigServer server;
-Time ewcTime;
-bool timePrinted = false;
-
-void setup() {
-    Serial.begin(115200);
-    // add time configuration
-    I::get().configFS().addConfig(ewcTime);
-    // start webserver
-    server.led().enable(true);
-	server.setup();
-}
-
-
-void loop() {
     // process dns requests and connection state AP/STA
     server.loop();
     if (WiFi.status() == WL_CONNECTED) {
-        if (ewcTime.ntpAvailable() && !timePrinted) {
+        if (time_.ntpAvailable() && !timePrinted) {
             timePrinted = true;
             // print current time
-            I::get().logger() << "Current time:" << ewcTime.str() << endl;
+            I::get().logger() << "Current time:" << time_.str() << endl;
             // or current time in seconds
-            I::get().logger() << "  as seconds:" << ewcTime.currentTime() << endl;
+            I::get().logger() << "  as seconds:" << time_.currentTime() << endl;
         }
     } else {
         // or if not yet connected
     }
-    delay(1000);
+    delay(1);
 }

@@ -16,7 +16,7 @@
     </div>
     <div style="display: flex; justify-content: center;">
         <button id="btn_back" type="button" name="btn_back" value="BACK" onclick="redirect('{{BACK}}')">{{BACK_NAME}}</button>
-        <button id="btn_forward" type="button" name="btn_forward" value="FORWARD" onclick="redirect('{{FORWARD}}')">{{FWD_NAME}}</button>
+        <button id="btn_forward" type="button" name="btn_forward" style="background-color:#787878" value="FORWARD" onclick="redirect('{{FORWARD}}')">{{FWD_NAME}}</button>
     </div>
     </div>
     <script src="/js/postload.js"></script>

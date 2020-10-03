@@ -30,14 +30,12 @@
             } else if (data["connected"]) {
               hh += '<label id="lbl_connected" style="color:green;">connected </label>';
               dbl = document.getElementById("dbl").remove();
-              setTimeout(redirect.bind(null, "/"), 5000);
             } else if (data["failed"]) {
               hh += '<label id="mqtt_failed" style="color:red;">failed</label>';
               if ( data["reason"].length > 0) {
                 hh += '<label style="color:red;">: ' + data["reason"] + '</label>';
               }
               dbl = document.getElementById("dbl").remove();
-              setTimeout(redirect.bind(null, "/mqtt/setup"), 5000);
             }
           } else {
             dbl = document.getElementById("dbl").remove();
