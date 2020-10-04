@@ -45,6 +45,7 @@ public:
     void setup(JsonDocument& config, bool resetConfig=false);
     void fillJson(JsonDocument& config);
     bool paramEnabled;
+    String paramDiscoveryPrefix;
 
 protected:
     AsyncMqttClient _mqttClient;
@@ -58,7 +59,6 @@ protected:
     uint16_t _paramPort;
     String _paramUser;
     String _paramPassword;
-    String _paramHomeTopic;
 
 
     void _initParams();

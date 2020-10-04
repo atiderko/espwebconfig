@@ -80,6 +80,7 @@ ConfigServer::ConfigServer(uint16_t port)
 {
 
     I::get()._server = this;
+    I::get()._config = &_config;
     I::get()._configFS = &_configFS;
     I::get()._logger = &_logger;
     I::get()._rtc = &_rtc;

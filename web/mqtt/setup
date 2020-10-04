@@ -39,9 +39,9 @@
                   <input id="httpass-status" class="pwdcb" type="checkbox" aria-hidden="true" onClick="viewPassword('mqtt_pass', '')">
               </div>
               <div>
-                  <label id="lbl_mqtt_topic" for="mqtt_topic">Base topic</label>
-                  <input id="mqtt_topic" type="text" name="mqtt_topic" placeholder="/home">
-                  <!--label id="info_mqtt_topic">Optional: </label-->
+                  <label id="lbl_mqtt_prefix" for="mqtt_prefix">Discovery Prefix</label>
+                  <input id="mqtt_prefix" type="text" name="mqtt_prefix" placeholder="ewc">
+                  <!--label id="info_mqtt_prefix">Optional: </label-->
               </div>
             </div>
           </div>
@@ -57,7 +57,7 @@
           document.getElementById("mqtt_" + id).checked = data["mqtt"][id];
           vsw(data["mqtt"][id], 'exp')
         });
-        ["server","port","user", "pass","topic"
+        ["server","port","user", "pass","prefix"
         ].forEach(function(id,idy,arr) {
           document.getElementById("mqtt_" + id).value = data["mqtt"][id];
         });

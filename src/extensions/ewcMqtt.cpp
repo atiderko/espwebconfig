@@ -56,13 +56,6 @@ void Mqtt::setup(JsonDocument& config, bool resetConfig)
     _wifiDisconnectHandler = WiFi.onStationModeDisconnected(std::bind(&Mqtt::_onWifiDisconnect, this, std::placeholders::_1));
 }
 
-// void Mqtt::loop()
-// {
-//     if (paramEnabled && WiFi.status() == WL_CONNECTED) {
-//         //
-//     }
-// }
-
 void Mqtt::fillJson(JsonDocument& config)
 {
     config["mqtt"]["enabled"] = paramEnabled;
@@ -70,7 +63,7 @@ void Mqtt::fillJson(JsonDocument& config)
     config["mqtt"]["port"] = _paramPort;
     config["mqtt"]["user"] = _paramUser;
     config["mqtt"]["pass"] = _paramPassword;
-    config["mqtt"]["topic"] = _paramHomeTopic;
+    config["mqtt"]["prefix"] = paramDiscoveryPrefix;
 }
 
 void Mqtt::_initParams()
@@ -80,7 +73,7 @@ void Mqtt::_initParams()
     _paramPort = 1883;
     _paramUser = "";
     _paramPassword = "";
-    _paramHomeTopic = "/ewc";
+    paramDiscoveryPrefix = "ewc";
 }
 
 void Mqtt::_fromJson(JsonDocument& config)
@@ -88,7 +81,6 @@ void Mqtt::_fromJson(JsonDocument& config)
     JsonVariant jv = config["mqtt"]["enabled"];
     if (!jv.isNull()) {
         paramEnabled = jv.as<bool>();
-        I::get().logger() << "  _fromJson, paramEnabled " << paramEnabled << endl;
     }
     jv = config["mqtt"]["server"];
     if (!jv.isNull()) {
@@ -106,9 +98,9 @@ void Mqtt::_fromJson(JsonDocument& config)
     if (!jv.isNull()) {
         _paramPassword = jv.as<String>();
     }
-    jv = config["mqtt"]["topic"];
+    jv = config["mqtt"]["prefix"];
     if (!jv.isNull()) {
-        _paramHomeTopic = jv.as<String>();
+        paramDiscoveryPrefix = jv.as<String>();
     }
     if (paramEnabled) {
         // set contact informations
@@ -133,12 +125,10 @@ void Mqtt::_onMqttConfig(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-//    I::get().logger() << "[EWC MQTT]: ESP heap: _onMqttConfig: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(512);
     fillJson(jsonDoc);
     String output;
     serializeJson(jsonDoc, output);
-//    I::get().logger() << "[EWC MQTT]: ESP heap: _onMqttConfig: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
@@ -147,7 +137,6 @@ void Mqtt::_onMqttSave(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-//    I::get().logger() << "[EWC MQTT]: ESP heap: _onMqttSave: " << ESP.getFreeHeap() << endl;
     for (size_t i = 0; i < request->params(); i++) {
         I::get().logger() << "  " << request->argName(i) << ": " << request->arg(i) << endl;
     }
@@ -169,10 +158,9 @@ void Mqtt::_onMqttSave(AsyncWebServerRequest *request)
     if (request->hasArg("mqtt_pass")) {
         config["mqtt"]["pass"] = request->arg("mqtt_pass");
     }
-    if (request->hasArg("mqtt_topic")) {
-        config["mqtt"]["topic"] = request->arg("mqtt_topic");
+    if (request->hasArg("mqtt_prefix")) {
+        config["mqtt"]["prefix"] = request->arg("mqtt_prefix");
     }
-//    I::get().logger() << "[EWC MQTT]: ESP heap: _onMqttSave: " << ESP.getFreeHeap() << endl;
     _fromJson(config);
     I::get().configFS().save();
     String details;
@@ -185,7 +173,6 @@ void Mqtt::_onMqttState(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-//    I::get().logger() << "[EWC MQTT]: ESP heap: _onMqttState: " << ESP.getFreeHeap() << endl;
     DynamicJsonDocument jsonDoc(512);
     jsonDoc["enabled"] = paramEnabled;
     jsonDoc["connecting"] = _connecting;
@@ -196,7 +183,6 @@ void Mqtt::_onMqttState(AsyncWebServerRequest *request)
     jsonDoc["port"] = _paramPort;
     String output;
     serializeJson(jsonDoc, output);
-//    I::get().logger() << "[EWC MQTT]: ESP heap: _onMqttState: " << ESP.getFreeHeap() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
@@ -208,8 +194,8 @@ void Mqtt::_connectToMqtt() {
 }
 
 void Mqtt::_onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
-    I::get().logger() << F("[EWC MQTT] Disconnected from MQTT.") << endl;
-    if (WiFi.isConnected()) {
+    I::get().logger() << F("[EWC MQTT] Disconnected from MQTT, reason: ") << (uint32_t)reason << endl;
+    if (WiFi.isConnected() && (uint32_t)reason < 4) {
         _mqttReconnectTimer.once(2, std::bind(&Mqtt::_connectToMqtt, this));
     }
 }

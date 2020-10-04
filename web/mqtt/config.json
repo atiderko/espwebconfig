@@ -5,6 +5,6 @@
         "port": 1883,
         "user": "mqtt",
         "pass": "secure",
-        "topic": "/ewc"
+        "prefix": "ewc"
     }
 }

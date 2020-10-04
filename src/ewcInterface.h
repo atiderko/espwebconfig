@@ -27,6 +27,7 @@ limitations under the License.
 
 namespace EWC {
 class ConfigServer;
+class Config;
 class ConfigFS;
 class RTC;
 class TickerLed;
@@ -40,6 +41,7 @@ class InterfaceData {
     InterfaceData() {}
 
     ConfigServer& server() { return *_server; }
+    Config& config() { return *_config; }
     ConfigFS& configFS() { return *_configFS; }
     Logger& logger() { return *_logger; }
     RTC& rtc() { return *_rtc; }
@@ -47,6 +49,7 @@ class InterfaceData {
 
   private:
     ConfigServer* _server;
+    Config* _config;
     ConfigFS* _configFS;
     Logger* _logger;
     RTC* _rtc;
