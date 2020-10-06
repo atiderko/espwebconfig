@@ -44,16 +44,16 @@ Time::~Time()
 void Time::setup(JsonDocument& config, bool resetConfig)
 {
     settimeofday_cb(std::bind(&Time::_callbackTimeSet, this));
-    I::get().logger() << "[EWC Time] setup" << endl;
+    I::get().logger() << F("[EWC Time] setup") << endl;
     _initParams();
     _fromJson(config);
-    EWC::I::get().server().insertMenuP("Time", "/time/setup", "menu_time", HTML_TIME_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML), true, 0);
+    EWC::I::get().server().insertMenuG("Time", "/time/setup", "menu_time", FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_TIME_SETUP_GZIP, sizeof(HTML_TIME_SETUP_GZIP), true, 0);
     EWC::I::get().server().webserver().on("/time/config.json", std::bind(&Time::_onTimeConfig, this, std::placeholders::_1));
     EWC::I::get().server().webserver().on("/time/save", std::bind(&Time::_onTimeSave, this, std::placeholders::_1));
-    I::get().logger() << "[EWC Time] current time: " << str() << endl;
+    I::get().logger() << F("[EWC Time] current time: ") << str() << endl;
     if (!_paramManually) {
         // Sync our clock to NTP
-        I::get().logger() << "[EWC Time] sync to ntp server..." << endl;
+        I::get().logger() << F("[EWC Time] sync to ntp server...") << endl;
         configTime(TZMAP[_paramTimezone-1][1] * 3600, TZMAP[_paramTimezone-1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
     }
 }
@@ -136,7 +136,7 @@ void Time::_onTimeConfig(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(512);
+    DynamicJsonDocument jsonDoc(JSON_OBJECT_SIZE(16));
     fillJson(jsonDoc);
     String output;
     serializeJson(jsonDoc, output);
@@ -148,7 +148,7 @@ void Time::_onTimeSave(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    DynamicJsonDocument config(512);
+    DynamicJsonDocument config(JSON_OBJECT_SIZE(16));
     if (request->hasArg("timezone") && !request->arg("timezone").isEmpty()) {
         config["time"]["timezone"] = request->arg("timezone").toInt();
     }

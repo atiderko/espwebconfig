@@ -60,7 +60,6 @@ protected:
     bool _resetDetected;
     String _filename;
     std::vector<ConfigInterface*> _cfgInterfaces;
-    unsigned long _tsLastSave;
 };
 
 };

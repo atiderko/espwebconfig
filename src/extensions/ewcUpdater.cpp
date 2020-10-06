@@ -38,10 +38,10 @@ Updater::~Updater()
 
 void Updater::setup(JsonDocument& config, bool resetConfig)
 {
-    I::get().logger() << "[EWC Updater] setup" << endl;
+    I::get().logger() << F("[EWC Updater] setup") << endl;
     _initParams();
     _fromJson(config);
-    I::get().server().insertMenuP("Update", "/ewc/update", "menu_update", HTML_EWC_UPDATE, FPSTR(PROGMEM_CONFIG_TEXT_HTML), true, 0);
+    I::get().server().insertMenuG("Update", "/ewc/update", "menu_update", FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_EWC_UPDATE_GZIP, sizeof(HTML_EWC_UPDATE_GZIP), true, 0);
     I::get().server().webserver().on("/ewc/update.json", std::bind(&Updater::_onUpdateInfo, this, std::placeholders::_1));
     I::get().server().webserver().on("/ewc/updatefw", HTTP_POST, std::bind(&Updater::_onUpdate, this, std::placeholders::_1),
         std::bind(&Updater::_onUpdateUpload, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
@@ -120,7 +120,7 @@ void Updater::_onUpdateInfo(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(512);
+    DynamicJsonDocument jsonDoc(JSON_OBJECT_SIZE(2));
     fillJson(jsonDoc);
     jsonDoc["update"]["version"] = I::get().server().version();
     String output;

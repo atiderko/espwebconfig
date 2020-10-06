@@ -45,11 +45,11 @@ void Mqtt::setup(JsonDocument& config, bool resetConfig)
     I::get().logger() << F("[EWC Mqtt] setup") << endl;
     _initParams();
     _fromJson(config);
-    EWC::I::get().server().insertMenuP("MQTT", "/mqtt/setup", "menu_mqtt", HTML_MQTT_SETUP, FPSTR(PROGMEM_CONFIG_TEXT_HTML), true, 0);
+    EWC::I::get().server().insertMenuG("MQTT", "/mqtt/setup", "menu_mqtt", FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_MQTT_SETUP_GZIP, sizeof(HTML_MQTT_SETUP_GZIP), true, 0);
     EWC::I::get().server().webserver().on("/mqtt/config.json", std::bind(&Mqtt::_onMqttConfig, this, std::placeholders::_1));
     EWC::I::get().server().webserver().on("/mqtt/save", std::bind(&Mqtt::_onMqttSave, this, std::placeholders::_1));
     EWC::I::get().server().webserver().on("/mqtt/state.json", std::bind(&Mqtt::_onMqttState, this, std::placeholders::_1));
-    EWC::I::get().server().webserver().on("/mqtt/connect", std::bind(&ConfigServer::sendContentP, &EWC::I::get().server(), std::placeholders::_1, HTML_MQTT_CONNECT, FPSTR(PROGMEM_CONFIG_TEXT_HTML)));
+    EWC::I::get().server().webserver().on("/mqtt/connect", std::bind(&ConfigServer::sendContentP, &EWC::I::get().server(), std::placeholders::_1, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_MQTT_CONNECT));
     _mqttClient.onConnect(std::bind(&Mqtt::_onMqttConnect, this, std::placeholders::_1));
     _mqttClient.onDisconnect(std::bind(&Mqtt::_onMqttDisconnect, this, std::placeholders::_1));
     _wifiConnectHandler = WiFi.onStationModeGotIP(std::bind(&Mqtt::_onWifiConnect, this, std::placeholders::_1));
@@ -125,7 +125,7 @@ void Mqtt::_onMqttConfig(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(512);
+    DynamicJsonDocument jsonDoc(JSON_OBJECT_SIZE(14));
     fillJson(jsonDoc);
     String output;
     serializeJson(jsonDoc, output);
@@ -140,7 +140,7 @@ void Mqtt::_onMqttSave(AsyncWebServerRequest *request)
     for (size_t i = 0; i < request->params(); i++) {
         I::get().logger() << "  " << request->argName(i) << ": " << request->arg(i) << endl;
     }
-    DynamicJsonDocument config(512);
+    DynamicJsonDocument config(JSON_OBJECT_SIZE(14));
     if (request->hasArg("mqtt_enabled")) {
         bool a = request->arg("mqtt_enabled").equals("true");
         config["mqtt"]["enabled"] = a;
@@ -173,7 +173,7 @@ void Mqtt::_onMqttState(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(512);
+    StaticJsonDocument<JSON_OBJECT_SIZE(14)> jsonDoc;
     jsonDoc["enabled"] = paramEnabled;
     jsonDoc["connecting"] = _connecting;
     jsonDoc["connected"] = _mqttClient.connected();

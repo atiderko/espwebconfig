@@ -49,6 +49,7 @@ void TickerLed::enable(bool enable, const uint8_t port, const uint8_t active, co
  */
 void TickerLed::start(const uint32_t cycle, const uint32_t duration) {
     if (_enabled) {
+
         I::get().logger() << "[EWC LED] start: " << cycle << ", duration: " << duration  << endl;
         _cycle = cycle;
         if (duration <= _cycle) {
@@ -66,18 +67,28 @@ void TickerLed::start(const uint32_t cycle, const uint32_t duration) {
 void TickerLed::start(void)
 {
     pinMode(_port, OUTPUT);
-    _pulse.detach();
-    _period.attach_ms<TickerLed*>(_cycle, TickerLed::_onPeriod, this);
+    if (_period == nullptr) {
+        _period = new Ticker();
+        _pulse = new Ticker();
+    }
+    _pulse->detach();
+    _period->attach_ms<TickerLed*>(_cycle, TickerLed::_onPeriod, this);
     _active = true;
 }
 
 void TickerLed::stop(void) 
 {
-    _period.detach();
-    _pulse.detach();
-    digitalWrite(_port, !_turnOn);
-    if (_active) {
-        I::get().logger() << "[EWC LED] stopped"  << endl;
+    if (_period != nullptr) {
+        _period->detach();
+        _pulse->detach();
+        digitalWrite(_port, !_turnOn);
+        if (_active) {
+            I::get().logger() << "[EWC LED] stopped"  << endl;
+        }
+        delete _period;
+        delete _pulse;
+        _period = nullptr;
+        _pulse = nullptr;
     }
     _active = false;
 }
@@ -92,7 +103,7 @@ void TickerLed::stop(void)
  */
 void TickerLed::_onPeriod(TickerLed* t) {
     digitalWrite(t->_port, t->_turnOn);
-    t->_pulse.once_ms<TickerLed*>(t->_duration, TickerLed::_onPulse, t);
+    t->_pulse->once_ms<TickerLed*>(t->_duration, TickerLed::_onPulse, t);
     if (t->_callback) {
         t->_callback();
     }

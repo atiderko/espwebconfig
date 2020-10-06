@@ -97,9 +97,8 @@ void ConfigFS::loop()
 
 void ConfigFS::save()
 {
-    _tsLastSave = millis();
     I::get().logger() << F("[EWC ConfigFS]: save subconfigurations, count: ") << _cfgInterfaces.size() << endl;
-    DynamicJsonDocument doc(2048);
+    DynamicJsonDocument doc(1048);
     for(std::size_t i = 0; i < _cfgInterfaces.size(); ++i) {
         I::get().logger() << F("[EWC ConfigFS]:  add [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
         _cfgInterfaces[i]->fillJson(doc);

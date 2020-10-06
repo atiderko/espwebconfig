@@ -52,8 +52,8 @@ class TickerLed {
   void onPeriod(Callback_ft cb) { _callback = cb ;}
 
  protected:
-  Ticker    _period;        //< Ticker for flicking cycle
-  Ticker    _pulse;         //< Ticker for pulse width generating
+  Ticker*    _period = nullptr;        //< Ticker for flicking cycle
+  Ticker*    _pulse = nullptr;         //< Ticker for pulse width generating
   uint32_t  _cycle;         //< Cycle time in [ms]
   uint32_t  _duration;      //< Pulse width in [ms]
   bool _enabled;            //< True if enabled by enable(...)

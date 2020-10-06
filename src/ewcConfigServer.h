@@ -51,6 +51,8 @@ const char PROGMEM_CONFIG_APPLICATION_JSON[] PROGMEM = "application/json";
 const char PROGMEM_CONFIG_TEXT_HTML[] PROGMEM = "text/html";
 const char PROGMEM_CONFIG_TEXT_CSS[] PROGMEM = "text/css";
 
+#define MAX_MENU_ITEMS 16
+
 struct MenuItem
 {
     String name;
@@ -89,8 +91,10 @@ public:
      * @param content: send content on menu item **/
     void insertMenu(const char* name, const char* uri, const char* entry_id, bool visible=true, int position=255);
     void insertMenuCb(const char* name, const char* uri, const char* entry_id, ArRequestHandlerFunction onRequest, bool visible=true, int position=255);
-    void insertMenuP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible=true, int position=255);
-    void insertMenuNoAuthP(const char* name, const char* uri, const char* entry_id, PGM_P content, const String& contentType, bool visible=true, int position=255);
+    void insertMenuP(const char* name, const char* uri, const char* entry_id, const String& contentType, PGM_P content, bool visible=true, int position=255);
+    void insertMenuG(const char* name, const char* uri, const char* entry_id, const String& contentType, const uint8_t* content, size_t len, bool visible=true, int position=255);
+    void insertMenuNoAuthP(const char* name, const char* uri, const char* entry_id, const String& contentType, PGM_P content, bool visible=true, int position=255);
+    void insertMenuNoAuthG(const char* name, const char* uri, const char* entry_id, const String& contentType, const uint8_t* content, size_t len, bool visible=true, int position=255);
     /** Grands access to configuration under "/ewc/config". The result is a JSON object.
      * Call enableConfigUri() before setup to enabled access. **/
     void enableConfigUri() { _publicConfig = true; }
@@ -118,7 +122,8 @@ public:
     TickerLed& led() { return _led; }
     AsyncWebServer& webserver() { return _server; }
     /** Sends content to the client. The authentication is carried out before send depending on the configuration. **/
-    void sendContentP(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
+    void sendContentP(AsyncWebServerRequest* request, const String& contentType, PGM_P content);
+    void sendContentG(AsyncWebServerRequest* request, const String& contentType, const uint8_t* content, size_t len);
     /** Creates a page with successfull result.**/
     void sendPageSuccess(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
     /** Creates a page with failed result. **/
@@ -174,8 +179,9 @@ protected:
     /** === web handler === **/
     String _token_WIFI_MODE();
     void _sendMenu(AsyncWebServerRequest* request);
-    void _sendFileContent(AsyncWebServerRequest* request, const String& filename, const String& contentType);
-    void _sendContentNoAuthP(AsyncWebServerRequest* request, PGM_P content, const String& contentType);
+    void _sendFileContent(AsyncWebServerRequest* request, const String& contentType, const String& filename);
+    void _sendContentNoAuthP(AsyncWebServerRequest* request, const String& contentType, PGM_P content);
+    void _sendContentNoAuthG(AsyncWebServerRequest* request, const String& contentType, const uint8_t* content, size_t len);
     void _onAccessGet(AsyncWebServerRequest* request);
     void _onAccessSave(AsyncWebServerRequest* request);
     void _onGetInfo(AsyncWebServerRequest* request);
@@ -189,9 +195,9 @@ protected:
 #if defined(ESP8266)
     void _wifiOnStationModeConnected(const WiFiEventStationModeConnected& event);
     void _wifiOnStationModeDisconnected(const WiFiEventStationModeDisconnected& event);
-    void _wifiOnStationModeAuthModeChanged(const WiFiEventStationModeAuthModeChanged& event);
-    void _wifiOnStationModeGotIP(const WiFiEventStationModeGotIP& event);
-    void _wifiOnStationModeDHCPTimeout();
+    // void _wifiOnStationModeAuthModeChanged(const WiFiEventStationModeAuthModeChanged& event);
+    // void _wifiOnStationModeGotIP(const WiFiEventStationModeGotIP& event);
+    // void _wifiOnStationModeDHCPTimeout();
     void _wifiOnSoftAPModeStationConnected(const WiFiEventSoftAPModeStationConnected& event);
     void _wifiOnSoftAPModeStationDisconnected(const WiFiEventSoftAPModeStationDisconnected& event);
 #else
