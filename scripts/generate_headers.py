@@ -155,9 +155,9 @@ if __name__ == '__main__' and 'get_ipython' not in dir():
     print('minify: %s' % ('false' if args.notminify else 'true'))
     print('storemini: %s' % ('true' if args.storemini else 'false'))
     print('project_dir: %s' % (args.project_dir))
-    if args.project_dir:
+    library_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+    if args.project_dir != library_dir:
 	    # generate library headers
-        main(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'), args.storemini, args.notminify)
-    else:
-        main(args.project_dir, args.storemini, args.notminify)
+        main(library_dir, args.storemini, args.notminify)
+    main(args.project_dir, args.storemini, args.notminify)
 
