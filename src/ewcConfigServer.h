@@ -51,8 +51,6 @@ const char PROGMEM_CONFIG_APPLICATION_JSON[] PROGMEM = "application/json";
 const char PROGMEM_CONFIG_TEXT_HTML[] PROGMEM = "text/html";
 const char PROGMEM_CONFIG_TEXT_CSS[] PROGMEM = "text/css";
 
-#define MAX_MENU_ITEMS 16
-
 struct MenuItem
 {
     String name;

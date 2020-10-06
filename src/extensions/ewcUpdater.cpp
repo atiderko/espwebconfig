@@ -120,7 +120,7 @@ void Updater::_onUpdateInfo(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(JSON_OBJECT_SIZE(2));
+    DynamicJsonDocument jsonDoc(512);
     fillJson(jsonDoc);
     jsonDoc["update"]["version"] = I::get().server().version();
     String output;

@@ -125,7 +125,7 @@ void Mqtt::_onMqttConfig(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(JSON_OBJECT_SIZE(14));
+    DynamicJsonDocument jsonDoc(1024);
     fillJson(jsonDoc);
     String output;
     serializeJson(jsonDoc, output);
@@ -140,7 +140,7 @@ void Mqtt::_onMqttSave(AsyncWebServerRequest *request)
     for (size_t i = 0; i < request->params(); i++) {
         I::get().logger() << "  " << request->argName(i) << ": " << request->arg(i) << endl;
     }
-    DynamicJsonDocument config(JSON_OBJECT_SIZE(14));
+    DynamicJsonDocument config(1024);
     if (request->hasArg("mqtt_enabled")) {
         bool a = request->arg("mqtt_enabled").equals("true");
         config["mqtt"]["enabled"] = a;

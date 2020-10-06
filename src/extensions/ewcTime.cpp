@@ -136,7 +136,7 @@ void Time::_onTimeConfig(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(JSON_OBJECT_SIZE(16));
+    DynamicJsonDocument jsonDoc(1024);
     fillJson(jsonDoc);
     String output;
     serializeJson(jsonDoc, output);
@@ -148,7 +148,7 @@ void Time::_onTimeSave(AsyncWebServerRequest *request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    DynamicJsonDocument config(JSON_OBJECT_SIZE(16));
+    DynamicJsonDocument config(1024);
     if (request->hasArg("timezone") && !request->arg("timezone").isEmpty()) {
         config["time"]["timezone"] = request->arg("timezone").toInt();
     }

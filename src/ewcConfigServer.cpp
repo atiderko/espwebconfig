@@ -278,10 +278,6 @@ void ConfigServer::_wifiOnSoftAPModeStationDisconnected(const WiFiEventSoftAPMod
 
 void ConfigServer::insertMenu(const char* name, const char* uri, const char* entry_id, bool visible, int position)
 {
-    if (_menu.size() >= MAX_MENU_ITEMS) {
-        I::get().logger() << F("✘ [EWC CS]: can not insert menu item, maximum of items reached: ") << MAX_MENU_ITEMS << endl;
-        return;
-    }
     MenuItem item;
     item.name = name;
     item.link = uri;
@@ -504,13 +500,11 @@ void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
     if (!isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    const size_t len = JSON_OBJECT_SIZE(3*2) + JSON_ARRAY_SIZE(MAX_MENU_ITEMS) * JSON_OBJECT_SIZE(4*2);
-    StaticJsonDocument<len> jsonDoc;
-    JsonObject json = jsonDoc.to<JsonObject>();
-    json["brand"] = _brand;
-    json["branduri"] = _branduri;
-    json["language"] = _config.paramLanguage;
-    JsonArray elements = json.createNestedArray("elements");
+    DynamicJsonDocument jsonDoc(2048);
+    jsonDoc["brand"] = _brand;
+    jsonDoc["branduri"] = _branduri;
+    jsonDoc["language"] = _config.paramLanguage;
+    JsonArray elements = jsonDoc.createNestedArray("elements");
     std::vector<MenuItem>::iterator it;
     for (it = _menu.begin(); it != _menu.end(); it++) {
         JsonObject jsonElements = elements.createNestedObject();
@@ -520,8 +514,8 @@ void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
         jsonElements["visible"] = it->visible;
     }
     String output;
-    serializeJson(json, output);
-    // I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << ", json: " << json.memoryUsage() << endl;
+    serializeJson(jsonDoc, output);
+    I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << ", json: " << jsonDoc.memoryUsage() << endl;
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
@@ -532,7 +526,7 @@ void ConfigServer::_onWifiState(AsyncWebServerRequest *request)
     }
     I::get().logger() << "[EWC CS]: report WifiState, connected: " << (WiFi.status() == WL_CONNECTED) << endl;
     const size_t len = JSON_OBJECT_SIZE(8);
-    StaticJsonDocument<len> jsonDoc;
+    DynamicJsonDocument jsonDoc(len);
     JsonObject json = jsonDoc.to<JsonObject>();
     json["ssid"] = WiFi.SSID();
     json["connected"] = WiFi.status() == WL_CONNECTED;
