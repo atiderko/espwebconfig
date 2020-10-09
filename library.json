@@ -12,14 +12,15 @@
     "url": "https://github.com/atiderko/ewc",
     "maintainer": true
   }],
-  "dependencies": [{
-      "name": "ESP Async WebServer",
-      "authors": "Hristo Gochkov",
-      "frameworks": "arduino"
-    },
+  "dependencies": [
     {
       "name": "ArduinoJson",
       "authors": "Benoit Blanchon",
+      "frameworks": "arduino"
+    },
+    {
+      "name": "AsyncMqttClient",
+      "authors": "Marvin ROGER",
       "frameworks": "arduino"
     },
     {

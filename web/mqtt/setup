@@ -70,7 +70,7 @@
           console.log("load mqtt state " + uri);
           hh = '<label id="mqtt_server" style="color:black;">[' + data["server"] + ":" + data["port"] + ']: </label>';
           if (data["enabled"]) {
-            if (data["connecting"]) {
+            if (data["connecting"] && !data["connected"]) {
               hh += '<label id="lbl_connecting" style="color:black;">connecting... </label>';
             } else if (data["connected"]) {
               hh += '<label id="lbl_connected" style="color:green;">connected </label>';

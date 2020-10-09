@@ -19,7 +19,7 @@ limitations under the License.
 
 **************************************************************/
 
-#include <ESPAsyncWebServer.h>
+// #include <ESPAsyncWebServer.h>
 #include "ewcUpdater.h"
 #include "ewcConfigServer.h"
 #include "ewcInterface.h"
@@ -30,6 +30,7 @@ using namespace EWC;
 Updater::Updater() : ConfigInterface("updater")
 {
     _shouldReboot = false;
+    _tsReboot = 0;
 }
 
 Updater::~Updater()
@@ -42,18 +43,14 @@ void Updater::setup(JsonDocument& config, bool resetConfig)
     _initParams();
     _fromJson(config);
     I::get().server().insertMenuG("Update", "/ewc/update", "menu_update", FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_EWC_UPDATE_GZIP, sizeof(HTML_EWC_UPDATE_GZIP), true, 0);
-    I::get().server().webserver().on("/ewc/update.json", std::bind(&Updater::_onUpdateInfo, this, std::placeholders::_1));
-    I::get().server().webserver().on("/ewc/updatefw", HTTP_POST, std::bind(&Updater::_onUpdate, this, std::placeholders::_1),
-        std::bind(&Updater::_onUpdateUpload, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-        std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));
+    I::get().server().webserver().on("/ewc/update.json", std::bind(&Updater::_onUpdateInfo, this, &EWC::I::get().server().webserver()));
+    I::get().server().webserver().on("/ewc/updatefw", HTTP_POST, std::bind(&Updater::_onUpdate, this, &EWC::I::get().server().webserver()),
+                                                           std::bind(&Updater::_onUpdateUpload, this, &EWC::I::get().server().webserver()));
 }
 
 void Updater::loop()
 {
-    if (_shouldReboot) {
-        yield();
-        delay(2000);
-        yield();
+    if (_shouldReboot && millis() - _tsReboot > 3000) {
         #if defined(ESP8266)
             ESP.restart();
         #elif defined(ESP32)
@@ -63,7 +60,6 @@ void Updater::loop()
             while(true);
         #endif
     }
-
 }
 
 void Updater::fillJson(JsonDocument& config)
@@ -78,52 +74,54 @@ void Updater::_fromJson(JsonDocument& config)
 {
 }
 
-void Updater::_onUpdate(AsyncWebServerRequest *request)
+void Updater::_onUpdate(WebServer* server)
 {
-    if (!I::get().server().isAuthenticated(request)) {
-        return request->requestAuthentication();
+    if (!I::get().server().isAuthenticated(server)) {
+        return server->requestAuthentication();
     }
     _shouldReboot = !Update.hasError();
     I::get().logger() << F("[EWC Updater] should restart after update: ") << _shouldReboot << endl;
     if (_shouldReboot) {
-        I::get().server().sendPageSuccess(request, "Update successful", "Update successful!", "/ewc/update", "restarting device...");
+        _tsReboot = millis();
+        I::get().server().sendPageSuccess(server, "Update successful", "Update successful!", "/ewc/update", "restarting device...");
     } else {
-        I::get().server().sendPageFailed(request, "Update Failed", "Update Failed with error " + String(Update.getError()), "/ewc/update");
+        I::get().server().sendPageFailed(server, "Update Failed", "Update Failed with error " + String(Update.getError()), "/ewc/update");
     }
 }
 
-void Updater::_onUpdateUpload(AsyncWebServerRequest* request, String filename, size_t index, uint8_t *data, size_t len, bool final)
+void Updater::_onUpdateUpload(WebServer* server)
 {
-    if (!index){
-        I::get().logger() << F("[EWC Updater] Update Start: ") << filename << endl;
-        Update.runAsync(true);
-        if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
+    HTTPUpload& upload = server->upload();
+    if (upload.status == UPLOAD_FILE_START) {
+        WiFiUDP::stopAll();
+        I::get().logger() << F("[EWC Updater] Update Start: ") << upload.filename << endl;
+        uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+        if (!Update.begin(maxSketchSpace)) { // start with max available size
             I::get().logger() << F("✘ [EWC Updater] update error: ") << Update.getError() << endl;
         }
-    }
-    if (!Update.hasError()) {
-        if (Update.write(data, len) != len){
+    } else if (upload.status == UPLOAD_FILE_WRITE) {
+        if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
             I::get().logger() << F("✘ [EWC Updater] update error: ") << Update.getError() << endl;
         }
-    }
-    if (final) {
-        if (Update.end(true)) {
-            I::get().logger() << F("✔ [EWC Updater] Update Success: ") << index+len << "B" << endl;
+    } else if (upload.status == UPLOAD_FILE_END) {
+        if (Update.end(true)) { // true to set the size to the current progress
+            I::get().logger() << F("✔ [EWC Updater] Update Success: ") << upload.totalSize << "B\nRebooting..." << endl;
         } else {
             I::get().logger() << F("✘ [EWC Updater] update error: ") << Update.getError() << endl;
         }
     }
+    yield();
 }
 
-void Updater::_onUpdateInfo(AsyncWebServerRequest *request)
+void Updater::_onUpdateInfo(WebServer* server)
 {
-    if (!I::get().server().isAuthenticated(request)) {
-        return request->requestAuthentication();
+    if (!I::get().server().isAuthenticated(server)) {
+        return server->requestAuthentication();
     }
     DynamicJsonDocument jsonDoc(512);
     fillJson(jsonDoc);
     jsonDoc["update"]["version"] = I::get().server().version();
     String output;
     serializeJson(jsonDoc, output);
-    request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+    server->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }

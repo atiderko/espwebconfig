@@ -68,23 +68,23 @@
         </form>
     </div>
 
-<script type="text/javascript">
-window.onload=function(){
-  ["staip","gtway","ntmsk","dns1","dns2"].forEach(function(n,o,t){
-    io=document.getElementById(n),io.placeholder='0.0.0.0',io.pattern='^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'});
-  vsw(false, 'exp')};
-function onFocus(e){
-  document.getElementById('ssid').value=e,document.getElementById('passphrase').focus()
-}
-function onDisableWiFi() {
-    var check = confirm('Disable WiFi? You will need hardware reset to revert this decision!'); 
-	if (check == true) {
-		location.href='/wifi/disable';
-	}
-}
-</script>
-<script>jsons = [ ["/wifi/state.json", "wifistate"], ["/wifi/stations.json", "wifistations"] ];</script>
-<script src="/js/wifi.js"></script>
-<script src="/js/postload.js"></script>
+  <script type="text/javascript">
+    window.onload=function(){
+      ["staip","gtway","ntmsk","dns1","dns2"].forEach(function(n,o,t){
+        io=document.getElementById(n),io.placeholder='0.0.0.0',io.pattern='^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'});
+      vsw(false, 'exp')};
+    function onFocus(e){
+      document.getElementById('ssid').value=e,document.getElementById('passphrase').focus()
+    }
+    function onDisableWiFi() {
+        var check = confirm('Disable WiFi? You will need hardware reset to revert this decision!'); 
+      if (check == true) {
+        location.href='/wifi/disable';
+      }
+    }
+  </script>
+  <script>jsons = [ ["/wifi/state.json", "wifistate"], ["/wifi/stations.json", "wifistations"] ];</script>
+  <script src="/js/wifi.js"></script>
+  <script src="/js/postload.js"></script>
 </body>
 </html>

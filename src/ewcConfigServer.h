@@ -21,22 +21,28 @@ limitations under the License.
 #ifndef EWC_CONFIG_SERVER_H
 #define EWC_CONFIG_SERVER_H
 
-#if defined(ESP8266)
-#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-#else
-#include <WiFi.h>
-#include "esp_wps.h"
-#define ESP_WPS_MODE WPS_TYPE_PBC
-#endif
-#include <ESPAsyncWebServer.h>
+// #if defined(ESP8266)
+// #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
+// #else
+// #include <WiFi.h>
+// #include "esp_wps.h"
+// #define ESP_WPS_MODE WPS_TYPE_PBC
+// #endif
+// #include <ESPAsyncWebServer.h>
 
-#ifdef USE_EADNS
-#include <ESPAsyncDNSServer.h>    //https://github.com/devyte/ESPAsyncDNSServer
-                                  //https://github.com/me-no-dev/ESPAsyncUDP
-typedef ESPAsyncDNSServer DNSServer;
-#else
-#include <DNSServer.h>
+#ifdef ESP8266
+# include <ESP8266WiFi.h>
+# include <ESP8266WebServer.h>
+// # include <ESP8266HTTPUpdateServer.h>
+# define WebServer ESP8266WebServer
+typedef std::function<void ()> WebServerHandlerFunction;
+// # define HTTPUpdateServer ESP8266HTTPUpdateServer
+#elif defined(ESP32)
+# include <WiFi.h>
+# include <WebServer.h>
 #endif
+
+#include <DNSServer.h>
 #include "ewcConfigFS.h"
 #include "ewcLogger.h"
 #include "ewcRTC.h"
@@ -46,10 +52,10 @@ typedef ESPAsyncDNSServer DNSServer;
 
 namespace EWC {
 
-const char PROGMEM_CONFIG_APPLICATION_JS[] PROGMEM = "application/javascript";
-const char PROGMEM_CONFIG_APPLICATION_JSON[] PROGMEM = "application/json";
-const char PROGMEM_CONFIG_TEXT_HTML[] PROGMEM = "text/html";
-const char PROGMEM_CONFIG_TEXT_CSS[] PROGMEM = "text/css";
+const char PROGMEM_CONFIG_APPLICATION_JS[] PROGMEM = "application/javascript; charset=utf-8";
+const char PROGMEM_CONFIG_APPLICATION_JSON[] PROGMEM = "application/json; charset=utf-8";
+const char PROGMEM_CONFIG_TEXT_HTML[] PROGMEM = "text/html; charset=utf-8";
+const char PROGMEM_CONFIG_TEXT_CSS[] PROGMEM = "text/css; charset=utf-8";
 
 struct MenuItem
 {
@@ -88,7 +94,7 @@ public:
      * @param onRequest: callback on menu item
      * @param content: send content on menu item **/
     void insertMenu(const char* name, const char* uri, const char* entry_id, bool visible=true, int position=255);
-    void insertMenuCb(const char* name, const char* uri, const char* entry_id, ArRequestHandlerFunction onRequest, bool visible=true, int position=255);
+    void insertMenuCb(const char* name, const char* uri, const char* entry_id, WebServerHandlerFunction onRequest, bool visible=true, int position=255);
     void insertMenuP(const char* name, const char* uri, const char* entry_id, const String& contentType, PGM_P content, bool visible=true, int position=255);
     void insertMenuG(const char* name, const char* uri, const char* entry_id, const String& contentType, const uint8_t* content, size_t len, bool visible=true, int position=255);
     void insertMenuNoAuthP(const char* name, const char* uri, const char* entry_id, const String& contentType, PGM_P content, bool visible=true, int position=255);
@@ -118,21 +124,21 @@ public:
     bool isConnected() { return WiFi.status() == WL_CONNECTED; }
     Config& config() { return _config; }
     TickerLed& led() { return _led; }
-    AsyncWebServer& webserver() { return _server; }
+    WebServer& webserver() { return _server; }
     /** Sends content to the client. The authentication is carried out before send depending on the configuration. **/
-    void sendContentP(AsyncWebServerRequest* request, const String& contentType, PGM_P content);
-    void sendContentG(AsyncWebServerRequest* request, const String& contentType, const uint8_t* content, size_t len);
+    void sendContentP(WebServer* request, const String& contentType, PGM_P content);
+    void sendContentG(WebServer* request, const String& contentType, const uint8_t* content, size_t len);
     /** Creates a page with successfull result.**/
-    void sendPageSuccess(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
+    void sendPageSuccess(WebServer* request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
     /** Creates a page with failed result. **/
-    void sendPageFailed(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
+    void sendPageFailed(WebServer* request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
     /** Send header with redirect to given url. **/
-    void sendRedirect(AsyncWebServerRequest *request, String url, uint32_t timeout = 0);
+    void sendRedirect(WebServer* request, String url, uint32_t timeout = 0);
     /** Returns true if the client is authenticated. **/
-    bool isAuthenticated(AsyncWebServerRequest *request);
+    bool isAuthenticated(WebServer* request);
 
 protected:
-    AsyncWebServer _server;
+    WebServer _server;
     DNSServer _dnsServer;
     ConfigFS _configFS;
     Logger _logger;
@@ -170,24 +176,24 @@ protected:
     // DNS server
     const byte    DNS_PORT = 53;
 
-    bool _captivePortal(AsyncWebServerRequest*);
+    bool _captivePortal(WebServer* request);
     void _connect(const char* ssid=nullptr, const char* pass=nullptr);
     void _startAP();
     void _startWiFiScan(bool force=false);
     /** === web handler === **/
     String _token_WIFI_MODE();
-    void _sendMenu(AsyncWebServerRequest* request);
-    void _sendFileContent(AsyncWebServerRequest* request, const String& contentType, const String& filename);
-    void _sendContentNoAuthP(AsyncWebServerRequest* request, const String& contentType, PGM_P content);
-    void _sendContentNoAuthG(AsyncWebServerRequest* request, const String& contentType, const uint8_t* content, size_t len);
-    void _onAccessGet(AsyncWebServerRequest* request);
-    void _onAccessSave(AsyncWebServerRequest* request);
-    void _onGetInfo(AsyncWebServerRequest* request);
-    void _onWiFiConnect(AsyncWebServerRequest* request);
-    void _onWiFiDisconnect(AsyncWebServerRequest* request);
-    void _onWifiState(AsyncWebServerRequest* request);
-    void _onWifiScan(AsyncWebServerRequest* request);
-    void _onNotFound(AsyncWebServerRequest* request);
+    void _sendMenu(WebServer* request);
+    void _sendFileContent(WebServer* request, const String& contentType, const String& filename);
+    void _sendContentNoAuthP(WebServer* request, const String& contentType, PGM_P content);
+    void _sendContentNoAuthG(WebServer* request, const String& contentType, const uint8_t* content, size_t len);
+    void _onAccessGet(WebServer* request);
+    void _onAccessSave(WebServer* request);
+    void _onGetInfo(WebServer* request);
+    void _onWiFiConnect(WebServer* request);
+    void _onWiFiDisconnect(WebServer* request);
+    void _onWifiState(WebServer* request);
+    void _onWifiScan(WebServer* request);
+    void _onNotFound(WebServer* request);
 
     /** === WiFi handler === **/
 #if defined(ESP8266)

@@ -58,7 +58,7 @@ def get_context(infile, outfile):
     return locals()
     
 def perform_gzip(c):
-    compressed = gzip.compress(bytes(c['minidata'], 'utf-8'))
+    compressed = gzip.compress(c['minidata'].encode('utf-8'), compresslevel=8)
     c['gzipdata'] = ','.join([ str(b) for b in compressed ])
     c['gziplen'] = len(compressed)
     return c

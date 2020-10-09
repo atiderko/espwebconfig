@@ -27,18 +27,21 @@ limitations under the License.
 
 #if defined(ESP8266)
     #include "ESP8266WiFi.h"
-    #include "ESPAsyncTCP.h"
+    #include "ESP8266WebServer.h"
+    # define WebServer ESP8266WebServer
+    // #include "ESPAsyncTCP.h"
     #include "flash_hal.h"
     #include "FS.h"
 #elif defined(ESP32)
     #include "WiFi.h"
-    #include "AsyncTCP.h"
+    #include "WebServer.h"
+    // #include "AsyncTCP.h"
     #include "Update.h"
     #include "esp_int_wdt.h"
     #include "esp_task_wdt.h"
 #endif
 
-#include <ESPAsyncWebServer.h>
+// #include <ESPAsyncWebServer.h>
 #include "ewcUpdater.h"
 
 #include "../ewcConfigInterface.h"
@@ -57,9 +60,10 @@ public:
 
 protected:
     bool _shouldReboot;
-    void _onUpdate(AsyncWebServerRequest* request);
-    void _onUpdateUpload(AsyncWebServerRequest* request, String filename, size_t index, uint8_t *data, size_t len, bool final);
-    void _onUpdateInfo(AsyncWebServerRequest* request);
+    long _tsReboot;
+    void _onUpdate(WebServer* server);
+    void _onUpdateUpload(WebServer* server);
+    void _onUpdateInfo(WebServer* server);
     void _initParams();
     void _fromJson(JsonDocument& config);
 };

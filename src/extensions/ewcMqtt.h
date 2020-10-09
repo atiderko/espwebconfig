@@ -24,8 +24,15 @@ limitations under the License.
 #ifndef EWC_MQTT_h
 #define EWC_MQTT_h
 
+#if defined(ESP8266)
+    #include "ESP8266WiFi.h"
+    #include "ESP8266WebServer.h"
+    # define WebServer ESP8266WebServer
+#elif defined(ESP32)
+    #include "WiFi.h"
+    #include "WebServer.h"
+#endif
 #include <Arduino.h>
-#include <ESPAsyncWebServer.h>
 #include <AsyncMqttClient.h>
 #include <Ticker.h>
 #include "../ewcConfigInterface.h"
@@ -63,9 +70,9 @@ protected:
 
     void _initParams();
     void _fromJson(JsonDocument& config);
-    void _onMqttConfig(AsyncWebServerRequest *request);
-    void _onMqttState(AsyncWebServerRequest *request);
-    void _onMqttSave(AsyncWebServerRequest *request);
+    void _onMqttConfig(WebServer* request);
+    void _onMqttState(WebServer* request);
+    void _onMqttSave(WebServer* request);
 
     void _onWifiConnect(const WiFiEventStationModeGotIP& event);
     void _onWifiDisconnect(const WiFiEventStationModeDisconnected& event);

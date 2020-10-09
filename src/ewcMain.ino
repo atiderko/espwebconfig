@@ -51,7 +51,7 @@ void setup() {
 
 
 void loop() {
-    // process dns requests and connection state AP/STA
+    // process web and dns requests
     server.loop();
     if (WiFi.status() == WL_CONNECTED) {
         if (time_.ntpAvailable() && !timePrinted) {

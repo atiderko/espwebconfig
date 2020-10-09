@@ -28,6 +28,7 @@ limitations under the License.
 #include "generated/ewcFailHTML.h"
 #include "generated/ewcSuccessHTML.h"
 #include "generated/webBaseCSS.h"
+#include "generated/webInfoCSS.h"
 #include "generated/webPostloadJS.h"
 #include "generated/webPreJS.h"
 #include "generated/webTableCSS.h"
@@ -134,31 +135,29 @@ void ConfigServer::setup()
     I::get().logger() << "CSS_WEB_BASE_GZIP size: " << sizeof(CSS_WEB_BASE_GZIP) << endl;
     // _server.reset(); do we need this?
     /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
-    _server.on("/", std::bind(&ConfigServer::sendContentG, this, std::placeholders::_1, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_SETUP_GZIP, sizeof(HTML_WIFI_SETUP_GZIP))).setFilter(ON_AP_FILTER);
-    _server.on("/menu.json", std::bind(&ConfigServer::_sendMenu, this, std::placeholders::_1));
-    _server.on("/css/base.css", std::bind(&ConfigServer::sendContentG, this, std::placeholders::_1, FPSTR(PROGMEM_CONFIG_TEXT_CSS), CSS_WEB_BASE_GZIP, sizeof(CSS_WEB_BASE_GZIP)));
-    _server.on("/css/table.css", std::bind(&ConfigServer::sendContentG, this, std::placeholders::_1, FPSTR(PROGMEM_CONFIG_TEXT_CSS), CSS_WEB_TABLE_GZIP, sizeof(CSS_WEB_TABLE_GZIP)));
-    _server.on("/css/wifiicons.css", std::bind(&ConfigServer::sendContentG, this, std::placeholders::_1, FPSTR(PROGMEM_CONFIG_TEXT_CSS), CSS_WEB_WIFIICONS_GZIP, sizeof(CSS_WEB_WIFIICONS_GZIP)));
-    _server.on("/js/postload.js", std::bind(&ConfigServer::sendContentG, this, std::placeholders::_1, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), JS_WEB_POSTLOAD_GZIP, sizeof(JS_WEB_POSTLOAD_GZIP)));
-    _server.on("/js/pre.js", std::bind(&ConfigServer::sendContentG, this, std::placeholders::_1, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), JS_WEB_PRE_GZIP, sizeof(JS_WEB_PRE_GZIP)));
-    _server.on("/js/wifi.js", std::bind(&ConfigServer::sendContentG, this, std::placeholders::_1, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), JS_WEB_WIFI_GZIP, sizeof(JS_WEB_WIFI_GZIP)));
-    _server.rewrite("/wifi", "/wifi/setup");
-    insertMenuCb("WiFi", "/wifi/setup", "menu_wifi", std::bind(&ConfigServer::sendContentG, this, std::placeholders::_1, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_SETUP_GZIP, sizeof(HTML_WIFI_SETUP_GZIP)));
-    _server.on("/wifi/connect", std::bind(&ConfigServer::_onWiFiConnect, this, std::placeholders::_1));
-    _server.on("/wifi/disconnect", std::bind(&ConfigServer::_onWiFiDisconnect, this, std::placeholders::_1));  //.setFilter(ON_AP_FILTER);
-    _server.on("/wifi/state.json", std::bind(&ConfigServer::_onWifiState, this, std::placeholders::_1));
-    _server.on("/wifi/stations.json", std::bind(&ConfigServer::_onWifiScan, this, std::placeholders::_1));
-    insertMenuCb("Access", "/ewc/access", "menu_access", std::bind(&ConfigServer::sendContentG, this, std::placeholders::_1, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_EWC_ACCESS_GZIP, sizeof(HTML_EWC_ACCESS_GZIP)));
-    _server.on("/ewc/access.json", std::bind(&ConfigServer::_onAccessGet, this, std::placeholders::_1));
-    _server.on("/ewc/accesssave", std::bind(&ConfigServer::_onAccessSave, this, std::placeholders::_1));
-    insertMenuCb("Info", "/ewc/info", "menu_info", std::bind(&ConfigServer::sendContentG, this, std::placeholders::_1, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_EWC_INFO_GZIP, sizeof(HTML_EWC_INFO_GZIP)));
-    _server.on("/ewc/info.json", std::bind(&ConfigServer::_onGetInfo, this, std::placeholders::_1));
+    _server.on("/menu.json", std::bind(&ConfigServer::_sendMenu, this, &_server));
+    _server.on("/css/base.css", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_CSS), CSS_WEB_BASE_GZIP, sizeof(CSS_WEB_BASE_GZIP)));
+    _server.on("/css/info.css", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_CSS), CSS_WEB_INFO_GZIP, sizeof(CSS_WEB_INFO_GZIP)));
+    _server.on("/css/table.css", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_CSS), CSS_WEB_TABLE_GZIP, sizeof(CSS_WEB_TABLE_GZIP)));
+    _server.on("/css/wifiicons.css", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_CSS), CSS_WEB_WIFIICONS_GZIP, sizeof(CSS_WEB_WIFIICONS_GZIP)));
+    _server.on("/js/postload.js", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), JS_WEB_POSTLOAD_GZIP, sizeof(JS_WEB_POSTLOAD_GZIP)));
+    _server.on("/js/pre.js", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), JS_WEB_PRE_GZIP, sizeof(JS_WEB_PRE_GZIP)));
+    _server.on("/js/wifi.js", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), JS_WEB_WIFI_GZIP, sizeof(JS_WEB_WIFI_GZIP)));
+    insertMenuCb("WiFi", "/wifi/setup", "menu_wifi", std::bind(&ConfigServer::sendContentP, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_SETUP));
+    _server.on("/wifi/connect", std::bind(&ConfigServer::_onWiFiConnect, this, &_server));
+    _server.on("/wifi/disconnect", std::bind(&ConfigServer::_onWiFiDisconnect, this, &_server));  //.setFilter(ON_AP_FILTER);
+    _server.on("/wifi/state.json", std::bind(&ConfigServer::_onWifiState, this, &_server));
+    _server.on("/wifi/stations.json", std::bind(&ConfigServer::_onWifiScan, this, &_server));
+    insertMenuCb("Access", "/ewc/access", "menu_access", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_EWC_ACCESS_GZIP, sizeof(HTML_EWC_ACCESS_GZIP)));
+    _server.on("/ewc/access.json", std::bind(&ConfigServer::_onAccessGet, this, &_server));
+    _server.on("/ewc/accesssave", std::bind(&ConfigServer::_onAccessSave, this, &_server));
+    insertMenuCb("Info", "/ewc/info", "menu_info", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_EWC_INFO_GZIP, sizeof(HTML_EWC_INFO_GZIP)));
+    _server.on("/ewc/info.json", std::bind(&ConfigServer::_onGetInfo, this, &_server));
     if (_publicConfig) {
-        _server.on("/ewc/config", std::bind(&ConfigServer::_sendFileContent, this, std::placeholders::_1, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), FPSTR(CONFIG_FILENAME)));
+        _server.on("/ewc/config", std::bind(&ConfigServer::_sendFileContent, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), FPSTR(CONFIG_FILENAME)));
     }
-    _server.on("/fwlink", std::bind(&ConfigServer::sendContentG, this, std::placeholders::_1, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_SETUP_GZIP, sizeof(HTML_WIFI_SETUP_GZIP))).setFilter(ON_AP_FILTER);  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
-    _server.on("/favicon.ico", std::bind(&ConfigServer::_sendFileContent, this, std::placeholders::_1, "/favicon.ico", "image/x-icon"));
-    _server.onNotFound (std::bind(&ConfigServer::_onNotFound,this,std::placeholders::_1));
+    _server.on("/favicon.ico", std::bind(&ConfigServer::_sendFileContent, this, &_server, "/favicon.ico", "image/x-icon"));
+    _server.onNotFound (std::bind(&ConfigServer::_onNotFound, this, &_server));
     _server.begin(); // Web server start
 }
 
@@ -298,7 +297,7 @@ void ConfigServer::insertMenu(const char* name, const char* uri, const char* ent
     }
 }
 
-void ConfigServer::insertMenuCb(const char* name, const char* uri, const char* entry_id, ArRequestHandlerFunction onRequest, bool visible, int position)
+void ConfigServer::insertMenuCb(const char* name, const char* uri, const char* entry_id, WebServerHandlerFunction onRequest, bool visible, int position)
 {
     insertMenu(name, uri, entry_id, visible, position);
     _server.on(uri, HTTP_GET, onRequest);
@@ -306,22 +305,22 @@ void ConfigServer::insertMenuCb(const char* name, const char* uri, const char* e
 
 void ConfigServer::insertMenuP(const char* name, const char* uri, const char* entry_id, const String& contentType, PGM_P content, bool visible, int position)
 {
-    insertMenuCb(name, uri, entry_id, std::bind(&ConfigServer::sendContentP, this, std::placeholders::_1, contentType, content), visible, position);
+    insertMenuCb(name, uri, entry_id, std::bind(&ConfigServer::sendContentP, this, &_server, contentType, content), visible, position);
 }
 
 void ConfigServer::insertMenuG(const char* name, const char* uri, const char* entry_id, const String& contentType, const uint8_t* content, size_t len, bool visible, int position)
 {
-    insertMenuCb(name, uri, entry_id, std::bind(&ConfigServer::sendContentG, this, std::placeholders::_1, contentType, content, len), visible, position);
+    insertMenuCb(name, uri, entry_id, std::bind(&ConfigServer::sendContentG, this, &_server, contentType, content, len), visible, position);
 }
 
 void ConfigServer::insertMenuNoAuthP(const char* name, const char* uri, const char* entry_id, const String& contentType, PGM_P content, bool visible, int position)
 {
-    insertMenuCb(name, uri, entry_id, std::bind(&ConfigServer::_sendContentNoAuthP, this, std::placeholders::_1, contentType, content), visible, position);
+    insertMenuCb(name, uri, entry_id, std::bind(&ConfigServer::_sendContentNoAuthP, this, &_server, contentType, content), visible, position);
 }
 
 void ConfigServer::insertMenuNoAuthG(const char* name, const char* uri, const char* entry_id, const String& contentType, const uint8_t* content, size_t len, bool visible, int position)
 {
-    insertMenuCb(name, uri, entry_id, std::bind(&ConfigServer::_sendContentNoAuthG, this, std::placeholders::_1, contentType, content, len), visible, position);
+    insertMenuCb(name, uri, entry_id, std::bind(&ConfigServer::_sendContentNoAuthG, this, &_server, contentType, content, len), visible, position);
 }
 
 String ConfigServer::_token_WIFI_MODE() {
@@ -367,52 +366,52 @@ String ConfigServer::_toMACAddressString(const uint8_t mac[]) {
   return macAddr;
 }
 
-void ConfigServer::_onAccessGet(AsyncWebServerRequest *request)
+void ConfigServer::_onAccessGet(WebServer* webserver)
 {
-    if (!isAuthenticated(request)) {
-        return request->requestAuthentication();
+    if (!isAuthenticated(webserver)) {
+        return webserver->requestAuthentication();
     }
     DynamicJsonDocument jsonDoc(JSON_OBJECT_SIZE(16));
     JsonObject json = jsonDoc.to<JsonObject>();
     _config.fillJson(jsonDoc);
     String output;
     serializeJson(json, output);
-    request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+    webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
-void ConfigServer::_onAccessSave(AsyncWebServerRequest *request)
+void ConfigServer::_onAccessSave(WebServer* webserver)
 {
-    if (!isAuthenticated(request)) {
-        return request->requestAuthentication();
+    if (!isAuthenticated(webserver)) {
+        return webserver->requestAuthentication();
     }
-    if (request->hasArg("apname")) {
-        _config.paramAPName = request->arg("apname");
+    if (webserver->hasArg("apname")) {
+        _config.paramAPName = webserver->arg("apname");
     }
-    if (request->hasArg("appass")) {
-        _config.setAPPass(request->arg("appass"));
+    if (webserver->hasArg("appass")) {
+        _config.setAPPass(webserver->arg("appass"));
     }
-    if (request->hasArg("ap_always_on")) {
-        _config.paramAPStartAlways = request->arg("ap_always_on").equals("true");
+    if (webserver->hasArg("ap_always_on")) {
+        _config.paramAPStartAlways = webserver->arg("ap_always_on").equals("true");
     }
-    if (request->hasArg("basic_auth")) {
-        _config.paramBasicAuth = request->arg("basic_auth").equals("true");
+    if (webserver->hasArg("basic_auth")) {
+        _config.paramBasicAuth = webserver->arg("basic_auth").equals("true");
     }
-    if (request->hasArg("httpuser")) {
-        _config.paramHttpUser = request->arg("httpuser");
+    if (webserver->hasArg("httpuser")) {
+        _config.paramHttpUser = webserver->arg("httpuser");
     }
-    if (request->hasArg("httppass")) {
-        _config.paramHttpPassword = request->arg("httppass");
+    if (webserver->hasArg("httppass")) {
+        _config.paramHttpPassword = webserver->arg("httppass");
     }
-    if (request->hasArg("hostname")) {
-        _config.paramHostname = request->arg("hostname");
+    if (webserver->hasArg("hostname")) {
+        _config.paramHostname = webserver->arg("hostname");
     }
-    sendPageSuccess(request, "Security save", "Save successful! Please, restart to apply AP changes!", "/ewc/access");
+    sendPageSuccess(webserver, "Security save", "Save successful! Please, restart to apply AP changes!", "/ewc/access");
 }
 
-void ConfigServer::_onGetInfo(AsyncWebServerRequest *request)
+void ConfigServer::_onGetInfo(WebServer* webserver)
 {
-    if (!isAuthenticated(request)) {
-        return request->requestAuthentication();
+    if (!isAuthenticated(webserver)) {
+        return webserver->requestAuthentication();
     }
     const size_t len = JSON_OBJECT_SIZE(32);
     StaticJsonDocument<len> jsonDoc;
@@ -443,62 +442,61 @@ void ConfigServer::_onGetInfo(AsyncWebServerRequest *request)
 	json["free_heap"] = String(ESP.getFreeHeap());
     String output;
     serializeJson(json, output);
-    request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+    webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
-void ConfigServer::_onWiFiConnect(AsyncWebServerRequest *request)
+void ConfigServer::_onWiFiConnect(WebServer* webserver)
 {
-    if (!isAuthenticated(request)) {
-        return request->requestAuthentication();
+    if (!isAuthenticated(webserver)) {
+        return webserver->requestAuthentication();
     }
-    for (size_t idx = 0; idx < request->args(); idx++) {
-        I::get().logger() << "[EWC CS]: " << idx << ": " << request->argName(idx) << request->arg(idx) << endl;
+    for (int idx = 0; idx < webserver->args(); idx++) {
+        I::get().logger() << "[EWC CS]: " << idx << ": " << webserver->argName(idx) << webserver->arg(idx) << endl;
     }
-    const char* ssid = request->arg("ssid").c_str();
-    const char* pass = request->arg("passphrase").c_str();
-    if (request->hasArg("staip")) {
-        I::get().logger() << F("[EWC CS]: static ip: ") << request->arg("staip") << endl;
-        String ip = request->arg("staip");
+    const char* ssid = webserver->arg("ssid").c_str();
+    const char* pass = webserver->arg("passphrase").c_str();
+    if (webserver->hasArg("staip")) {
+        I::get().logger() << F("[EWC CS]: static ip: ") << webserver->arg("staip") << endl;
+        String ip = webserver->arg("staip");
         _optionalIPFromString(&_sta_static_ip, ip.c_str());
     }
-    if (request->hasArg("gtway")) {
-        I::get().logger() << F("[EWC CS]: static gateway") << request->arg("gtway") << endl;
-        String gw = request->arg("gtway");
+    if (webserver->hasArg("gtway")) {
+        I::get().logger() << F("[EWC CS]: static gateway") << webserver->arg("gtway") << endl;
+        String gw = webserver->arg("gtway");
         _optionalIPFromString(&_sta_static_gw, gw.c_str());
     }
-    if (request->hasArg("ntmsk")) {
-        I::get().logger() << F("[EWC CS]: static netmask") << request->arg("ntmsk") << endl;
-        String sn = request->arg("ntmsk");
+    if (webserver->hasArg("ntmsk")) {
+        I::get().logger() << F("[EWC CS]: static netmask") << webserver->arg("ntmsk") << endl;
+        String sn = webserver->arg("ntmsk");
         _optionalIPFromString(&_sta_static_sn, sn.c_str());
     }
-    if (request->hasArg("dns1")) {
-        I::get().logger() << F("[EWC CS]: static DNS 1") << request->arg("dns1") << endl;
-        String dns1 = request->arg("dns1");
+    if (webserver->hasArg("dns1")) {
+        I::get().logger() << F("[EWC CS]: static DNS 1") << webserver->arg("dns1") << endl;
+        String dns1 = webserver->arg("dns1");
         _optionalIPFromString(&_sta_static_dns1, dns1.c_str());
     }
-    if (request->hasArg("dns2")) {
-        I::get().logger() << F("[EWC CS]: static DNS 2") << request->arg("dns2") << endl;
-        String dns2 = request->arg("dns2");
+    if (webserver->hasArg("dns2")) {
+        I::get().logger() << F("[EWC CS]: static DNS 2") << webserver->arg("dns2") << endl;
+        String dns2 = webserver->arg("dns2");
         _optionalIPFromString(&_sta_static_dns2, dns2.c_str());
     }
-    request->send_P(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_CONNECT);
+    webserver->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), FPSTR(HTML_WIFI_CONNECT));
     _connect(ssid, pass);
 }
 
-void ConfigServer::_onWiFiDisconnect(AsyncWebServerRequest *request)
+void ConfigServer::_onWiFiDisconnect(WebServer* webserver)
 {
-    if (!isAuthenticated(request)) {
-        return request->requestAuthentication();
+    if (!isAuthenticated(webserver)) {
+        return webserver->requestAuthentication();
     }
-    AsyncWebServerResponse *response = request->beginResponse(302,"text/plain","");
-    response->addHeader("Location", "/wifi/setup");
-    request->send ( response);
+    webserver->sendHeader("Location", "/wifi/setup");
+    webserver->send(302, "text/plain", "");
     WiFi.disconnect(false);
 }
 
-void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
-    if (!isAuthenticated(request)) {
-        return request->requestAuthentication();
+void ConfigServer::_sendMenu(WebServer* webserver) {
+    if (!isAuthenticated(webserver)) {
+        return webserver->requestAuthentication();
     }
     DynamicJsonDocument jsonDoc(2048);
     jsonDoc["brand"] = _brand;
@@ -516,13 +514,13 @@ void ConfigServer::_sendMenu(AsyncWebServerRequest *request) {
     String output;
     serializeJson(jsonDoc, output);
     I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << ", json: " << jsonDoc.memoryUsage() << endl;
-    request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+    webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
-void ConfigServer::_onWifiState(AsyncWebServerRequest *request)
+void ConfigServer::_onWifiState(WebServer* webserver)
 {
-    if (!isAuthenticated(request)) {
-        return request->requestAuthentication();
+    if (!isAuthenticated(webserver)) {
+        return webserver->requestAuthentication();
     }
     I::get().logger() << "[EWC CS]: report WifiState, connected: " << (WiFi.status() == WL_CONNECTED) << endl;
     const size_t len = JSON_OBJECT_SIZE(8);
@@ -534,7 +532,7 @@ void ConfigServer::_onWifiState(AsyncWebServerRequest *request)
     json["reason"] = _disconnect_reason;
     String output;
     serializeJson(json, output);
-    request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+    webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
 void _wiFiState2Json(JsonObject& json, bool finished, bool failed, const char* reason)
@@ -544,10 +542,10 @@ void _wiFiState2Json(JsonObject& json, bool finished, bool failed, const char* r
     json["reason"] = reason;
 }
 
-void ConfigServer::_onWifiScan(AsyncWebServerRequest *request)
+void ConfigServer::_onWifiScan(WebServer* webserver)
 {
-    if (!isAuthenticated(request)) {
-        return request->requestAuthentication();
+    if (!isAuthenticated(webserver)) {
+        return webserver->requestAuthentication();
     }
     _startWiFiScan();
     int n = WiFi.scanComplete();
@@ -569,7 +567,7 @@ void ConfigServer::_onWifiScan(AsyncWebServerRequest *request)
     JsonArray networks = json.createNestedArray("networks");
     if (n > 0) {
         _wiFiState2Json(json, true, false, "");
-        std::set<String> ssids;
+        std::vector<String> ssids;
         String ssid;
         uint8_t encType;
         int32_t rssi;
@@ -579,7 +577,7 @@ void ConfigServer::_onWifiScan(AsyncWebServerRequest *request)
         for (uint8_t i = 0; i < n; i++) {
             bool result = WiFi.getNetworkInfo(i, ssid, encType, rssi, bssid, channel, isHidden);
             // do not add the same station twice
-            if (result && !ssid.isEmpty() && ssids.find(ssid.c_str()) == ssids.end()) {
+            if (result && !ssid.isEmpty() && std::find(ssids.begin(), ssids.end(), ssid) == ssids.end()) {
                 JsonObject jsonNetwork = networks.createNestedObject();
                 jsonNetwork["ssid"] = ssid;
                 jsonNetwork["encrypted"] = encType == ENC_TYPE_NONE ? false : true;
@@ -589,12 +587,12 @@ void ConfigServer::_onWifiScan(AsyncWebServerRequest *request)
                 sprintf(mac, "%02X:%02X:%02X:%02X:%02X:%02X", bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5]);
                 jsonNetwork["bssid"] = mac;
                 jsonNetwork["hidden"] = isHidden ? true : false;
-                ssids.insert(ssid);
+                ssids.push_back(ssid);
             }
         }
         String output;
         serializeJson(json, output);
-        request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+        webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
         //WiFi.scanDelete();
         return;
     } else if (n == -2) {
@@ -603,14 +601,13 @@ void ConfigServer::_onWifiScan(AsyncWebServerRequest *request)
     }
     String output;
     serializeJson(json, output);
-    request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+    webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
 void ConfigServer::loop()
 {
-#ifndef USE_EADNS	
     _dnsServer.processNextRequest();
-#endif
+    _server.handleClient();
     if (!_config.paramWifiDisabled) {
         if (WiFi.status() != WL_CONNECTED) {
             // after _msConfigPortalTimeout the portal will be disbaled
@@ -668,23 +665,23 @@ void ConfigServer::setBrand(const char* brand, const char* version)
     _version = String(version);
 }
 
-void ConfigServer::sendContentP(AsyncWebServerRequest *request, const String& contentType, PGM_P content)
+void ConfigServer::sendContentP(WebServer* webserver, const String& contentType, PGM_P content)
 {
-    if (!isAuthenticated(request)) {
-        return request->requestAuthentication();
+    if (!isAuthenticated(webserver)) {
+        return webserver->requestAuthentication();
     }
-    _sendContentNoAuthP(request, contentType, content);
+    _sendContentNoAuthP(webserver, contentType, content);
 }
 
-void ConfigServer::sendContentG(AsyncWebServerRequest* request, const String& contentType, const uint8_t* content, size_t len)
+void ConfigServer::sendContentG(WebServer* webserver, const String& contentType, const uint8_t* content, size_t len)
 {
-    if (!isAuthenticated(request)) {
-        return request->requestAuthentication();
+    if (!isAuthenticated(webserver)) {
+        return webserver->requestAuthentication();
     }
-    _sendContentNoAuthG(request, contentType, content, len);
+    _sendContentNoAuthG(webserver, contentType, content, len);
 }
 
-void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details, String nameBack, String urlForward, String nameForward)
+void ConfigServer::sendPageSuccess(WebServer* webserver, String title, String summary, String urlBack, String details, String nameBack, String urlForward, String nameForward)
 {
     String result(FPSTR(HTML_EWC_SUCCESS));
     result.replace("{{TITLE}}", title);
@@ -694,10 +691,10 @@ void ConfigServer::sendPageSuccess(AsyncWebServerRequest *request, String title,
     result.replace("{{BACK_NAME}}", nameBack);
     result.replace("{{FORWARD}}", urlForward);
     result.replace("{{FWD_NAME}}", nameForward);
-    request->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
+    webserver->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
 }
 
-void ConfigServer::sendPageFailed(AsyncWebServerRequest *request, String title, String summary, String urlBack, String details, String nameBack,  String urlForward, String nameForward)
+void ConfigServer::sendPageFailed(WebServer* webserver, String title, String summary, String urlBack, String details, String nameBack,  String urlForward, String nameForward)
 {
     String result(FPSTR(HTML_EWC_FAIL));
     result.replace("{{TITLE}}", title);
@@ -707,90 +704,93 @@ void ConfigServer::sendPageFailed(AsyncWebServerRequest *request, String title, 
     result.replace("{{BACK_NAME}}", nameBack);
     result.replace("{{FORWARD}}", urlForward);
     result.replace("{{FWD_NAME}}", nameForward);
-    request->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
+    webserver->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
 }
 
-void ConfigServer::sendRedirect(AsyncWebServerRequest *request, String url, uint32_t timeout)
+void ConfigServer::sendRedirect(WebServer* webserver, String url, uint32_t timeout)
 {
-    AsyncWebServerResponse *response = request->beginResponse(302,"text/plain","");
     if (timeout == 0) {
-        response->addHeader("Location", url);
+        webserver->sendHeader("Location", url);
     } else {
-        response->addHeader("Location", "refresh:" + String(timeout) + ";url=" + url);
+        webserver->sendHeader("Location", "refresh:" + String(timeout) + ";url=" + url);
     }
-    request->send(response);
+    webserver->send(302, "text/plain", "");
 }
 
-void ConfigServer::_sendFileContent(AsyncWebServerRequest *request, const String& contentType, const String& filename)
+void ConfigServer::_sendFileContent(WebServer* webserver, const String& contentType, const String& filename)
 {
-    if (!isAuthenticated(request)) {
-        return request->requestAuthentication();
+    if (!isAuthenticated(webserver)) {
+        return webserver->requestAuthentication();
     }
     I::get().logger() << F("[EWC CS]: Handle sendFileContent: ") << filename << endl;
     File reqFile = LittleFS.open(filename, "r");
     if (reqFile && reqFile.isFile()) {
-        request->send(LittleFS, filename, contentType);
+        //webserver->send(LittleFS, filename, contentType);
+        webserver->streamFile(reqFile, contentType);
         reqFile.close();
         return;
     }
-    _onNotFound(request);
+    _onNotFound(webserver);
 }
 
 
-void ConfigServer::_sendContentNoAuthP(AsyncWebServerRequest *request, const String& contentType, PGM_P content)
+void ConfigServer::_sendContentNoAuthP(WebServer* webserver, const String& contentType, PGM_P content)
 {
     if (ESP.getFreeHeap() <= strlen_P(content)) {
-        I::get().logger() << F("✘ [EWC CS]: Not enough memory to reply request ") << request->url() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << strlen_P(content) << endl;
-        request->send(200, "text/plain", F("Not enough memory"));
+        I::get().logger() << F("✘ [EWC CS]: Not enough memory to reply request ") << webserver->uri() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << strlen_P(content) << endl;
+        webserver->send(200, "text/plain", F("Not enough memory"));
     } else {
-        request->send_P(200, contentType, content);
+        webserver->send(200, contentType.c_str(), content);
     }
 }
 
-void ConfigServer::_sendContentNoAuthG(AsyncWebServerRequest *request, const String& contentType, const uint8_t* content, size_t len)
+void ConfigServer::_sendContentNoAuthG(WebServer* webserver, const String& contentType, const uint8_t* content, size_t len)
 {
-    if (ESP.getFreeHeap() <= len) {
-        I::get().logger() << F("✘ [EWC CS]: Not enough memory to reply request ") << request->url() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << len << endl;
-        request->send(200, "text/plain", F("Not enough memory"));
+    I::get().logger() << F("[EWC CS]: send content for ") << webserver->uri() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << len << endl;
+    if (ESP.getFreeHeap() <= 4000) {
+        I::get().logger() << F("✘ [EWC CS]: Not enough memory to reply request ") << webserver->uri() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << len << endl;
+        sendRedirect(webserver, webserver->uri(), 1);
+        webserver->send(406, "text/plain", F("Not enough memory"));
     } else {
-        AsyncWebServerResponse* response = request->beginResponse_P(200, contentType, content, len);
-        response->addHeader("Content-Encoding", "gzip");
-        request->send(response);
+        I::get().logger() << F("content type: ") << contentType << endl;
+        webserver->sendHeader("Content-Encoding", "gzip");
+        webserver->sendHeader("Content-Disposition", "inline");
+        webserver->send(200, contentType.c_str(), content, len);
     }
 }
 
-void ConfigServer::_onNotFound(AsyncWebServerRequest *request) {
+void ConfigServer::_onNotFound(WebServer* webserver) {
     I::get().logger() << F("[EWC CS]: Handle not found") << endl;
-    if (_captivePortal(request)) { // If captive portal redirect instead of displaying the error page.
+    if (_captivePortal(webserver)) { // If captive portal redirect instead of displaying the error page.
         return;
     }
     String message = "File Not Found\n\n";
     message += "URI: ";
-    message += request->url();
+    message += webserver->uri();
     message += "\nMethod: ";
-    message += ( request->method() == HTTP_GET ) ? "GET" : "POST";
+    message += ( webserver->method() == HTTP_GET ) ? "GET" : "POST";
     message += "\nArguments: ";
-    message += request->args();
+    message += webserver->args();
     message += "\n";
-    for ( uint8_t i = 0; i < request->args(); i++ ) {
-        message += " " + request->argName ( i ) + ": " + request->arg ( i ) + "\n";
+    for ( int i = 0; i < webserver->args(); i++ ) {
+        message += " " + webserver->argName ( i ) + ": " + webserver->arg ( i ) + "\n";
     }
-    AsyncWebServerResponse *response = request->beginResponse(404, "text/plain", message);
-    response->addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    response->addHeader("Pragma", "no-cache");
-    response->addHeader("Expires", "-1");
-    request->send (response );
+    webserver->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    webserver->sendHeader("Pragma", "no-cache");
+    webserver->sendHeader("Expires", "-1");
+    webserver->sendHeader("Content-Length", String(message.length()));
+    webserver->send(404, "text/plain", message);
 }
 
 /** Redirect to captive portal if we got a request for another domain. Return true in that case so the page handler do not try to handle the request again. */
-bool ConfigServer::_captivePortal(AsyncWebServerRequest *request)
+bool ConfigServer::_captivePortal(WebServer* webserver)
 {
-    if (!_isIp(request->host()) ) {
-        I::get().logger() << F("[EWC CS]: Request host is not an IP: ") << request->host() << endl;
-        I::get().logger() << F("[EWC CS]: Request redirected to captive portal: ") << _toStringIp(request->client()->localIP()) << endl;
-        AsyncWebServerResponse *response = request->beginResponse(302,"text/plain","");
-        response->addHeader("Location", String("http://") + _toStringIp(request->client()->localIP()));
-        request->send ( response);
+    if (!_isIp(webserver->hostHeader()) ) {
+        I::get().logger() << F("[EWC CS]: Request host is not an IP: ") << webserver->hostHeader() << endl;
+        I::get().logger() << F("[EWC CS]: Request redirected to captive portal: ") << _toStringIp(webserver->client().localIP()) << endl;
+        webserver->sendHeader("Location", String("http://") + _toStringIp(webserver->client().localIP()) + "/wifi/setup");
+        webserver->send(302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+        webserver->client().stop(); // Stop is needed because we sent no content length
         return true;
     }
     return false;
@@ -804,9 +804,9 @@ void ConfigServer::_startWiFiScan(bool force)
     }
 }
 
-bool ConfigServer::isAuthenticated(AsyncWebServerRequest *request)
+bool ConfigServer::isAuthenticated(WebServer* webserver)
 {
-    return ! (_config.paramBasicAuth && !request->authenticate(_config.paramHttpUser.c_str(), _config.paramHttpPassword.c_str()));
+    return ! (_config.paramBasicAuth && !webserver->authenticate(_config.paramHttpUser.c_str(), _config.paramHttpPassword.c_str()));
 }
 
 /** Is this an IP? */

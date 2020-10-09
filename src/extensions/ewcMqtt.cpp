@@ -46,10 +46,10 @@ void Mqtt::setup(JsonDocument& config, bool resetConfig)
     _initParams();
     _fromJson(config);
     EWC::I::get().server().insertMenuG("MQTT", "/mqtt/setup", "menu_mqtt", FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_MQTT_SETUP_GZIP, sizeof(HTML_MQTT_SETUP_GZIP), true, 0);
-    EWC::I::get().server().webserver().on("/mqtt/config.json", std::bind(&Mqtt::_onMqttConfig, this, std::placeholders::_1));
-    EWC::I::get().server().webserver().on("/mqtt/save", std::bind(&Mqtt::_onMqttSave, this, std::placeholders::_1));
-    EWC::I::get().server().webserver().on("/mqtt/state.json", std::bind(&Mqtt::_onMqttState, this, std::placeholders::_1));
-    EWC::I::get().server().webserver().on("/mqtt/connect", std::bind(&ConfigServer::sendContentP, &EWC::I::get().server(), std::placeholders::_1, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_MQTT_CONNECT));
+    EWC::I::get().server().webserver().on("/mqtt/config.json", std::bind(&Mqtt::_onMqttConfig, this, &EWC::I::get().server().webserver()));
+    EWC::I::get().server().webserver().on("/mqtt/save", std::bind(&Mqtt::_onMqttSave, this, &EWC::I::get().server().webserver()));
+    EWC::I::get().server().webserver().on("/mqtt/state.json", std::bind(&Mqtt::_onMqttState, this, &EWC::I::get().server().webserver()));
+    EWC::I::get().server().webserver().on("/mqtt/connect", std::bind(&ConfigServer::sendContentP, &EWC::I::get().server(), &EWC::I::get().server().webserver(), FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_MQTT_CONNECT));
     _mqttClient.onConnect(std::bind(&Mqtt::_onMqttConnect, this, std::placeholders::_1));
     _mqttClient.onDisconnect(std::bind(&Mqtt::_onMqttDisconnect, this, std::placeholders::_1));
     _wifiConnectHandler = WiFi.onStationModeGotIP(std::bind(&Mqtt::_onWifiConnect, this, std::placeholders::_1));
@@ -115,12 +115,13 @@ void Mqtt::_fromJson(JsonDocument& config)
         // reconnect
         if (_mqttClient.connected()) {
             _mqttClient.disconnect(true);
+        } else {
+            _connectToMqtt();
         }
-        _mqttReconnectTimer.once(1, std::bind(&Mqtt::_connectToMqtt, this));
     }
 }
 
-void Mqtt::_onMqttConfig(AsyncWebServerRequest *request)
+void Mqtt::_onMqttConfig(WebServer* request)
 {
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
@@ -132,12 +133,12 @@ void Mqtt::_onMqttConfig(AsyncWebServerRequest *request)
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
-void Mqtt::_onMqttSave(AsyncWebServerRequest *request)
+void Mqtt::_onMqttSave(WebServer* request)
 {
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    for (size_t i = 0; i < request->params(); i++) {
+    for (int i = 0; i < request->args(); i++) {
         I::get().logger() << "  " << request->argName(i) << ": " << request->arg(i) << endl;
     }
     DynamicJsonDocument config(1024);
@@ -168,7 +169,7 @@ void Mqtt::_onMqttSave(AsyncWebServerRequest *request)
     I::get().server().sendPageSuccess(request, "EWC MQTT save", "Save successful!", "/mqtt/setup", "<pre id=\"json\">" + details + "</pre>", "Back", "/mqtt/connect", "MQTT State");
 }
 
-void Mqtt::_onMqttState(AsyncWebServerRequest *request)
+void Mqtt::_onMqttState(WebServer* request)
 {
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();

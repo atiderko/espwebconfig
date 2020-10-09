@@ -24,13 +24,13 @@ function _loadJson() {
     let tuple = jsons.pop();
     console.log('_loadJson, tuple: ' + tuple);
     if (tuple != undefined) {
-      //for (var i = 0; i < jsons.length; i++) {
       let url = tuple[0];
       cjson_url = url;
       let func = tuple[1];
       let request = new XMLHttpRequest();
       request.open("GET",  tuple[0]);
       request.setRequestHeader('Cache-Control', 'no-cache');
+      request.overrideMimeType('application/json; charset=UTF-8');
       request.onreadystatechange = function() {
         try {
           if (request.readyState === XMLHttpRequest.DONE) {
@@ -70,9 +70,6 @@ function menu(data, uri) {
   }
   hh += '  </ul>';
   hh += '</div>';
-  //hh += '<div class="lap" id="rdlg"><a href="#reset" class="overlap"></a>';
-  //hh += '    <div class="modal_button"><h2><a href="/reset" class="modal_button">RESET</a></h2></div>';
-  //hh += '</div>';
   hh += '</header>';
   console.log(hh);
   document.getElementById("header").innerHTML = hh;

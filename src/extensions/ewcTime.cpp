@@ -48,8 +48,8 @@ void Time::setup(JsonDocument& config, bool resetConfig)
     _initParams();
     _fromJson(config);
     EWC::I::get().server().insertMenuG("Time", "/time/setup", "menu_time", FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_TIME_SETUP_GZIP, sizeof(HTML_TIME_SETUP_GZIP), true, 0);
-    EWC::I::get().server().webserver().on("/time/config.json", std::bind(&Time::_onTimeConfig, this, std::placeholders::_1));
-    EWC::I::get().server().webserver().on("/time/save", std::bind(&Time::_onTimeSave, this, std::placeholders::_1));
+    EWC::I::get().server().webserver().on("/time/config.json", std::bind(&Time::_onTimeConfig, this, &EWC::I::get().server().webserver()));
+    EWC::I::get().server().webserver().on("/time/save", std::bind(&Time::_onTimeSave, this, &EWC::I::get().server().webserver()));
     I::get().logger() << F("[EWC Time] current time: ") << str() << endl;
     if (!_paramManually) {
         // Sync our clock to NTP
@@ -131,7 +131,7 @@ void Time::_callbackTimeSet(void)
     _ntpAvailable = true;
 }
 
-void Time::_onTimeConfig(AsyncWebServerRequest *request)
+void Time::_onTimeConfig(WebServer* request)
 {
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
@@ -143,7 +143,7 @@ void Time::_onTimeConfig(AsyncWebServerRequest *request)
     request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
-void Time::_onTimeSave(AsyncWebServerRequest *request)
+void Time::_onTimeSave(WebServer* request)
 {
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();

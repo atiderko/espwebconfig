@@ -11,6 +11,7 @@ There are already many cool web-based configuration libraries out there, but I h
 - Modern web design // _based on [AutoConnect](https://github.com/Hieromon/AutoConnect)_
 - Simple integration into your sketch
 - No blocking, even if not yet connected
+- Save memory and increased stability by avoiding AsyncWebServer
 - Pages are created on the client site by JavaScript
 - Logging using __<<-operator__ // _based on [Homie](https://github.com/homieiot/homie-esp8266)_
 - Reset configuration by double press on reset button // _based on https://github.com/datacute/DoubleResetDetector_
@@ -36,7 +37,6 @@ board_build.filesystem = littlefs
 lib_deps =
     ArduinoJson
     AsyncMqttClient
-    ESP Async WebServer
     Ticker
     ESPWebConfig=https://github.com/atiderko/espwebconfig.git
 ```

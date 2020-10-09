@@ -22,11 +22,20 @@ limitations under the License.
 #ifndef EWC_TIME_h
 #define EWC_TIME_h
 
+#if defined(ESP8266)
+    #include "ESP8266WiFi.h"
+    #include "ESP8266WebServer.h"
+    # define WebServer ESP8266WebServer
+#elif defined(ESP32)
+    #include "WiFi.h"
+    #include "WebServer.h"
+#endif
+
 #include <Arduino.h>
 #include <time.h>                       // time() ctime()
 #include <sys/time.h>                   // struct timeval
 #include <coredecls.h>                  // settimeofday_cb()
-#include <ESPAsyncWebServer.h>
+// #include <ESPAsyncWebServer.h>
 #include "../ewcConfigInterface.h"
 
 
@@ -157,8 +166,8 @@ protected:
     void _initParams();
     void _fromJson(JsonDocument& config);
     void _callbackTimeSet(void);
-    void _onTimeConfig(AsyncWebServerRequest *request);
-    void _onTimeSave(AsyncWebServerRequest *request);
+    void _onTimeConfig(WebServer* request);
+    void _onTimeSave(WebServer* request);
 
     time_t _dndToMin(String& hmTime);
 };
