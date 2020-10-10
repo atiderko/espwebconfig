@@ -28,7 +28,6 @@ limitations under the License.
 #include "generated/ewcFailHTML.h"
 #include "generated/ewcSuccessHTML.h"
 #include "generated/webBaseCSS.h"
-#include "generated/webInfoCSS.h"
 #include "generated/webPostloadJS.h"
 #include "generated/webPreJS.h"
 #include "generated/webTableCSS.h"
@@ -137,7 +136,6 @@ void ConfigServer::setup()
     /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
     _server.on("/menu.json", std::bind(&ConfigServer::_sendMenu, this, &_server));
     _server.on("/css/base.css", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_CSS), CSS_WEB_BASE_GZIP, sizeof(CSS_WEB_BASE_GZIP)));
-    _server.on("/css/info.css", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_CSS), CSS_WEB_INFO_GZIP, sizeof(CSS_WEB_INFO_GZIP)));
     _server.on("/css/table.css", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_CSS), CSS_WEB_TABLE_GZIP, sizeof(CSS_WEB_TABLE_GZIP)));
     _server.on("/css/wifiicons.css", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_CSS), CSS_WEB_WIFIICONS_GZIP, sizeof(CSS_WEB_WIFIICONS_GZIP)));
     _server.on("/js/postload.js", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), JS_WEB_POSTLOAD_GZIP, sizeof(JS_WEB_POSTLOAD_GZIP)));

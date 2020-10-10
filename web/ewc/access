@@ -5,7 +5,6 @@
     <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
     <title>Access Settings</title>
     <link rel="stylesheet" href="/css/base.css">
-    <link rel="stylesheet" href="/css/info.css">
     <script src="/js/pre.js"></script>
   </head>
   <body style="padding-top:58px;">

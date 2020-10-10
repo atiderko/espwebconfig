@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <circle style="paint-order: fill; fill: rgb(30, 144, 255);" cx="24" cy="24" r="22"/>
+  <circle style="fill: rgb(255, 255, 255);" cx="24.179" cy="11.179" r="4"/>
+  <rect x="20" y="17.498" width="8" height="22.198" style="fill: rgb(255, 255, 255);" bx:origin="0.481375 0.5"/>
+</svg>

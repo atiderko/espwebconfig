@@ -28,10 +28,11 @@ function wifistations(data, uri) {
     hh += '<input type="button" onClick="onFocus(this.getAttribute(\'value\'))" value="' + network["ssid"] + '">';
     hh += '<label class="slist">' + getRSSIasQuality(network["rssi"]) + '&#037;&ensp;Ch.' + network["channel"] + '</label>';
     if (network["encrypted"]) {
-      hh += '<span class="img-lock"></span>';
+      hh += '<span class="svg-lock"></span>';
+      //hh += '<span><svg class="icon icon-connection"><use xlink:href="#icon-connection"></use></svg></span>';
     }
     if (network["hidden"]) {
-      hh += '<span class="img-hidden"></span>';
+      hh += '<span class="svg-hidden"></span>';
       hiddenCount += 1;
     }
     hh += '<br>';

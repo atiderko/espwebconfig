@@ -114,6 +114,16 @@ div .noorder {
 }
 */
 
+.noorder label[id^="info"]{
+    display: block;
+    color:#818181;
+    font-size: 13px;
+    text-align: left;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' style='fill:%23FFFFFF;' %3E %3Ccircle style='fill:%231E90FF;' cx='24' cy='24' r='18'/%3E%3Ccircle cx='24' cy='14' r='4'/%3E %3Crect x='20' y='22' width='8' height='12' /%3E %3C/svg%3E") no-repeat;
+    margin: 3px 0 0 12px;
+    padding:1px 0px 0px 20px
+}
+
 .noorder div label[for]{
     display:  table-row;
     width:140px;
