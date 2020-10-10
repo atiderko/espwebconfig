@@ -1,3 +1,6 @@
+var timerInfo;
+var timerSetup;
+var timerState;
 let countGetWifiStations = 0;
 let countGetWifiState = 0;
 
@@ -72,7 +75,8 @@ function wifistate(data, uri) {
           dbl.remove();
         }
         if (document.getElementById("list_ssid") == null) {
-          setTimeout(redirect.bind(null, "/ewc/info"), 3000);
+          clearTimeout(timerInfo);
+          timerInfo = setTimeout(redirect.bind(null, "/ewc/info"), 3000);
         }
       } else if (data["failed"]) {
         hh += '<label style="color:red;">' + data["reason"] + '</label>';
@@ -81,13 +85,15 @@ function wifistate(data, uri) {
           dbl.remove();
         }
         if (document.getElementById("list_ssid") == null) {
-          setTimeout(redirect.bind(null, "/wifi/setup"), 3000);
+          clearTimeout(timerSetup);
+          timerSetup = setTimeout(redirect.bind(null, "/wifi/setup"), 3000);
         }
       } else if (data["ssid"].length > 0) {
         countGetWifiState += 1;
         hh += '<label id="lbl_connecting">connecting...</label>';
         hh += '<label id="lbl_connecting_count">' + countGetWifiState + '</label>';
-        setTimeout(getJSON.bind(null, "/wifi/state.json", "wifistate"), 1000);
+        clearTimeout(timerState);
+        timerState = setTimeout(getJSON.bind(null, "/wifi/state.json", "wifistate"), 1000);
       }
     } else {
       hh = "not connected";
