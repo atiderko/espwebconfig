@@ -89,7 +89,7 @@ public:
     MqttHomie();
     ~MqttHomie();
 
-    void setup(EWC::Mqtt& mqtt, String deviceName, String deviceId="ewc-"+I::get().config().getChipId(), String prefix="homie");
+    void setup(EWC::Mqtt& mqtt, String deviceName, String deviceId="ewc-"+I::get().config().getChipId());
     /** Adds a node to the device. */
     bool addNode(String id, String name, String type="");
     /** Adds property to an existing node. The node should be inserted first. */

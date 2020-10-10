@@ -56,18 +56,13 @@ MqttHomie::~MqttHomie()
 {
 }
 
-void MqttHomie::setup(EWC::Mqtt& mqtt, String deviceName, String deviceId, String prefix) {
+void MqttHomie::setup(EWC::Mqtt& mqtt, String deviceName, String deviceId) {
     _ewcMqtt = &mqtt;
     for (auto itn = _homieDevice.nodes.begin(); itn != _homieDevice.nodes.end(); itn++) {
         itn->properties.clear();
     }
     _homieDevice.nodes.clear();
     _homieDevice.name = deviceName;
-    prefix.replace(SEP, "");
-    if (prefix.length() == 0) {
-        prefix = "homie";
-    }
-    _homieDevice.prefix = prefix;
     _homieDevice.id = deviceId;
     mqtt.client().onMessage(std::bind(&MqttHomie::_onMqttMessage, this, std::placeholders::_1, std::placeholders::_2,
                                       std::placeholders::_3, std::placeholders::_4,
@@ -141,6 +136,12 @@ bool MqttHomie::addPropertySettable(String nodeId, String propertyId, String nam
 void MqttHomie::_onMqttConnect(bool sessionPresent) {
     I::get().logger() << F("[MQTTHomie] setup on connect, session present: ") << sessionPresent << endl;
     I::get().logger() << "[MQTTHomie]: ESP heap: _onMqttConnect: " << ESP.getFreeHeap() << endl;
+    String prefix = _ewcMqtt->paramDiscoveryPrefix;
+    prefix.replace(SEP, "");
+    if (prefix.length() == 0) {
+        prefix = "homie";
+    }
+    _homieDevice.prefix = prefix;
     _homieStateTopic = _homieDevice.prefix + SEP + _homieDevice.id + SEP + "$state";
     I::get().logger() << F("[MQTTHomie] configure homie topics") << endl;
     _ewcMqtt->client().setWill(_homieStateTopic.c_str(), 2, true, "lost");
