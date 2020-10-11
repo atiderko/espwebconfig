@@ -10,7 +10,7 @@
   <body style="padding-top:58px;">
     <div id="header"></div>
     <div class="base-panel">
-        <form action="/ewc/accesssave" method="post">
+        <form action="/access/config/save" method="post">
           <div class="noorder">
             <div>
                 <label id="lbl_apname" for="apname">AP Name</label>
@@ -46,7 +46,7 @@
         </form>
     </div>
 
-    <script>var jsons = [ ["/ewc/access.json", "fillaccess"] ];</script>
+    <script>var jsons = [ ["/access/config.json", "fillaccess"] ];</script>
     <script src="/js/postload.js"></script>
     <script type="text/javascript">
       window.onload=function(){vsw(false, 'http');};
@@ -57,7 +57,7 @@
         "httppass", "hostname"].forEach(function(id,idy,arr) {
           document.getElementById(id).value = data["ewc"][id];
         });
-        // setTimeout(getJSON.bind(null, "/ewc/access.json", "fillaccess"), 3000);
+        // setTimeout(getJSON.bind(null, "/access/config.json", "fillaccess"), 3000);
       }
     </script>
   </body>

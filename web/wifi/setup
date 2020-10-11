@@ -11,7 +11,7 @@
   <body style="padding-top:58px;">
     <div id="header"></div>
     <div class="base-panel">
-        <form action="/wifi/connect" method="post">
+        <form action="/wifi/config/save" method="post">
           <div class="spinner">
               <div id="dbl">
                 <div id="dbl1" class="dbl-bounce1"></div>

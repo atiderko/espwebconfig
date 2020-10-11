@@ -49,7 +49,7 @@ void Time::setup(JsonDocument& config, bool resetConfig)
     _fromJson(config);
     EWC::I::get().server().insertMenuG("Time", "/time/setup", "menu_time", FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_TIME_SETUP_GZIP, sizeof(HTML_TIME_SETUP_GZIP), true, 0);
     EWC::I::get().server().webserver().on("/time/config.json", std::bind(&Time::_onTimeConfig, this, &EWC::I::get().server().webserver()));
-    EWC::I::get().server().webserver().on("/time/save", std::bind(&Time::_onTimeSave, this, &EWC::I::get().server().webserver()));
+    EWC::I::get().server().webserver().on("/time/config/save", std::bind(&Time::_onTimeSave, this, &EWC::I::get().server().webserver()));
     I::get().logger() << F("[EWC Time] current time: ") << str() << endl;
     if (!_paramManually) {
         // Sync our clock to NTP

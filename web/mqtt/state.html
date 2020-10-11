@@ -26,7 +26,7 @@
           if (data["enabled"]) {
             if (data["connecting"]) {
               hh += '<label id="lbl_connecting" style="color:black;">connecting... </label>';
-              setTimeout(redirect.bind(null, "/mqtt/connect"), 1000);
+              setTimeout(redirect.bind(null, "/mqtt/state.html"), 1000);
             } else if (data["connected"]) {
               hh += '<label id="lbl_connected" style="color:green;">connected </label>';
               dbl = document.getElementById("dbl").remove();

@@ -11,7 +11,7 @@
   <body style="padding-top:58px;">
     <div id="header"></div>
     <div class="base-panel">
-        <form action="/time/save" method="post">
+        <form action="/time/config/save" method="post">
           <div class="noorder">
             <div>
                 <label id="lbl_current" for="timezone">Current Time</label>

@@ -28,7 +28,7 @@ limitations under the License.
 #include <WiFi.h>
 #endif
 #include "generated/mqttSetupHTML.h"
-#include "generated/mqttConnectHTML.h"
+#include "generated/mqttStateHTML.h"
 
 using namespace EWC;
 
@@ -47,9 +47,9 @@ void Mqtt::setup(JsonDocument& config, bool resetConfig)
     _fromJson(config);
     EWC::I::get().server().insertMenuG("MQTT", "/mqtt/setup", "menu_mqtt", FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_MQTT_SETUP_GZIP, sizeof(HTML_MQTT_SETUP_GZIP), true, 0);
     EWC::I::get().server().webserver().on("/mqtt/config.json", std::bind(&Mqtt::_onMqttConfig, this, &EWC::I::get().server().webserver()));
-    EWC::I::get().server().webserver().on("/mqtt/save", std::bind(&Mqtt::_onMqttSave, this, &EWC::I::get().server().webserver()));
+    EWC::I::get().server().webserver().on("/mqtt/config/save", std::bind(&Mqtt::_onMqttSave, this, &EWC::I::get().server().webserver()));
+    EWC::I::get().server().webserver().on("/mqtt/state.html", std::bind(&ConfigServer::sendContentG, &EWC::I::get().server(), &EWC::I::get().server().webserver(), FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_MQTT_STATE_GZIP, sizeof(HTML_MQTT_STATE_GZIP)));
     EWC::I::get().server().webserver().on("/mqtt/state.json", std::bind(&Mqtt::_onMqttState, this, &EWC::I::get().server().webserver()));
-    EWC::I::get().server().webserver().on("/mqtt/connect", std::bind(&ConfigServer::sendContentP, &EWC::I::get().server(), &EWC::I::get().server().webserver(), FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_MQTT_CONNECT));
     _mqttClient.onConnect(std::bind(&Mqtt::_onMqttConnect, this, std::placeholders::_1));
     _mqttClient.onDisconnect(std::bind(&Mqtt::_onMqttDisconnect, this, std::placeholders::_1));
     _wifiConnectHandler = WiFi.onStationModeGotIP(std::bind(&Mqtt::_onWifiConnect, this, std::placeholders::_1));
@@ -166,7 +166,7 @@ void Mqtt::_onMqttSave(WebServer* request)
     I::get().configFS().save();
     String details;
     serializeJsonPretty(config["mqtt"], details);
-    I::get().server().sendPageSuccess(request, "EWC MQTT save", "Save successful!", "/mqtt/setup", "<pre id=\"json\">" + details + "</pre>", "Back", "/mqtt/connect", "MQTT State");
+    I::get().server().sendPageSuccess(request, "EWC MQTT save", "Save successful!", "/mqtt/setup", "<pre id=\"json\">" + details + "</pre>", "Back", "/mqtt/state.html", "MQTT State");
 }
 
 void Mqtt::_onMqttState(WebServer* request)

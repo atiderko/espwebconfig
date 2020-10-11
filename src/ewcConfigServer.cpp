@@ -24,7 +24,7 @@ limitations under the License.
 #include <LittleFS.h>
 #include "ewcInterface.h"
 #include "generated/ewcInfoHTML.h"
-#include "generated/ewcAccessHTML.h"
+#include "generated/accessSetupHTML.h"
 #include "generated/ewcFailHTML.h"
 #include "generated/ewcSuccessHTML.h"
 #include "generated/webBaseCSS.h"
@@ -33,7 +33,7 @@ limitations under the License.
 #include "generated/webTableCSS.h"
 #include "generated/webWifiiconsCSS.h"
 #include "generated/webWifiJS.h"
-#include "generated/wifiConnectHTML.h"
+#include "generated/wifiStateHTML.h"
 #include "generated/wifiSetupHTML.h"
 
 /**
@@ -142,17 +142,18 @@ void ConfigServer::setup()
     _server.on("/js/pre.js", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), JS_WEB_PRE_GZIP, sizeof(JS_WEB_PRE_GZIP)));
     _server.on("/js/wifi.js", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), JS_WEB_WIFI_GZIP, sizeof(JS_WEB_WIFI_GZIP)));
     insertMenuCb("WiFi", "/wifi/setup", "menu_wifi", std::bind(&ConfigServer::sendContentP, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_SETUP));
-    _server.on("/wifi/connect", std::bind(&ConfigServer::_onWiFiConnect, this, &_server));
     _server.on("/wifi/disconnect", std::bind(&ConfigServer::_onWiFiDisconnect, this, &_server));  //.setFilter(ON_AP_FILTER);
+    _server.on("/wifi/config/save", std::bind(&ConfigServer::_onWiFiConnect, this, &_server));
+    _server.on("/wifi/state.html", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_SETUP_GZIP, sizeof(HTML_WIFI_SETUP_GZIP)));
     _server.on("/wifi/state.json", std::bind(&ConfigServer::_onWifiState, this, &_server));
     _server.on("/wifi/stations.json", std::bind(&ConfigServer::_onWifiScan, this, &_server));
-    insertMenuCb("Access", "/ewc/access", "menu_access", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_EWC_ACCESS_GZIP, sizeof(HTML_EWC_ACCESS_GZIP)));
-    _server.on("/ewc/access.json", std::bind(&ConfigServer::_onAccessGet, this, &_server));
-    _server.on("/ewc/accesssave", std::bind(&ConfigServer::_onAccessSave, this, &_server));
+    insertMenuCb("Access", "/access/setup", "menu_access", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_ACCESS_SETUP_GZIP, sizeof(HTML_ACCESS_SETUP_GZIP)));
+    _server.on("/access/config.json", std::bind(&ConfigServer::_onAccessGet, this, &_server));
+    _server.on("/access/config/save", std::bind(&ConfigServer::_onAccessSave, this, &_server));
     insertMenuCb("Info", "/ewc/info", "menu_info", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_EWC_INFO_GZIP, sizeof(HTML_EWC_INFO_GZIP)));
     _server.on("/ewc/info.json", std::bind(&ConfigServer::_onGetInfo, this, &_server));
     if (_publicConfig) {
-        _server.on("/ewc/config", std::bind(&ConfigServer::_sendFileContent, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), FPSTR(CONFIG_FILENAME)));
+        _server.on("/config.json", std::bind(&ConfigServer::_sendFileContent, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), FPSTR(CONFIG_FILENAME)));
     }
     _server.on("/favicon.ico", std::bind(&ConfigServer::_sendFileContent, this, &_server, "/favicon.ico", "image/x-icon"));
     _server.onNotFound (std::bind(&ConfigServer::_onNotFound, this, &_server));
@@ -403,7 +404,7 @@ void ConfigServer::_onAccessSave(WebServer* webserver)
     if (webserver->hasArg("hostname")) {
         _config.paramHostname = webserver->arg("hostname");
     }
-    sendPageSuccess(webserver, "Security save", "Save successful! Please, restart to apply AP changes!", "/ewc/access");
+    sendPageSuccess(webserver, "Security save", "Save successful! Please, restart to apply AP changes!", "/access/setup");
 }
 
 void ConfigServer::_onGetInfo(WebServer* webserver)
@@ -478,7 +479,7 @@ void ConfigServer::_onWiFiConnect(WebServer* webserver)
         String dns2 = webserver->arg("dns2");
         _optionalIPFromString(&_sta_static_dns2, dns2.c_str());
     }
-    webserver->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), FPSTR(HTML_WIFI_CONNECT));
+    webserver->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), FPSTR(HTML_WIFI_STATE));
     _connect(ssid, pass);
 }
 

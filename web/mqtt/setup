@@ -11,7 +11,7 @@
   <body style="padding-top:58px;">
     <div id="header"></div>
     <div class="base-panel">
-        <form action="/mqtt/save" method="post">
+        <form action="/mqtt/config/save" method="post">
           <div class="noorder">
             <div class="line_named" id="lbl_status">Status</div>
             <div id="mqtt_state">
