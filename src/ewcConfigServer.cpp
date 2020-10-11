@@ -705,13 +705,9 @@ void ConfigServer::sendPageFailed(WebServer* webserver, String title, String sum
     webserver->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
 }
 
-void ConfigServer::sendRedirect(WebServer* webserver, String url, uint32_t timeout)
+void ConfigServer::sendRedirect(WebServer* webserver, String url)
 {
-    if (timeout == 0) {
-        webserver->sendHeader("Location", url);
-    } else {
-        webserver->sendHeader("Location", "refresh:" + String(timeout) + ";url=" + url);
-    }
+    webserver->sendHeader("Location", url);
     webserver->send(302, "text/plain", "");
 }
 
@@ -723,7 +719,6 @@ void ConfigServer::_sendFileContent(WebServer* webserver, const String& contentT
     I::get().logger() << F("[EWC CS]: Handle sendFileContent: ") << filename << endl;
     File reqFile = LittleFS.open(filename, "r");
     if (reqFile && reqFile.isFile()) {
-        //webserver->send(LittleFS, filename, contentType);
         webserver->streamFile(reqFile, contentType);
         reqFile.close();
         return;
@@ -747,7 +742,7 @@ void ConfigServer::_sendContentNoAuthG(WebServer* webserver, const String& conte
     I::get().logger() << F("[EWC CS]: send content for ") << webserver->uri() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << len << endl;
     if (ESP.getFreeHeap() <= 4000) {
         I::get().logger() << F("✘ [EWC CS]: Not enough memory to reply request ") << webserver->uri() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << len << endl;
-        sendRedirect(webserver, webserver->uri(), 1);
+        sendRedirect(webserver, webserver->uri());
         webserver->send(406, "text/plain", F("Not enough memory"));
     } else {
         I::get().logger() << F("content type: ") << contentType << endl;

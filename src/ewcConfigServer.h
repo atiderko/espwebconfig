@@ -133,7 +133,7 @@ public:
     /** Creates a page with failed result. **/
     void sendPageFailed(WebServer* request, String title, String summary, String urlBack, String details="", String nameBack="Back", String urlForward="/", String nameForward="Home");
     /** Send header with redirect to given url. **/
-    void sendRedirect(WebServer* request, String url, uint32_t timeout = 0);
+    void sendRedirect(WebServer* request, String url);
     /** Returns true if the client is authenticated. **/
     bool isAuthenticated(WebServer* request);
 

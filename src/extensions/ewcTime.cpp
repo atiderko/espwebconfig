@@ -232,7 +232,7 @@ time_t Time::shiftDisturb(time_t offsetSeconds)
         time_t m24 =  24 * 60;
         time_t ctime = currentTime();
         struct tm * timeinfo;
-        timeinfo = localtime(&ctime);
+        timeinfo = gmtime(&ctime);
         time_t cmin = timeinfo->tm_hour * 60 + timeinfo->tm_min;
         time_t minFrom = _dndToMin(_paramDndFrom);
         time_t minTo = _dndToMin(_paramDndTo);
