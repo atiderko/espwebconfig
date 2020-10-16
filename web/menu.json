@@ -1,7 +1,7 @@
 {
   "brand": "ESP WebConfig",
   "branduri": "/",
-  "language": "en",
+  "language": "de",
   "elements": [
     {
       "name": "Status",
@@ -31,7 +31,7 @@
     {
       "name": "Access",
       "id": "menu_access",
-      "href": "/ewc/access"
+      "href": "/access/setup"
     },
     {
       "name": "Update",

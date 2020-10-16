@@ -13,63 +13,63 @@
         <table class="info" style="border:none;">
           <tbody>
           <tr>
-            <td>Firmware version</td>
+            <td id="lbl_version">Firmware version</td>
             <td id="version"></td>
           </tr>
           <tr>
-            <td>Established connection</td>
+            <td id="lbl_estab_ssid">Established connection</td>
             <td id="estab_ssid"></td>
           </tr>
           <tr>
-            <td>Mode</td>
+            <td id="lbl_wifi_mode">Mode</td>
             <td id="wifi_mode"></td>
           </tr>
           <tr>
-            <td>IP</td>
+            <td id="lbl_local_ip">IP</td>
             <td id="local_ip"></td>
           </tr>
           <tr>
-            <td>Gateway</td>
+            <td id="lbl_gateway">Gateway</td>
             <td id="gateway"></td>
           </tr>
           <tr>
-            <td>Netmask</td>
+            <td id="lbl_netwask">Netmask</td>
             <td id="netwask"></td>
           </tr>
           <tr>
-            <td>SoftAP IP</td>
+            <td id="lbl_softap_ip">SoftAP IP</td>
             <td id="softap_ip"></td>
           </tr>
           <tr>
-            <td>AP MAC</td>
+            <td id="lbl_ap_mac">AP MAC</td>
             <td id="ap_mac"></td>
           </tr>
           <tr>
-            <td>STA MAC</td>
+            <td id="lbl_sta_mac">STA MAC</td>
             <td id="sta_mac"></td>
           </tr>
           <tr>
-            <td>Channel</td>
+            <td id="lbl_channel">Channel</td>
             <td id="channel"></td>
           </tr>
           <tr>
-            <td>dBm</td>
+            <td id="lbl_dbm">dBm</td>
             <td id="dbm"></td>
           </tr>
           <tr>
-            <td>Chip ID</td>
+            <td id="lbl_chip_id">Chip ID</td>
             <td id="chip_id"></td>
           </tr>
           <tr>
-            <td>CPU Freq.</td>
+            <td id="lbl_cpu_freq">CPU Freq.</td>
             <td id="cpu_freq"></td>
           </tr>
           <tr>
-            <td>Flash size</td>
+            <td id="lbl_flash_size">Flash size</td>
             <td id="flash_size"></td>
           </tr>
           <tr>
-            <td>Free memory</td>
+            <td id="lbl_free_heap">Free memory</td>
             <td id="free_heap"></td>
           </tr>
           </tbody>

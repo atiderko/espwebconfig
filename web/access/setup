@@ -22,7 +22,7 @@
                 <input id="appass-status" class="pwdcb" type="checkbox" aria-hidden="true" onClick="viewPassword('appass', 'appass-status')">
             </div>
             <div>
-              <input id="ap_start_always" type="checkbox" name="ap_start_always" value="true" checked>AP start always</input>
+              <input id="ap_start_always" type="checkbox" name="ap_start_always" value="true" checked><label id="lbl_ap_start_always">AP start always</label></input>
               <label id="info_ap_start_always">Open AP also while connected to WiFi. </label>
             </div>
             <div>
@@ -30,7 +30,7 @@
                 <input id="hostname" type="text" name="hostname" placeholder="Name">
             </div>
             <div>
-              <input id="basic_auth" type="checkbox" name="basic_auth" value="true" onclick="vsw(this.checked, 'http');">Enable HTTP authentification</input>
+              <input id="basic_auth" type="checkbox" name="basic_auth" value="true" onclick="vsw(this.checked, 'http');"><label id="lbl_basic_auth">Enable HTTP authentification</label></input>
             </div>
             <div class="http">
                 <label id="lbl_httpuser" for="httpuser">HTTP User</label>
@@ -42,7 +42,7 @@
                 <input id="httpass-status" class="pwdcb" type="checkbox" aria-hidden="false" onClick="viewPassword('httppass', 'httpass-status')"/>
             </div>
           </div>
-          <input type="submit" name="apply" value="Apply">
+          <input id="npt_apply" type="submit" name="apply" value="Apply">
         </form>
     </div>
 

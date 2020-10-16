@@ -99,7 +99,12 @@ function updateLanguageKey(id) {
     if (value != undefined) {
       item = document.getElementById(id)
       if (item != undefined) {
-        if (item.value) {
+        console.log(id, ":", value)
+        console.log(id, ":", item.tagName)
+        console.log(id, ":", item.text)
+        if (item.tagName.toUpperCase() == "BUTTON") {
+          item.innerHTML = value;
+        } else if (item.tagName.toUpperCase() == "INPUT") {
           item.value = value;
         } else {
           item.innerHTML = value;

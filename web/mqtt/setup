@@ -18,7 +18,7 @@
             </div>
             <div class="line_named" id="lbl_settings">Settings</div>
             <div>
-              <input id="mqtt_enabled" type="checkbox" name="mqtt_enabled" value="true" onclick="vsw(this.checked, 'exp');">Enable MQTT</input>
+              <input id="mqtt_enabled" type="checkbox" name="mqtt_enabled" value="true" onclick="vsw(this.checked, 'exp');"><label id="lbl_mqtt_enabled">Enable MQTT</label></input>
             </div>
             <div class="exp">
               <div>
@@ -45,7 +45,7 @@
               </div>
             </div>
           </div>
-          <input type="submit" name="apply" value="Apply">
+          <input id="npt_apply" type="submit" name="apply" value="Apply">
         </form>
     </div>
 

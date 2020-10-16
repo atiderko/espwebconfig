@@ -1,28 +1,20 @@
 {
-    "lbl_current": {
-        "de": "Aktuelle Zeit"
+    "menu_wifi": {
+        "de": "WLAN"
     },
-    "lbl_timezone": {
-        "de": "Zeitzone"
+    "menu_info": {
+        "de": "Info"
     },
-    "lbl_manually": {
-        "de": "Manuelle Zeit"
+    "menu_access": {
+        "de": "Zugriff"
     },
-    "info_manually": {
-        "de": "Die Zeit muss dann nach jedem Start neu eingestellt werden!"
+    "menu_time": {
+        "de": "Zeit"
     },
-    "lbl_dnd_enabled": {
-        "de": "Nicht stören in der Zeit"
+    "menu_mqtt": {
+        "de": "MQTT"
     },
-    "lbl_dnd_from": {
-        "de": "Von"
-    },
-    "lbl_dnd_to": {
-        "de": "Bis"
-    },
-    "npt_apply": {
-        "de": "Übernehmen"
-    },
+
     "btn_disable_wifi": {
         "de": "Deaktiviere WLAN"
     },
@@ -50,10 +42,135 @@
     "btn_disconnect": {
         "de": "trennen"
     },
-    "menu_access": {
-        "de": "Zugriff"
+
+    "lbl_version": {
+        "de": "Firmwareversion"
     },
-    "menu_time": {
-        "de": "Zeit"
-    }    
+    "lbl_estab_ssid": {
+        "de": "Aufgebaute Verbindung"
+    },
+    "lbl_wifi_mode": {
+        "de": "Modus"
+    },
+    "lbl_local_ip": {
+        "de": "IP"
+    },
+    "lbl_gateway": {
+        "de": "Gateway"
+    },
+    "lbl_netwask": {
+        "de": "Netzwerkmaske"
+    },
+    "lbl_softap_ip": {
+        "de": "SoftAP IP"
+    },
+    "lbl_ap_mac": {
+        "de": "AP MAC"
+    },
+    "lbl_sta_mac": {
+        "de": "STA MAC"
+    },
+    "lbl_channel": {
+        "de": "Kanal"
+    },
+    "lbl_dbm": {
+        "de": "dBm"
+    },
+    "lbl_chip_id": {
+        "de": "Chip ID"
+    },
+    "lbl_cpu_freq": {
+        "de": "CPU Freq."
+    },
+    "lbl_flash_size": {
+        "de": "Flashgröße"
+    },
+    "lbl_free_heap": {
+        "de": "Freier Specher"
+    },
+
+    "lbl_fw_version": {
+        "de": "Aktuelle Version:"
+    },
+    "div_manually": {
+        "de": "Manuell"
+    },
+    "lbl_firmware": {
+        "de": "Firmware"
+    },
+    "npt_update": {
+        "de": "Aktualisiere"
+    },
+
+    "lbl_apname": {
+        "de": "AP Name"
+    },
+    "lbl_appass": {
+        "de": "AP Passwort"
+    },
+    "lbl_ap_start_always": {
+        "de": "AP starte immer"
+    },
+    "info_ap_start_always": {
+        "de": "Starte AP auch wenn verbunden."
+    },
+    "lbl_hostname": {
+        "de": "Hostname"
+    },
+    "lbl_basic_auth": {
+        "de": "HTTP Authentifikation"
+    },
+    "lbl_httpuser": {
+        "de": "HTTP Benutzer"
+    },
+    "lbl_httppass": {
+        "de": "HTTP Passwort"
+    },
+
+    "lbl_current": {
+        "de": "Aktuelle Zeit"
+    },
+    "lbl_timezone": {
+        "de": "Zeitzone"
+    },
+    "lbl_manually": {
+        "de": "Manuelle Zeit"
+    },
+    "info_manually": {
+        "de": "Die Zeit muss dann nach jedem Start neu eingestellt werden!"
+    },
+    "lbl_dnd_enabled": {
+        "de": "Nicht stören in der Zeit"
+    },
+    "lbl_dnd_from": {
+        "de": "Von"
+    },
+    "lbl_dnd_to": {
+        "de": "Bis"
+    },
+    "npt_apply": {
+        "de": "Übernehmen"
+    },
+
+    "lbl_settings": {
+        "de": "Einstellungen"
+    },
+    "lbl_mqtt_enabled": {
+        "de": "Aktiviere MQTT"
+    },
+    "lbl_mqtt_server": {
+        "de": "Server"
+    },
+    "lbl_mqtt_port": {
+        "de": "Port"
+    },
+    "lbl_user": {
+        "de": "Benutzer"
+    },
+    "lbl_passphrase": {
+        "de": "Passwort"
+    },
+    "lbl_mqtt_prefix": {
+        "de": "Discovery prefix"
+    }
 }
