@@ -17,7 +17,8 @@ There are already many cool web-based configuration libraries out there, but I h
 - Reset configuration by double press on reset button // _based on https://github.com/datacute/DoubleResetDetector_
 - Interface to store runtime data in RTC memory.
 - Option to add own languages.
-- Extensions for __OTA Update__, __MQTT__ _(with optional Homie-Discovery support)_, __Time__ or __E-Mail__ setup pages.
+- Extensions for __OTA Update__, __MQTT__, __Time__ or __E-Mail__ setup pages.
+- Optional: [MQTT Homie](https://homieiot.github.io) integration for simple setup of property discovery.
 - Create you own pages and test the functionality with a webserver of your choice. Include the HTML, CSS, JS or SVG files as auto generated header files // _based on [ESPUI](https://github.com/s00500/ESPUI)_
 
 ## Installation
