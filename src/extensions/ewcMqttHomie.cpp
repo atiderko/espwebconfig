@@ -24,8 +24,6 @@ limitations under the License.
 
 using namespace EWC;
 
-const char SEP[2] = "/";
-
 
 MqttConfigTopic::MqttConfigTopic(String topic, String value, uint8_t qos, bool retain)
 {
@@ -115,7 +113,7 @@ bool MqttHomie::addPropertySettable(String nodeId, String propertyId, String nam
 {
     for (auto itn = _homieDevice.nodes.begin(); itn != _homieDevice.nodes.end(); itn++) {
         if (itn->id.compareTo(nodeId) == 0) {
-            I::get().logger() << F("[MQTTHomie] add seattable property with id: ") << propertyId << F(" to nodeid: ") << nodeId << endl;
+            I::get().logger() << F("[MQTTHomie] add settable property with id: ") << propertyId << F(" to nodeid: ") << nodeId << endl;
             HomieProperty hp;
             hp.id = propertyId;
             hp.name = name;
@@ -125,8 +123,7 @@ bool MqttHomie::addPropertySettable(String nodeId, String propertyId, String nam
             hp.settable = true;
             hp.retained = retained;
             itn->properties.push_back(hp);
-            String topic_set = _homieDevice.prefix + SEP + _homieDevice.id + SEP + itn->id + SEP + propertyId + "/set";
-            _callbacks.push_back(CallbackTopic(topic_set, callback));
+            _callbacks.push_back(CallbackTopic(nodeId, propertyId, callback));
             return true;
         }
     }
@@ -154,6 +151,7 @@ void MqttHomie::_onMqttConnect(bool sessionPresent) {
     _configTopics.push_back(MqttConfigTopic(devicePrefix + "$homie", "4.0", 2, true));
     _configTopics.push_back(MqttConfigTopic(devicePrefix + "$name", _homieDevice.name, 2, true));
     _configTopics.push_back(MqttConfigTopic(_homieStateTopic, "init", 2, false));
+    // create nodes string
     String nodes;
     for (auto itn = _homieDevice.nodes.begin(); itn != _homieDevice.nodes.end(); itn++) {
         if (nodes.isEmpty()) {
@@ -163,6 +161,10 @@ void MqttHomie::_onMqttConnect(bool sessionPresent) {
         }
     }
     _configTopics.push_back(MqttConfigTopic(devicePrefix + "$nodes", nodes, 2, true));
+    // update callable topics
+    for (auto itc = _callbacks.begin(); itc != _callbacks.end(); itc++) {
+        itc->createTopic(_homieDevice.prefix, _homieDevice.id);
+    }
     // create topics for node configuration
     for (auto itn = _homieDevice.nodes.begin(); itn != _homieDevice.nodes.end(); itn++) {
         _configTopics.push_back(MqttConfigTopic(devicePrefix + itn->id + SEP + "$name", itn->name, 2, true));
@@ -191,10 +193,9 @@ void MqttHomie::_onMqttConnect(bool sessionPresent) {
             }
             if (itp->settable) {
                 _configTopics.push_back(MqttConfigTopic(propPrefix + "$settable", "true", 2, true));
+                // subscribe to callable topics of this property
                 String tpset = propPrefix + "set";
-                I::get().logger() << F("[MQTTHomie] subscriber search for ") << tpset << endl;
                 for (auto itc = _callbacks.begin(); itc != _callbacks.end(); itc++) {
-                    I::get().logger() << F("[MQTTHomie] compare to ") << itc->topic << endl;
                     if (tpset.compareTo(itc->topic) == 0) {
                         I::get().logger() << F("[MQTTHomie] subscribe to ") << tpset << endl;
                         _ewcMqtt->client().subscribe(itc->topic.c_str(), 2);

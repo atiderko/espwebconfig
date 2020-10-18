@@ -27,6 +27,7 @@ limitations under the License.
 
 namespace EWC {
 
+const char SEP[2] = "/";
 
 struct HomieProperty {
     String id;
@@ -59,13 +60,22 @@ struct HomieDevice {
 /** Stores the callback for the settable topic. */
 class CallbackTopic {
 public:
-    String topic;
     AsyncMqttClientInternals::OnMessageUserCallback callback;
+    String topic;
 
-    CallbackTopic(String topicName, AsyncMqttClientInternals::OnMessageUserCallback callbackFunc) {
-        topic = topicName;
+    CallbackTopic(String nodeId, String propertyId, AsyncMqttClientInternals::OnMessageUserCallback callbackFunc) {
+        _nodeId = nodeId;
+        _propertyId = propertyId;
         callback = callbackFunc;
     }
+
+    void createTopic(String homiePrefix, String deviceId) {
+        topic = homiePrefix + SEP + deviceId + SEP + _nodeId + SEP + _propertyId + SEP + "set";
+    }
+
+protected:
+    String _nodeId;
+    String _propertyId;
 };
 
 
