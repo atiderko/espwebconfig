@@ -59,6 +59,7 @@ public:
     String paramAPName;
     const String& getAPPass() { return _paramAPPass; }
     void setAPPass(String pass);
+    String paramDeviceName;
     bool paramAPStartAlways;
     bool paramWifiDisabled;
     bool paramBasicAuth;

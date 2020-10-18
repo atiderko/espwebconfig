@@ -13,6 +13,10 @@
         <form action="/access/config/save" method="post">
           <div class="noorder">
             <div>
+                <label id="lbl_dev_name" for="dev_name">Device Name</label>
+                <input id="dev_name" type="text" name="dev_name" placeholder="Device Name">
+            </div>
+            <div>
                 <label id="lbl_apname" for="apname">AP Name</label>
                 <input id="apname" type="text" name="apname" placeholder="Name">
             </div>
@@ -53,7 +57,7 @@
       function fillaccess(data, url) {
         document.getElementById("ap_start_always").checked = data["ewc"]["ap_start_always"];
         document.getElementById("basic_auth").checked = data["ewc"]["basic_auth"];
-        ["apname","appass","httpuser",
+        ["dev_name", "apname","appass","httpuser",
         "httppass", "hostname"].forEach(function(id,idy,arr) {
           document.getElementById(id).value = data["ewc"][id];
         });

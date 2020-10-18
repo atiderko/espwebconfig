@@ -383,6 +383,9 @@ void ConfigServer::_onAccessSave(WebServer* webserver)
     if (!isAuthenticated(webserver)) {
         return webserver->requestAuthentication();
     }
+    if (webserver->hasArg("dev_name")) {
+        _config.paramDeviceName = webserver->arg("dev_name");
+    }
     if (webserver->hasArg("apname")) {
         _config.paramAPName = webserver->arg("apname");
     }

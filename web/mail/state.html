@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <title>Testing mail</title>
+    <link rel="stylesheet" href="/css/base.css">
+  </head>
+  <body style="padding-top:58px;">
+    <div id="header"></div>
+    <div class="spinner">
+        <div id="dbl">
+          <div id="dbl1" class="dbl-bounce1"></div>
+          <div id="dbl2" class="dbl-bounce2"></div>
+        </div>
+        <div id="mail_result" style="position:absolute;left:-200%;right:-200%;text-align:center;margin:30px auto;font-weight:bold;color:#0b0b33;">
+          <label>sending test email...</label>
+        </div>
+    </div>
+    <script>var jsons = [ ["/mail/state.json", "fillMailTesting"] ];</script>
+    <script src="/js/postload.js"></script>
+    <script type="text/javascript">
+      function fillMailTesting(data, url) {
+        hh = '<label>sending test email...</label>';
+        if (!data["mail"]["test_send"]) {
+          if (data["mail"]["test_success"]) {
+            hh += '<label style="color:green;"> ' + data["mail"]["test_result"] + '</label>';
+            setTimeout(redirect.bind(null, "/"), 3000);
+          } else {
+            hh += '<label style="color:red;"> ' + data["mail"]["test_result"] + '</label>';
+            setTimeout(redirect.bind(null, "/mail/setup"), 3000);
+          }
+          document.getElementById("dbl").remove();
+        } else {
+          setTimeout(getJSON.bind(null, "/mail/state.json", "fillMailTesting"), 1000);
+        }
+        document.getElementById("mail_result").innerHTML = hh;
+      }
+    </script>
+  </body>
+</html>

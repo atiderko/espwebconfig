@@ -1,0 +1,12 @@
+{
+    "mail": {
+        "on_warning": true,
+        "on_change": true,
+        "on_event": false,
+        "receiver": "",
+        "sender": "",
+        "passphrase": "",
+        "smtp": "",
+        "port": 25
+    }
+}

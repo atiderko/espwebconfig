@@ -76,6 +76,7 @@ void Config::setup(JsonDocument& config, bool resetConfig)
 
 void Config::fillJson(JsonDocument& config)
 {
+    config["ewc"]["dev_name"] = paramDeviceName;
     config["ewc"]["apname"] = paramAPName;
     config["ewc"]["appass"] = _paramAPPass;
     config["ewc"]["ap_start_always"] = paramAPStartAlways;
@@ -91,6 +92,10 @@ void Config::_fromJson(JsonDocument& doc)
     JsonVariant jv = doc["ewc"]["wifi_disabled"];
     if (!jv.isNull()) {
         paramWifiDisabled = jv.as<bool>();
+    }
+    jv = doc["ewc"]["dev_name"];
+    if (!jv.isNull()) {
+        paramDeviceName = jv.as<String>();
     }
     jv = doc["ewc"]["apname"];
     if (!jv.isNull()) {
@@ -154,6 +159,7 @@ void Config::setAPPass(String pass)
 
 void Config::_initParams()
 {
+    paramDeviceName = String("ewc-") + getChipId();
     paramAPName = String("ewc-") + getChipId();
     _paramAPPass = "";
     paramAPStartAlways = false;

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <title>E-Mail Setup</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <script src="/js/pre.js"></script>
+  </head>
+
+  <body style="padding-top:58px;">
+    <div id="header"></div>
+    <div class="base-panel">
+        <form action="/mail/config/save" method="post">
+          <div class="noorder">
+            <div>
+              <input id="on_warning" type="checkbox" name="on_warning" value="true" checked><label id="lbl_on_warning">Send on warning</label></input>
+              <label id="info_on_warning">Send only warnings, e.g. no regular function is possible</label>
+            </div>
+            <div>
+              <input id="on_change" type="checkbox" name="on_change" value="true" checked><label id="lbl_on_change">Send on change</label></input>
+              <label id="info_on_change">Send on state changes, e.g. function mode is changed</label>
+            </div>
+            <div>
+              <input id="on_event" type="checkbox" name="on_event" value="false"><label id="lbl_on_event">Send on each event</label></input>
+            </div>
+            <div>
+                <label id="lbl_receiver" for="receiver">Receiver:</label>
+                <input id="receiver" type="text" name="receiver" placeholder="receiver@mail.de" pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}'>
+                <label id="info_receiver">E-Mail address to receive notifications.</label>
+            </div>
+            <div>
+                <label id="lbl_sender" for="sender">Sender:</label>
+                <input id="sender" type="text" name="sender" placeholder="sender@mail.de" pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}'>
+            </div>
+            <div>
+                <label id="lbl_smtp" for="smtp">SMTP Server</label>
+                <input id="smtp" type="text" name="smtp" placeholder="mx2fbd.netcup.net">
+            </div>
+            <div>
+                <label id="lbl_port" for="smtp">SMTP Port</label>
+                <input id="port" type="text" name="port" placeholder="25">
+            </div>
+            <div>
+                <label id="lbl_passphrase" for="passphrase">Password</label>
+                <input id="passphrase" type="password" name="passphrase" placeholder="Passphrase">
+                <input id="httpass-status" class="pwdcb" type="checkbox" aria-hidden="true" onClick="viewPassword('passphrase', '')">
+            </div>
+          </div>
+          <input id="npt_apply" type="submit" name="apply" value="Apply">
+          <input id="btn_test_send" type="button" style="margin:12px 5px 15px 20px;width:9em; background: #2060e9;" onClick="onTestMail();" value="Save & Test">
+        </form>
+    </div>
+
+<script type="text/javascript">
+function onTestMail() {
+  location.href='/mail/test';
+}
+</script>
+<script>jsons = [ ["/mail/config.json", "fillMailConfig"] ];</script>
+<script src="/js/postload.js"></script>
+<script type="text/javascript">
+  function fillMailConfig(data, url) {
+    ["on_warning", "on_change","on_event"
+    ].forEach(function(id,idy,arr) {
+      document.getElementById(id).checked = data["mail"][id];
+    });
+    ["receiver","sender","passphrase","smtp","port"
+    ].forEach(function(id,idy,arr) {
+      document.getElementById(id).value = data["mail"][id];
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+    "mail": {
+        "test_send": false,
+        "test_success": true,
+        "test_result": "Successfully",
+        "sending": true
+        
+    }
+}
