@@ -101,7 +101,19 @@ Default _Info_ (/ewc/info) and _Access-Configuration_ (/access/setup) pages:
 
 ## Language customization
 
-TODO
+Copy _web/languages.json_ to _web_ folder of your project. Extend/replace the content of the JSON file with your launguage.
+Add following code to your code.
+
+```cpp
+#include "generated/webLanguagesJSON.h"
+
+void setup()
+    // ... other content
+    EWC::I::get().config().paramLanguage = "de";
+    EWC::I::get().server().webserver().on("/languages.json", std::bind(&EWC::ConfigServer::sendContentP, &EWC::I::get().server(), &EWC::I::get().server().webserver(), FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), JSON_WEB_LANGUAGES));
+    // ... other content
+}
+```
 
 ## Favicon.ico
 
