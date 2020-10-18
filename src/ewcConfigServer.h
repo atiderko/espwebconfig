@@ -21,22 +21,11 @@ limitations under the License.
 #ifndef EWC_CONFIG_SERVER_H
 #define EWC_CONFIG_SERVER_H
 
-// #if defined(ESP8266)
-// #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-// #else
-// #include <WiFi.h>
-// #include "esp_wps.h"
-// #define ESP_WPS_MODE WPS_TYPE_PBC
-// #endif
-// #include <ESPAsyncWebServer.h>
-
 #ifdef ESP8266
 # include <ESP8266WiFi.h>
 # include <ESP8266WebServer.h>
-// # include <ESP8266HTTPUpdateServer.h>
 # define WebServer ESP8266WebServer
 typedef std::function<void ()> WebServerHandlerFunction;
-// # define HTTPUpdateServer ESP8266HTTPUpdateServer
 #elif defined(ESP32)
 # include <WiFi.h>
 # include <WebServer.h>
