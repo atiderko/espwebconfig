@@ -1,17 +1,18 @@
-## Integration of __Updater__ extension
+## Integration of __Mail__ extension
 
 ```cpp
 #include <Arduino.h>
 #include <ewcConfigServer.h>
-#include <extensions/ewcUpdater.h>
+#include <extensions/ewcMail.h>
 
 EWC::ConfigServer server;
-EWC::Updater ewcUpdater;
+EWC::Mail ewcMail;
+bool mailSend = false;
 
 void setup() {
     Serial.begin(115200);
-    // add updater configuration
-    EWC::I::get().configFS().addConfig(ewcUpdater);
+    // add mail configuration
+    EWC::I::get().configFS().addConfig(ewcMail);
     // start webserver
 	server.setup();
 }
@@ -20,10 +21,13 @@ void setup() {
 void loop() {
     // process dns requests and connection state AP/STA
     server.loop();
-    // should be called to perform reboot after successful update
-    ewcUpdater.loop();
+    // should be called to perform send and receive ACK
+    ewcMail.loop();
     if (WiFi.status() == WL_CONNECTED) {
         // do your stuff if connected
+        if (!mailSend) {
+            mailSend = ewcMail.sendChange("Subject", "Device connected");
+        }
     } else {
         // or if not yet connected
     }

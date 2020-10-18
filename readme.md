@@ -11,14 +11,14 @@ There are already many cool web-based configuration libraries out there, but I h
 - Modern web design // _based on [AutoConnect](https://github.com/Hieromon/AutoConnect)_
 - Simple integration into your sketch
 - No blocking, even if not yet connected
-- Save memory and increased stability by avoiding AsyncWebServer
-- Pages are created on the client site by JavaScript
+- Increased stability by avoiding AsyncWebServer
+- Pages are filled on the client site by JavaScript
 - Logging using __<<-operator__ // _based on [Homie](https://github.com/homieiot/homie-esp8266)_
 - Reset configuration by double press on reset button // _based on https://github.com/datacute/DoubleResetDetector_
 - Interface to store runtime data in RTC memory.
 - Option to add own languages.
-- Extensions for __OTA Update__, __MQTT__ or __Time__ setup pages.
-- Create you own pages and test the functionality with a webserver of your choice. Include the HTML, CSS and JS file as auto generated header files // _based on [ESPUI](https://github.com/s00500/ESPUI)_
+- Extensions for __OTA Update__, __MQTT__ _(with optional Homie-Discovery support)_, __Time__ or __E-Mail__ setup pages.
+- Create you own pages and test the functionality with a webserver of your choice. Include the HTML, CSS, JS or SVG files as auto generated header files // _based on [ESPUI](https://github.com/s00500/ESPUI)_
 
 ## Installation
 
@@ -41,7 +41,7 @@ lib_deps =
     ESPWebConfig=https://github.com/atiderko/espwebconfig.git
 ```
 
-If you want add your own pages you need to put the html file into __web__ folder.
+To add your own pages you need to put the html file into __web__ folder.
 For header generation while build extend your _platromio.ini_ with:
 ```ini
 extra_scripts = pre:pre_build.py
@@ -86,16 +86,22 @@ On first start it creates a captive portal where you can enter your credentials 
 
 <img src="docs/images/wifi_not_connected.png" width="200">&emsp;<img src="docs/images/wifi_connected.png" width="200">
 
-Default _Info_ (/ewc/info) and _Access-Configuration_ (/ewc/access) pages:
+Default _Info_ (/ewc/info) and _Access-Configuration_ (/access/setup) pages:
 
 <img src="docs/images/info.png" width="200">&emsp;<img src="docs/images/access.png" width="200">
 
 ## Extensions
 
-<img src="docs/images/time.png" width="200">&emsp;<img src="docs/images/updater.png" width="200">&emsp;<img src="docs/images/mqtt.png" width="200">
+<img src="docs/images/time.png" width="200">&emsp;<img src="docs/images/updater.png" width="200">&emsp;<img src="docs/images/mqtt.png" width="200">&emsp;<img src="docs/images/mail.png" width="200">
 
 - [Time integration](docs/time.md)
 - [Updater integration](docs/updater.md)
+- [MQTT integration](docs/mqtt.md)
+- [Mail integration](docs/mail.md)
+
+## Language customization
+
+TODO
 
 ## Favicon.ico
 

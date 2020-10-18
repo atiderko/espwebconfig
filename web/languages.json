@@ -14,6 +14,9 @@
     "menu_mqtt": {
         "de": "MQTT"
     },
+    "menu_mail": {
+        "de": "EMail"
+    },
 
     "btn_disable_wifi": {
         "de": "Deaktiviere WLAN"
@@ -172,5 +175,40 @@
     },
     "lbl_mqtt_prefix": {
         "de": "Discovery prefix"
+    },
+
+    "lbl_on_warning": {
+        "de": "Sende Warnungen"
+    },
+    "info_on_warning": {
+        "de": "Sende nur Warnungen, z.B. keine reguläre Funktion ist möglich"
+    },
+    "lbl_on_change": {
+        "de": "Sende Änderungen"
+    },
+    "info_on_change": {
+        "de": "Sende nur wenn der Funktionsmodus gewechselt wurde."
+    },
+    "lbl_on_event": {
+        "de": "Sende bei jedem Ereignis"
+    },
+    "lbl_receiver": {
+        "de": "Empfänger"
+    },
+    "info_receiver": {
+        "de": "Adresse des Empfängers der E-Mails."
+    },
+    "lbl_sender": {
+        "de": "Sender"
+    },
+    "lbl_smtp": {
+        "de": "SMTP Server"
+    },
+    "lbl_port": {
+        "de": "SMTP Port"
+    },
+    "btn_test_send": {
+        "de": "Testen"
     }
+
 }
