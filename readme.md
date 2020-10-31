@@ -47,10 +47,16 @@ For header generation while build extend your _platromio.ini_ with:
 ```ini
 extra_scripts = pre:pre_build.py
 ```
-and add the script file __pre_build.py__ with:
+and add the script file __pre_build.py__ with (for header generation from HTML, JS, JSON or SVG files we use __python__ with __htmlmin__, __jsmin__ and __csscompressor__; we check and install they if needed):
 ```python
 Import("env")
-env.Execute("python $PROJECT_DIR/.pio/libdeps/d1_mini/espwebconfig/scripts/generate_headers.py -p $PROJECT_DIR -n")
+try:
+    import jsmin
+    import htmlmin
+    import csscompressor
+except ImportError:
+    env.Execute("$PYTHONEXE -m pip install htmlmin jsmin csscompressor")
+env.Execute("$PYTHONEXE $PROJECT_DIR/.pio/libdeps/d1_mini/espwebconfig/scripts/generate_headers.py -p $PROJECT_DIR -n")
 ```
 
 See [BBS](https://github.com/atiderko/bbs) project for example integration.
