@@ -117,7 +117,7 @@ Add following code to your code.
 void setup()
     // ... other content
     EWC::I::get().config().paramLanguage = "de";
-    EWC::I::get().server().webserver().on("/languages.json", std::bind(&EWC::ConfigServer::sendContentP, &EWC::I::get().server(), &EWC::I::get().server().webserver(), FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), JSON_WEB_LANGUAGES));
+    EWC::I::get().server().webserver().on("/languages.json", std::bind(&ConfigServer::sendContentG, &EWC::I::get().server(), ws, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), JSON_WEB_LANGUAGES_GZIP, sizeof(JSON_WEB_LANGUAGES_GZIP)));
     // ... other content
 }
 ```
