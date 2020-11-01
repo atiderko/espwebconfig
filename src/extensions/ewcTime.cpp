@@ -199,7 +199,14 @@ time_t Time::currentTime()
     }
     time_t rawtime;
     time(&rawtime);
-    rawtime += TZMAP[_paramTimezone-1][1] * 3600 + TZMAP[_paramTimezone-1][0] * 3600;
+    struct tm * timeinfo;
+    timeinfo = localtime(&rawtime);
+    time_t dst = 0;
+    if (timeinfo->tm_isdst > 0) {
+        I::get().logger() << "[EWC Time] Daylight Saving Time is in effect" << endl;
+        dst = TZMAP[_paramTimezone-1][0] * 3600;
+    }
+    rawtime += TZMAP[_paramTimezone-1][1] * 3600 + dst;
     return rawtime;
 }
 
@@ -266,4 +273,17 @@ time_t Time::_dndToMin(String& hmTime)
     int hours, minutes;
     sscanf(hmTime.c_str(), "%d:%d", &hours, &minutes);
     return hours * 60 + minutes;
+}
+
+boolean Time::_summertimeEU(int year, byte month, byte day, byte hour, byte tzHours)
+// European Daylight Savings Time calculation by "jurs" for German Arduino Forum
+// input parameters: "normal time" for year, month, day, hour and tzHours (0=UTC, 1=MEZ)
+// return value: returns true during Daylight Saving Time, false otherwise
+{
+    if (month < 3 || month > 10) return false; // keine Sommerzeit in Jan, Feb, Nov, Dez
+    if (month > 3 && month < 10) return true; // Sommerzeit in Apr, Mai, Jun, Jul, Aug, Sep
+    if ((month == 3 && (hour + 24 * day) >= (1 + tzHours + 24*(31 - (5 * year /4 + 4) % 7))) || (month==10 && (hour + 24 * day)<(1 + tzHours + 24*(31 - (5 * year /4 + 1) % 7))))
+        return true;
+    else
+        return false;
 }

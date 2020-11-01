@@ -170,6 +170,7 @@ protected:
     void _onTimeSave(WebServer* request);
 
     time_t _dndToMin(String& hmTime);
+    boolean _summertimeEU(int year, byte month, byte day, byte hour, byte tzHours);
 };
 
 };
