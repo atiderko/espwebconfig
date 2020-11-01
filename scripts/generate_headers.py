@@ -16,6 +16,7 @@ TARGET_TEMPLATE = '''const char {constant}[] PROGMEM = R"=====(
 '''
 TARGET_GZIP_TEMPLATE = '''const uint8_t {constant}_GZIP[{gziplen}] PROGMEM = {{ {gzipdata} }};'''
 
+
 def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
         description='Generates header files by minifying and gzipping HTML, JS and CSS source files.')
@@ -53,18 +54,20 @@ def get_context(infile, outfile):
         outfile	= os.path.realpath(outfile)
         outdir	= os.path.dirname(outfile)
         outfilename	= os.path.basename(outfile)
-    minifile	= re.sub('\.([^.]+)$', '.min.\\1', infile) if not '.min.' in infile else infile
+    minifile	= re.sub(r'\.([^.]+)$', '.min.\\1', infile) if not '.min.' in infile else infile
     constant	= '%s_%s_%s' % (ext.upper(), prefix.upper(), name.upper())
     return locals()
-    
+
+
 def perform_gzip(c):
     compressed = gzip.compress(c['minidata'].encode('utf-8'), compresslevel=8)
     c['gzipdata'] = ','.join([ str(b) for b in compressed ])
     c['gziplen'] = len(compressed)
     return c
-    
+
+
 def perform_minify(c, notminify=False):
-    with open(c['infile']) as infile:
+    with open(c['infile'], mode="r", encoding="utf-8") as infile:
         minifier = {
             'css': cssminify,
             'js': jsminify,
@@ -79,6 +82,7 @@ def perform_minify(c, notminify=False):
             c['minidata'] = minifier(infile.read())
         perform_gzip(c)
     return c
+
 
 def process_file(infile, outdir, storemini=False, notminify=False):
     print('Processing file %s' % infile)
@@ -137,6 +141,7 @@ def process_dir(sourcedir, outdir, recursive=True, storemini=True, notminify=Fal
         # elif not os.path.isfile(f.replace('.min.', '.')):
         #     process_file(f, outdir, storemini)
     return result
+
 
 def main(project_dir, storemini=False, notminify=False):
     pdir = project_dir

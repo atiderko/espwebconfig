@@ -141,7 +141,7 @@ void ConfigServer::setup()
     _server.on("/js/postload.js", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), JS_WEB_POSTLOAD_GZIP, sizeof(JS_WEB_POSTLOAD_GZIP)));
     _server.on("/js/pre.js", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), JS_WEB_PRE_GZIP, sizeof(JS_WEB_PRE_GZIP)));
     _server.on("/js/wifi.js", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), JS_WEB_WIFI_GZIP, sizeof(JS_WEB_WIFI_GZIP)));
-    insertMenuCb("WiFi", "/wifi/setup", "menu_wifi", std::bind(&ConfigServer::sendContentP, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_SETUP));
+    insertMenuCb("WiFi", "/wifi/setup", "menu_wifi", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_SETUP_GZIP, sizeof(HTML_WIFI_SETUP_GZIP)));
     _server.on("/wifi/disconnect", std::bind(&ConfigServer::_onWiFiDisconnect, this, &_server));  //.setFilter(ON_AP_FILTER);
     _server.on("/wifi/config/save", std::bind(&ConfigServer::_onWiFiConnect, this, &_server));
     _server.on("/wifi/state.html", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_WIFI_SETUP_GZIP, sizeof(HTML_WIFI_SETUP_GZIP)));
