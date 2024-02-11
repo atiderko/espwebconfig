@@ -34,7 +34,7 @@ limitations under the License.
 #include <Arduino.h>
 #include <time.h>                       // time() ctime()
 #include <sys/time.h>                   // struct timeval
-#include <coredecls.h>                  // settimeofday_cb()
+
 // #include <ESPAsyncWebServer.h>
 #include "../ewcConfigInterface.h"
 
@@ -136,7 +136,14 @@ public:
     void setup(JsonDocument& config, bool resetConfig=false);
     void fillJson(JsonDocument& config);
 
-    bool ntpAvailable() { return _ntpAvailable; }
+    bool ntpAvailable() { 
+#ifdef ESP8266
+        return _ntpAvailable; 
+#else
+        struct tm timeinfo;
+        return getLocalTime(&timeinfo);
+#endif
+    }
     void setLocalTime(String& date, String& time);
     /** Current time as string.
      * param offsetSeconds: Offset in seconds to now **/

@@ -80,7 +80,7 @@ protected:
     boolean _mailOnChange;
     boolean _mailOnEvent;
     String _mailServer;
-    int _mailPort;
+    uint16_t _mailPort;
     String _mailSender;
     String _mailPassword;
     String _mailReceiver;

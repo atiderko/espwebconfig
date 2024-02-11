@@ -29,6 +29,10 @@ https://github.com/datacute/DoubleResetDetector
 #define EWC_CONFIGCONTAINER_h
 
 #include <Arduino.h>
+#ifdef ESP32
+    #define USE_LittleFS
+    #include <vector>
+#endif
 #include "ewcConfigInterface.h"
 
 

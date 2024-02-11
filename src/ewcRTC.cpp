@@ -57,12 +57,14 @@ uint8_t RTC::get()
 uint32_t RTC::read(uint8_t address)
 {
     uint32_t read_flag;
+#ifdef ESP8266
     if (address >= _min && address < _max) {
         ESP.rtcUserMemoryRead(address, &read_flag, sizeof(read_flag));
         I::get().logger() << F("[EWC RTC] read ") << read_flag <<  " from " << address << endl;
     } else {
         I::get().logger() << F("✘ [EWC RTC] read from invalid address ") << address << endl;
     }
+#endif
     return read_flag;
 }
 
@@ -70,7 +72,9 @@ void RTC::write(uint8_t address, uint32_t flag)
 {
     if (address >= _min && address < _max) {
         I::get().logger() << F("[EWC RTC] write ") << flag <<  " to " << address << endl;
+#ifdef ESP8266
         ESP.rtcUserMemoryWrite(address, &flag, sizeof(flag));
+#endif
     } else {
         I::get().logger() << F("✘ [EWC RTC] write invalid address ") << address << endl;
     }

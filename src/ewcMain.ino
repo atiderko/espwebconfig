@@ -45,7 +45,7 @@ void setup() {
     server.setBrand("EWC", "1.0.1");
     // optional: enable LED for wifi state
     EWC::I::get().led().enable(true, LED_BUILTIN, LOW);
-    // start webserver
+    // start web server
 	server.setup();
 }
 

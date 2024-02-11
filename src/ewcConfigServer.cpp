@@ -64,6 +64,7 @@ PGM_P ConfigServer::wlStatusSymbols[] = {
     "NO_SHIELD"
 };
 
+#if defined(ESP8266)
 WiFiEventHandler p1;
 WiFiEventHandler p2;
 // WiFiEventHandler p3;
@@ -71,6 +72,7 @@ WiFiEventHandler p2;
 // WiFiEventHandler p5;
 WiFiEventHandler p6;
 WiFiEventHandler p7;
+#endif
 
 ConfigServer::ConfigServer(uint16_t port)
   : _server(port),
@@ -81,7 +83,9 @@ ConfigServer::ConfigServer(uint16_t port)
     I::get()._config = &_config;
     I::get()._configFS = &_configFS;
     I::get()._logger = &_logger;
+#ifdef ESP8266
     I::get()._rtc = &_rtc;
+#endif
     I::get()._led = &_led;
     _publicConfig = false;
     _branduri = "/";
@@ -114,7 +118,11 @@ void ConfigServer::setup()
     p6 = WiFi.onSoftAPModeStationConnected(std::bind(&ConfigServer::_wifiOnSoftAPModeStationConnected, this, std::placeholders::_1));
     p7 = WiFi.onSoftAPModeStationDisconnected(std::bind(&ConfigServer::_wifiOnSoftAPModeStationDisconnected, this, std::placeholders::_1));
 #else
-// TODO: events for ESP32
+    // events for ESP32
+    WiFi.onEvent(std::bind(&ConfigServer::_wifiOnStationModeConnected, this, std::placeholders::_1, std::placeholders::_2), WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
+    WiFi.onEvent(std::bind(&ConfigServer::_wifiOnStationModeDisconnected, this, std::placeholders::_1, std::placeholders::_2), WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+    WiFi.onEvent(std::bind(&ConfigServer::_wifiOnSoftAPModeStationConnected, this, std::placeholders::_1, std::placeholders::_2), WiFiEvent_t::ARDUINO_EVENT_WIFI_AP_STACONNECTED);
+    WiFi.onEvent(std::bind(&ConfigServer::_wifiOnSoftAPModeStationDisconnected, this, std::placeholders::_1, std::placeholders::_2), WiFiEvent_t::ARDUINO_EVENT_WIFI_AP_STADISCONNECTED);
 #endif
     I::get().logger() << F("[EWC CS]: configure urls") << endl;
     if (!_config.paramWifiDisabled){
@@ -212,7 +220,7 @@ void ConfigServer::_connect(const char* ssid, const char* pass)
     }
 }
 
-#if defined(ESP8266)
+#ifdef ESP8266
 void ConfigServer::_wifiOnStationModeConnected(const WiFiEventStationModeConnected& event)
 {
     I::get().logger() << F("[EWC CS]: _wifiOnStationModeConnected: ") << event.ssid << endl;
@@ -271,7 +279,68 @@ void ConfigServer::_wifiOnSoftAPModeStationDisconnected(const WiFiEventSoftAPMod
     }
 }
 #else
-// TODO: events for ESP32
+void ConfigServer::_wifiOnStationModeConnected(WiFiEvent_t event, WiFiEventInfo_t info)
+{
+    I::get().logger() << F("[EWC CS]: _wifiOnStationModeConnected: ") << String(info.wifi_sta_connected.ssid, sizeof(info.wifi_sta_connected.ssid)) << endl;
+    _config.setBootMode(BootMode::NORMAL);
+    _ap_disabled_after_timeout = false;
+}
+
+void ConfigServer::_wifiOnStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
+{
+    I::get().logger() << F("✘ [EWC CS]: _wifiOnStationModeDisconnected: ") << String(info.wifi_sta_disconnected.ssid, sizeof(info.wifi_sta_disconnected.ssid)) << ", code: " << info.wifi_sta_disconnected.reason << endl;
+    switch (info.wifi_sta_disconnected.reason)
+    {
+    case wifi_err_reason_t::WIFI_REASON_NO_AP_FOUND:
+    {
+        _disconnect_state = info.wifi_sta_disconnected.reason;
+        _disconnect_reason = "No AP found";
+        break;
+    }
+    case wifi_err_reason_t::WIFI_REASON_AUTH_EXPIRE:
+    {
+        _disconnect_state = info.wifi_sta_disconnected.reason;
+        _disconnect_reason = "Authentification failed";
+        break;
+    }
+    default:
+    {
+        _disconnect_state = info.wifi_sta_disconnected.reason;
+        if (info.wifi_sta_disconnected.reason > 0)
+        {
+            _disconnect_reason = "Failed, error: " + String(info.wifi_sta_disconnected.reason);
+        }
+    }
+    }
+}
+
+// void ConfigServer::_wifiOnStationModeAuthModeChanged(const WiFiEventStationModeAuthModeChanged& event)
+// {
+//     I::get().logger() << F("[EWC CS]: _wifiOnStationModeAuthModeChanged: ") << event.newMode << endl;
+// }
+// void ConfigServer::_wifiOnStationModeGotIP(const WiFiEventStationModeGotIP& event)
+// {
+//     I::get().logger() << F("[EWC CS]: _wifiOnStationModeGotIP: ") << event.ip << endl;
+// }
+// void ConfigServer::_wifiOnStationModeDHCPTimeout()
+// {
+//     I::get().logger() << F("✘ [EWC CS]: _wifiOnStationModeDHCPTimeout: ") << endl;
+// }
+void ConfigServer::_wifiOnSoftAPModeStationConnected(WiFiEvent_t event, WiFiEventInfo_t info)
+{
+    I::get().logger() << F("[EWC CS]: _wifiOnSoftAPModeStationConnected: ") << endl;
+    _softAPClientCount++;
+}
+void ConfigServer::_wifiOnSoftAPModeStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
+{
+    I::get().logger() << F("[EWC CS]: _wifiOnSoftAPModeStationDisconnected: ") << endl;
+    _softAPClientCount--;
+    if (WiFi.status() == WL_CONNECTED && !_config.paramAPStartAlways)
+    {
+        I::get().logger() << F("[EWC CS]: disable AP after successfully connected") << endl;
+        WiFi.mode(WIFI_STA);
+    }
+}
 #endif
 
 void ConfigServer::insertMenu(const char* name, const char* uri, const char* entry_id, bool visible, int position)
@@ -483,7 +552,7 @@ void ConfigServer::_onWiFiConnect(WebServer* webserver)
         _optionalIPFromString(&_sta_static_dns2, dns2.c_str());
     }
     webserver->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), FPSTR(HTML_WIFI_STATE));
-    _connect(ssid, pass);
+    _connect(webserver->arg("ssid").c_str(), webserver->arg("passphrase").c_str());
 }
 
 void ConfigServer::_onWiFiDisconnect(WebServer* webserver)
@@ -577,18 +646,26 @@ void ConfigServer::_onWifiScan(WebServer* webserver)
         int32_t channel;
         bool isHidden;
         for (uint8_t i = 0; i < n; i++) {
+#ifdef ESP8266
             bool result = WiFi.getNetworkInfo(i, ssid, encType, rssi, bssid, channel, isHidden);
+#else
+            bool result = WiFi.getNetworkInfo(i, ssid, encType, rssi, bssid, channel);
+#endif
             // do not add the same station twice
             if (result && !ssid.isEmpty() && std::find(ssids.begin(), ssids.end(), ssid) == ssids.end()) {
                 JsonObject jsonNetwork = networks.createNestedObject();
                 jsonNetwork["ssid"] = ssid;
+#ifdef ESP8266
                 jsonNetwork["encrypted"] = encType == ENC_TYPE_NONE ? false : true;
+#else
+                jsonNetwork["encrypted"] = encType == wifi_auth_mode_t::WIFI_AUTH_OPEN ? false : true;
+#endif
                 jsonNetwork["rssi"] = rssi;
                 jsonNetwork["channel"] = channel;
                 char mac[18] = { 0 };
                 sprintf(mac, "%02X:%02X:%02X:%02X:%02X:%02X", bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5]);
                 jsonNetwork["bssid"] = mac;
-                jsonNetwork["hidden"] = isHidden ? true : false;
+                jsonNetwork["hidden"] = false;
                 ssids.push_back(ssid);
             }
         }
@@ -722,7 +799,7 @@ void ConfigServer::_sendFileContent(WebServer* webserver, const String& contentT
     }
     I::get().logger() << F("[EWC CS]: Handle sendFileContent: ") << filename << endl;
     File reqFile = LittleFS.open(filename, "r");
-    if (reqFile && reqFile.isFile()) {
+    if (reqFile && !reqFile.isDirectory()) {
         webserver->streamFile(reqFile, contentType);
         reqFile.close();
         return;
@@ -752,7 +829,11 @@ void ConfigServer::_sendContentNoAuthG(WebServer* webserver, const String& conte
         I::get().logger() << F("content type: ") << contentType << endl;
         webserver->sendHeader("Content-Encoding", "gzip");
         webserver->sendHeader("Content-Disposition", "inline");
+#ifdef ESP8266
         webserver->send(200, contentType.c_str(), content, len);
+#else
+        webserver->send(200, contentType.c_str(), String(content, len));
+#endif
     }
 }
 

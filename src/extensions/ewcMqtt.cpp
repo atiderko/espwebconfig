@@ -22,10 +22,10 @@ limitations under the License.
 #include "ewcMqtt.h"
 #include "ewcConfigServer.h"
 #include <ArduinoJSON.h>
-#if defined(ESP8266)
-#include <ESP8266WiFi.h>
+#ifdef ESP8266
+    #include <ESP8266WiFi.h>
 #else
-#include <WiFi.h>
+    #include <WiFi.h>
 #endif
 #include "generated/mqttSetupHTML.h"
 #include "generated/mqttStateHTML.h"
@@ -52,8 +52,13 @@ void Mqtt::setup(JsonDocument& config, bool resetConfig)
     EWC::I::get().server().webserver().on("/mqtt/state.json", std::bind(&Mqtt::_onMqttState, this, &EWC::I::get().server().webserver()));
     _mqttClient.onConnect(std::bind(&Mqtt::_onMqttConnect, this, std::placeholders::_1));
     _mqttClient.onDisconnect(std::bind(&Mqtt::_onMqttDisconnect, this, std::placeholders::_1));
+#ifdef ESP8266
     _wifiConnectHandler = WiFi.onStationModeGotIP(std::bind(&Mqtt::_onWifiConnect, this, std::placeholders::_1));
     _wifiDisconnectHandler = WiFi.onStationModeDisconnected(std::bind(&Mqtt::_onWifiDisconnect, this, std::placeholders::_1));
+#else
+    WiFi.onEvent(std::bind(&Mqtt::_onWifiConnect, this, std::placeholders::_1, std::placeholders::_2), WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
+    WiFi.onEvent(std::bind(&Mqtt::_onWifiDisconnect, this, std::placeholders::_1, std::placeholders::_2), WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+#endif
 }
 
 void Mqtt::fillJson(JsonDocument& config)
@@ -197,7 +202,14 @@ void Mqtt::_connectToMqtt() {
 void Mqtt::_onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
     I::get().logger() << F("[EWC MQTT] Disconnected from MQTT, reason: ") << (uint32_t)reason << endl;
     if (WiFi.isConnected() && (uint32_t)reason < 4) {
-        _mqttReconnectTimer.once(2, std::bind(&Mqtt::_connectToMqtt, this));
+#ifdef ESP8266
+        _mqttReconnectTimer.once(2.0, std::bind(&Mqtt::_connectToMqtt, this));
+#else
+        _mqttReconnectTimer.once(
+            2.0, +[](Mqtt *mqttInstance)
+                 { mqttInstance->_connectToMqtt(); },
+            this);
+#endif
     }
 }
 
@@ -206,6 +218,7 @@ void Mqtt::_onMqttConnect(bool sessionPresent) {
     _connecting = false;
 }
 
+#ifdef ESP8266
 void Mqtt::_onWifiConnect(const WiFiEventStationModeGotIP& event) {
   I::get().logger() << F("[EWC MQTT] Connected to Wi-Fi.") << endl;
   _connectToMqtt();
@@ -215,4 +228,14 @@ void Mqtt::_onWifiDisconnect(const WiFiEventStationModeDisconnected& event) {
   I::get().logger() << F("[EWC MQTT] Disconnected from Wi-Fi.") << endl;
   _mqttReconnectTimer.detach(); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
 }
+#else
+void Mqtt::_onWifiConnect(WiFiEvent_t event, WiFiEventInfo_t info) {
+  I::get().logger() << F("[EWC MQTT] Connected to Wi-Fi.") << endl;
+  _connectToMqtt();
+}
 
+void Mqtt::_onWifiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info) {
+  I::get().logger() << F("[EWC MQTT] Disconnected from Wi-Fi.") << endl;
+  _mqttReconnectTimer.detach(); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
+}
+#endif

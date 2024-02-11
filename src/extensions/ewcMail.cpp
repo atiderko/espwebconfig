@@ -290,8 +290,11 @@ void Mail::_setTestResult(bool success, const char* result)
 }
 
 bool Mail::_send(const char* subject, const char* body) {
+#ifdef ESP8266
     I::get().logger() << "[Mail]: _send status: " << String(_wifiClient.status()) << endl;
-    if (!_wifiClient.connect(_mailServer, _mailPort)) {
+#else
+#endif
+    if (!_wifiClient.connect(_mailServer.c_str(), _mailPort)) {
         _setTestResult(false, "Send mail failed");
         I::get().logger() << F("[Mail]: connect failed") << endl;
         EWC::I::get().logger() << F("✖ Connection to the server: ") << _mailServer << F(" with port: ") << _mailPort << F(" failed") << endl;

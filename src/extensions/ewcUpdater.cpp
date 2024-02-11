@@ -93,7 +93,9 @@ void Updater::_onUpdateUpload(WebServer* server)
 {
     HTTPUpload& upload = server->upload();
     if (upload.status == UPLOAD_FILE_START) {
+#ifdef ESP8266
         WiFiUDP::stopAll();
+#endif
         I::get().logger() << F("[EWC Updater] Update Start: ") << upload.filename << endl;
         uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
         if (!Update.begin(maxSketchSpace)) { // start with max available size

@@ -57,8 +57,10 @@ public:
 protected:
     AsyncMqttClient _mqttClient;
     Ticker _mqttReconnectTimer;
+#ifdef ESP8266
     WiFiEventHandler _wifiConnectHandler;
     WiFiEventHandler _wifiDisconnectHandler;
+#endif
 
 
     /** === Parameter === **/
@@ -74,8 +76,13 @@ protected:
     void _onMqttState(WebServer* request);
     void _onMqttSave(WebServer* request);
 
+    #if defined(ESP8266)
     void _onWifiConnect(const WiFiEventStationModeGotIP& event);
     void _onWifiDisconnect(const WiFiEventStationModeDisconnected& event);
+    #else
+    void _onWifiConnect(WiFiEvent_t event, WiFiEventInfo_t info);
+    void _onWifiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info);
+    #endif
 
     void _connectToMqtt();
     void _onMqttDisconnect(AsyncMqttClientDisconnectReason reason);

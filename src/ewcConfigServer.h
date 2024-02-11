@@ -22,19 +22,19 @@ limitations under the License.
 #define EWC_CONFIG_SERVER_H
 
 #ifdef ESP8266
-# include <ESP8266WiFi.h>
-# include <ESP8266WebServer.h>
-# define WebServer ESP8266WebServer
-typedef std::function<void ()> WebServerHandlerFunction;
+    #include <ESP8266WiFi.h>
+    #include <ESP8266WebServer.h>
+    #define WebServer ESP8266WebServer
+    #include "ewcRTC.h"
 #elif defined(ESP32)
-# include <WiFi.h>
-# include <WebServer.h>
+    #include <WiFi.h>
+    #include <WebServer.h>
 #endif
+typedef std::function<void ()> WebServerHandlerFunction;
 
 #include <DNSServer.h>
 #include "ewcConfigFS.h"
 #include "ewcLogger.h"
-#include "ewcRTC.h"
 #include "ewcConfig.h"
 #include "ewcTickerLED.h"
 #include "ewcInterface.h"
@@ -108,7 +108,13 @@ public:
     void setup();
     void loop();
     /** Returns true if AP is enabled and IP of the AP is valid. **/
-    bool isAP() { return _ap_address.isSet(); }
+    bool isAP() { 
+#ifdef ESP8266
+        return _ap_address.isSet();
+#else
+        return _ap_address != 0;
+#endif
+    }
     /** Returns true if device is connected to an AP. **/
     bool isConnected() { return WiFi.status() == WL_CONNECTED; }
     Config& config() { return _config; }
@@ -131,7 +137,9 @@ protected:
     DNSServer _dnsServer;
     ConfigFS _configFS;
     Logger _logger;
+#ifdef ESP8266
     RTC _rtc;
+#endif
     TickerLed _led;
     Config _config;
     String _brand;
@@ -194,7 +202,11 @@ protected:
     void _wifiOnSoftAPModeStationConnected(const WiFiEventSoftAPModeStationConnected& event);
     void _wifiOnSoftAPModeStationDisconnected(const WiFiEventSoftAPModeStationDisconnected& event);
 #else
-// TODO: events for ESP32
+    // events for ESP32
+    void _wifiOnStationModeConnected(WiFiEvent_t event, WiFiEventInfo_t info);
+    void _wifiOnStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);
+    void _wifiOnSoftAPModeStationConnected(WiFiEvent_t event, WiFiEventInfo_t info);
+    void _wifiOnSoftAPModeStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);
 #endif
     //helpers
     static String _toMACAddressString(const uint8_t mac[]);

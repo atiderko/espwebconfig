@@ -22,7 +22,9 @@ limitations under the License.
 
 #include <LittleFS.h>
 #include "ewcConfig.h"
-#include "ewcRtc.h"
+#ifdef ESP8266
+    #include "ewcRtc.h"
+#endif
 #include "ewcLogger.h"
 
 
@@ -42,6 +44,7 @@ Config::~Config()
 
 void Config::setup(JsonDocument& config, bool resetConfig)
 {
+#ifdef ESP8266
     I::get().logger() << F("[EWC Config]: setup EWC config") << endl;
     _bootmodeUtcAddress = I::get().rtc().get();
     if (resetConfig) {
@@ -65,6 +68,7 @@ void Config::setup(JsonDocument& config, bool resetConfig)
             I::get().rtc().write(_bootmodeUtcAddress, _bootMode);
         }
     }
+#endif
     I::get().logger() << F("[EWC Config]: read configuration") << endl;
     if (resetConfig) {
         I::get().logger() << F("[EWC Config]: reset -> use default configuration") << endl;
@@ -137,7 +141,9 @@ void Config::setBootMode(BootMode mode)
 {
     if (mode != getBootMode()) {
         I::get().logger() << F("[EWC Config]: write bootmode ") << (uint32_t)mode << " to: " << _bootmodeUtcAddress << endl;
+#ifdef ESP8266
         I::get().rtc().write(_bootmodeUtcAddress, mode);
+#endif
     }
 }
 

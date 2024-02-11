@@ -29,7 +29,9 @@ namespace EWC {
 class ConfigServer;
 class Config;
 class ConfigFS;
+#if defined(ESP8266)
 class RTC;
+#endif
 class TickerLed;
 
 /** The objects of the interface are initialized by ConfigServer.
@@ -44,7 +46,9 @@ class InterfaceData {
     Config& config() { return *_config; }
     ConfigFS& configFS() { return *_configFS; }
     Logger& logger() { return *_logger; }
+#if defined(ESP8266)
     RTC& rtc() { return *_rtc; }
+#endif
     TickerLed& led() { return *_led; }
 
   private:
@@ -52,7 +56,9 @@ class InterfaceData {
     Config* _config;
     ConfigFS* _configFS;
     Logger* _logger;
+#if defined(ESP8266)
     RTC* _rtc;
+#endif
     TickerLed* _led;
 };
 
