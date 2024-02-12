@@ -135,8 +135,9 @@ public:
     /** === ConfigInterface Methods === **/    
     void setup(JsonDocument& config, bool resetConfig=false);
     void fillJson(JsonDocument& config);
+    void setupTime();
 
-    bool ntpAvailable() { 
+    bool timeAvailable() { 
 #ifdef ESP8266
         return _ntpAvailable; 
 #else

@@ -3,7 +3,7 @@
         "dev_name": "Balkon",
         "apname": "ewc-123ABC",
         "appass": "",
-        "ap_always_on": false,
+        "ap_start_always": false,
         "basic_auth": false,
         "httpuser": "admin",
         "httppass": "admin",

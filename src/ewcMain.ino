@@ -54,12 +54,17 @@ void loop() {
     // process web and dns requests
     server.loop();
     if (WiFi.status() == WL_CONNECTED) {
-        if (time_.ntpAvailable() && !timePrinted) {
-            timePrinted = true;
-            // print current time
-            I::get().logger() << "Current time:" << time_.str() << endl;
-            // or current time in seconds
-            I::get().logger() << "  as seconds:" << time_.currentTime() << endl;
+        if (!timePrinted) {
+            I::get().logger() << "Check for NTP..." << endl;
+            time_.setupTime();
+            if (time_.timeAvailable())
+            {
+                timePrinted = true;
+                // print current time
+                I::get().logger() << "Current time:" << time_.str() << endl;
+                // or current time in seconds
+                I::get().logger() << "  as seconds:" << time_.currentTime() << endl;
+            }
         }
     } else {
         // or if not yet connected

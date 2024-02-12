@@ -19,19 +19,63 @@ limitations under the License.
 
 **************************************************************/
 #include <LittleFS.h>
-// #ifdef ESP8266
-//     #include <LittleFS.h>
-// #elif ESP32
-//     #include <LITTLEFS.h>
-// #endif
 #include "ewcConfigFS.h"
 #ifdef ESP8266
     #include "ewcRtc.h"
 #endif
 #include "ewcLogger.h"
 
-
 using namespace EWC;
+
+#ifdef ESP32
+void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
+{
+    Serial.printf("Listing directory: %s\r\n", dirname);
+
+    File root = fs.open(dirname);
+    if (!root)
+    {
+        Serial.println("- failed to open directory");
+        return;
+    }
+    if (!root.isDirectory())
+    {
+        Serial.println(" - not a directory");
+        return;
+    }
+
+    File file = root.openNextFile();
+    while (file)
+    {
+        if (file.isDirectory())
+        {
+            Serial.print("  DIR : ");
+
+            Serial.print(file.name());
+            time_t t = file.getLastWrite();
+            struct tm *tmstruct = localtime(&t);
+            Serial.printf("  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, tmstruct->tm_mday, tmstruct->tm_hour, tmstruct->tm_min, tmstruct->tm_sec);
+
+            if (levels)
+            {
+                listDir(fs, file.name(), levels - 1);
+            }
+        }
+        else
+        {
+            Serial.print("  FILE: ");
+            Serial.print(file.name());
+            Serial.print("  SIZE: ");
+
+            Serial.print(file.size());
+            time_t t = file.getLastWrite();
+            struct tm *tmstruct = localtime(&t);
+            Serial.printf("  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, tmstruct->tm_mday, tmstruct->tm_hour, tmstruct->tm_min, tmstruct->tm_sec);
+        }
+        file = root.openNextFile();
+    }
+}
+#endif
 
 ConfigFS::ConfigFS(String filename)
 {
@@ -55,16 +99,17 @@ void ConfigFS::setup()
     I::get().logger() << F("[EWC ConfigFS]: initialize LittleFS") << endl;
 #ifdef ESP8266
     LittleFS.begin();
-    Dir root = LittleFS.openDir("");
+    Dir root = LittleFS.openDir("/");
     while(root.next()) {
         I::get().logger() << "  found file: " << root.fileName() << endl;
     }
 #else
     LittleFS.begin(true);
-    File root = LittleFS.open("");
-    while (root.openNextFile()) {
-        I::get().logger() << "  found file: " << root.name() << endl;
-    }
+    listDir(LittleFS , "/", 3);
+    // File root = LittleFS.open("/");
+    // while (root.openNextFile()) {
+    //     I::get().logger() << "  found file: " << root.name() << endl;
+    // }
 #endif
 #ifdef ESP8266
     I::get().logger() << F("[EWC ConfigFS]: read reset flag") << endl;
@@ -86,12 +131,21 @@ void ConfigFS::setup()
     size_t fsize = 1024;
     if (cfgFile && !cfgFile.isDirectory())
     {
+#ifdef ESP8266
+        I::get().logger() << F("[EWC ConfigFS]: file open: ") << cfgFile.name() << endl;
+#else
+        I::get().logger() << F("[EWC ConfigFS]: file open: ") << cfgFile.path() << ", name" << cfgFile.name() << endl;
+#endif
         fsize = cfgFile.size();
-    }
-    DynamicJsonDocument jsondoc(fsize);
-    if (cfgFile && !cfgFile.isDirectory())
-    {
+        DynamicJsonDocument jsondoc(fsize);
         deserializeJson(jsondoc, cfgFile);
+        // add sub configurations
+        I::get().logger() << F("[EWC ConfigFS]: Load subconfigurations, count: ") << _cfgInterfaces.size() << endl;
+        for (std::size_t i = 0; i < _cfgInterfaces.size(); ++i)
+        {
+            I::get().logger() << F("[EWC ConfigFS]:  load [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
+            _cfgInterfaces[i]->setup(jsondoc, _resetDetected);
+        }
     }
 #ifdef ESP8266
     // reset RTC
@@ -99,12 +153,6 @@ void ConfigFS::setup()
         I::get().rtc().reset();
     }
 #endif
-    // add sub configurations
-    I::get().logger() << F("[EWC ConfigFS]: Load subconfigurations, count: ") << _cfgInterfaces.size() << endl;
-    for(std::size_t i = 0; i < _cfgInterfaces.size(); ++i) {
-        I::get().logger() << F("[EWC ConfigFS]:  load [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
-        _cfgInterfaces[i]->setup(jsondoc, _resetDetected);
-    }
 }
 
 

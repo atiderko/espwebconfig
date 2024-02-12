@@ -87,7 +87,7 @@ ConfigServer::ConfigServer(uint16_t port)
     I::get()._rtc = &_rtc;
 #endif
     I::get()._led = &_led;
-    _publicConfig = false;
+    _publicConfig = true;
     _branduri = "/";
     _connected_wifi = false;
     _ap_disabled_after_timeout = false;
@@ -452,7 +452,12 @@ void ConfigServer::_onAccessSave(WebServer* webserver)
     if (!isAuthenticated(webserver)) {
         return webserver->requestAuthentication();
     }
-    if (webserver->hasArg("dev_name")) {
+    // I::get().logger() << "[EWC CS]: handle args: " << webserver->args() << endl;
+    // for (int i = 0; i < webserver->args(); i++) {
+    //     I::get().logger() << "[EWC CS]:   " << webserver->argName(i) << ": " << webserver->arg(i) << endl;
+    // }
+    if (webserver->hasArg("dev_name"))
+    {
         _config.paramDeviceName = webserver->arg("dev_name");
     }
     if (webserver->hasArg("apname")) {
@@ -461,8 +466,9 @@ void ConfigServer::_onAccessSave(WebServer* webserver)
     if (webserver->hasArg("appass")) {
         _config.setAPPass(webserver->arg("appass"));
     }
-    if (webserver->hasArg("ap_always_on")) {
-        _config.paramAPStartAlways = webserver->arg("ap_always_on").equals("true");
+    if (webserver->hasArg("ap_start_always"))
+    {
+        _config.paramAPStartAlways = webserver->arg("ap_start_always").equals("true");
     }
     if (webserver->hasArg("basic_auth")) {
         _config.paramBasicAuth = webserver->arg("basic_auth").equals("true");
@@ -476,6 +482,7 @@ void ConfigServer::_onAccessSave(WebServer* webserver)
     if (webserver->hasArg("hostname")) {
         _config.paramHostname = webserver->arg("hostname");
     }
+    I::get().configFS().save();
     sendPageSuccess(webserver, "Security save", "Save successful! Please, restart to apply AP changes!", "/access/setup");
 }
 

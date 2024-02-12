@@ -27,7 +27,8 @@ limitations under the License.
     #include <coredecls.h>    // settimeofday_cb()
 #else
     #include <WiFi.h>
-    #include <time.h>         // settimeofday_cb()
+#include <WiFiUdp.h>
+#include <time.h> // settimeofday_cb()
 #endif
 #include "generated/timeSetupHTML.h"
 
@@ -36,6 +37,7 @@ using namespace EWC;
 Time::Time() : ConfigInterface("time")
 {
     _ntpAvailable = false;
+    _paramManually = false;
     _manuallOffset = 0;
 }
 
@@ -59,6 +61,16 @@ void Time::setup(JsonDocument& config, bool resetConfig)
         // Sync our clock to NTP
         I::get().logger() << F("[EWC Time] sync to ntp server...") << endl;
         configTime(TZMAP[_paramTimezone-1][1] * 3600, TZMAP[_paramTimezone-1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
+    }
+}
+
+void Time::setupTime()
+{
+    if (!_paramManually)
+    {
+        // Sync our clock to NTP
+        I::get().logger() << F("[EWC Time] sync to ntp server...") << endl;
+        configTime(TZMAP[_paramTimezone - 1][1] * 3600, TZMAP[_paramTimezone - 1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
     }
 }
 
