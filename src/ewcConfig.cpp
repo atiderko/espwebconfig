@@ -155,11 +155,11 @@ void Config::setAPPass(String pass)
             I::get().logger() << F("✘ [EWC Config]: Invalid AccessPoint password. Ignoring") << endl;
         } else {
             _paramAPPass = pass;
-            I::get().logger() << F("[EWC Config]: Set new AccessPoit password to ") << _paramAPPass << endl;
+            I::get().logger() << F("[EWC Config]: Set new AccessPoint password to ") << _paramAPPass << endl;
         }
     } else {
         _paramAPPass = pass;
-        I::get().logger() << F("[EWC Config]: Clear AccessPoit password") << endl;
+        I::get().logger() << F("[EWC Config]: Clear AccessPoint password") << endl;
     }
 }
 

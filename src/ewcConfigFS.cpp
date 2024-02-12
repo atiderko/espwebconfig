@@ -134,7 +134,7 @@ void ConfigFS::setup()
 #ifdef ESP8266
         I::get().logger() << F("[EWC ConfigFS]: file open: ") << cfgFile.name() << endl;
 #else
-        I::get().logger() << F("[EWC ConfigFS]: file open: ") << cfgFile.path() << ", name" << cfgFile.name() << endl;
+        I::get().logger() << F("[EWC ConfigFS]: file open: ") << cfgFile.path() << ", name: " << cfgFile.name() << endl;
 #endif
         fsize = cfgFile.size();
         DynamicJsonDocument jsondoc(fsize);
