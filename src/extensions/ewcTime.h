@@ -135,16 +135,8 @@ public:
     /** === ConfigInterface Methods === **/    
     void setup(JsonDocument& config, bool resetConfig=false);
     void fillJson(JsonDocument& config);
-    void setupTime();
 
-    bool timeAvailable() { 
-#ifdef ESP8266
-        return _ntpAvailable; 
-#else
-        struct tm timeinfo;
-        return getLocalTime(&timeinfo);
-#endif
-    }
+    bool timeAvailable() { return _ntpAvailable; }
     void setLocalTime(String& date, String& time);
     /** Current time as string.
      * param offsetSeconds: Offset in seconds to now **/
@@ -179,6 +171,9 @@ protected:
 
     time_t _dndToMin(String& hmTime);
     boolean _summertimeEU(int year, byte month, byte day, byte hour, byte tzHours);
+
+    void getTimeTask();
+    static void getTimeTaskImpl(void *);
 };
 
 };

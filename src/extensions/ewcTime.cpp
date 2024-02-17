@@ -27,12 +27,17 @@ limitations under the License.
     #include <coredecls.h>    // settimeofday_cb()
 #else
     #include <WiFi.h>
-#include <WiFiUdp.h>
-#include <time.h> // settimeofday_cb()
+    #include <WiFiUdp.h>
+// #include <time.h> // settimeofday_cb()
 #endif
 #include "generated/timeSetupHTML.h"
 
 using namespace EWC;
+
+void Time::getTimeTaskImpl(void *_this)
+{
+    static_cast<Time *>(_this)->getTimeTask();
+}
 
 Time::Time() : ConfigInterface("time")
 {
@@ -60,19 +65,31 @@ void Time::setup(JsonDocument& config, bool resetConfig)
         // Sync our clock to NTP
         I::get().logger() << F("[EWC Time] sync to ntp server...") << endl;
         configTime(TZMAP[_paramTimezone-1][1] * 3600, TZMAP[_paramTimezone-1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
+#if defined(ESP32)
+        xTaskCreate(
+            this->getTimeTaskImpl, // Function that should be called
+            "Check time",        // Name of the task (for debugging)
+            2048,                  // Stack size (bytes)
+            this,                  // Parameter to pass
+            5,                     // Task priority
+            NULL                   // Task handle
+        );
+#endif
     } else {
         I::get().logger() << F("[EWC Time] current time: ") << str() << endl;
     }
 }
 
-void Time::setupTime()
+void Time::getTimeTask()
 {
-    if (!_paramManually)
-    {
-        // Sync our clock to NTP
-        I::get().logger() << F("[EWC Time] sync to ntp server...") << endl;
-        configTime(TZMAP[_paramTimezone - 1][1] * 3600, TZMAP[_paramTimezone - 1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
+#if defined(ESP32)
+    // Sync our clock to NTP
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo)) {
+        _callbackTimeSet();
     }
+    vTaskDelete(NULL);
+#endif
 }
 
 void Time::fillJson(JsonDocument& config)
