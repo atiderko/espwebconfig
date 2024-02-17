@@ -250,6 +250,7 @@ void ConfigServer::_wifiOnStationModeDisconnected(const WiFiEventStationModeDisc
             }
         }
     }
+    WiFi.reconnect();
 }
 
 // void ConfigServer::_wifiOnStationModeAuthModeChanged(const WiFiEventStationModeAuthModeChanged& event)
@@ -291,27 +292,28 @@ void ConfigServer::_wifiOnStationModeDisconnected(WiFiEvent_t event, WiFiEventIn
     I::get().logger() << F("✘ [EWC CS]: _wifiOnStationModeDisconnected: ") << String(info.wifi_sta_disconnected.ssid, sizeof(info.wifi_sta_disconnected.ssid)) << ", code: " << info.wifi_sta_disconnected.reason << endl;
     switch (info.wifi_sta_disconnected.reason)
     {
-    case wifi_err_reason_t::WIFI_REASON_NO_AP_FOUND:
-    {
-        _disconnect_state = info.wifi_sta_disconnected.reason;
-        _disconnect_reason = "No AP found";
-        break;
-    }
-    case wifi_err_reason_t::WIFI_REASON_AUTH_EXPIRE:
-    {
-        _disconnect_state = info.wifi_sta_disconnected.reason;
-        _disconnect_reason = "Authentification failed";
-        break;
-    }
-    default:
-    {
-        _disconnect_state = info.wifi_sta_disconnected.reason;
-        if (info.wifi_sta_disconnected.reason > 0)
+        case wifi_err_reason_t::WIFI_REASON_NO_AP_FOUND:
         {
-            _disconnect_reason = "Failed, error: " + String(info.wifi_sta_disconnected.reason);
+            _disconnect_state = info.wifi_sta_disconnected.reason;
+            _disconnect_reason = "No AP found";
+            break;
+        }
+        case wifi_err_reason_t::WIFI_REASON_AUTH_EXPIRE:
+        {
+            _disconnect_state = info.wifi_sta_disconnected.reason;
+            _disconnect_reason = "Authentification failed";
+            break;
+        }
+        default:
+        {
+            _disconnect_state = info.wifi_sta_disconnected.reason;
+            if (info.wifi_sta_disconnected.reason > 0)
+            {
+                _disconnect_reason = "Failed, error: " + String(info.wifi_sta_disconnected.reason);
+            }
         }
     }
-    }
+    WiFi.reconnect();
 }
 
 // void ConfigServer::_wifiOnStationModeAuthModeChanged(const WiFiEventStationModeAuthModeChanged& event)

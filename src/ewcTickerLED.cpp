@@ -72,7 +72,9 @@ void TickerLed::start(void)
         _pulse = new Ticker();
     }
     _pulse->detach();
+    // we have to start first cycle manually
     _onPeriod(this);
+    // further cycles are triggered by a ticker timer
     _period->attach_ms<TickerLed *>(_cycle, TickerLed::_onPeriod, this);
     _active = true;
 }
@@ -103,7 +105,6 @@ void TickerLed::stop(void)
  * @param  t  Its own address
  */
 void TickerLed::_onPeriod(TickerLed* t) {
-    I::get().logger() << "[EWC LED] on Period" << endl;
     digitalWrite(t->_port, t->_turnOn);
     t->_pulse->once_ms<TickerLed*>(t->_duration, TickerLed::_onPulse, t);
     if (t->_callback) {
@@ -116,6 +117,5 @@ void TickerLed::_onPeriod(TickerLed* t) {
  * @param  t  Its own address
  */
 void TickerLed::_onPulse(TickerLed* t) {
-    I::get().logger() << "[EWC LED] on Pulse" << endl;
     digitalWrite(t->_port, !(t->_turnOn));
 }
