@@ -31,7 +31,7 @@ using namespace EWC;
 
 void TickerLed::enable(bool enable, const uint8_t port, const uint8_t active, const uint32_t cycle, uint32_t duration)
 {
-    I::get().logger() << "[EWC LED] enable" << endl;
+    I::get().logger() << "[EWC LED] enable on port " << port << endl;
     _port = port;
     _turnOn = active;
     _cycle = cycle;
@@ -72,7 +72,8 @@ void TickerLed::start(void)
         _pulse = new Ticker();
     }
     _pulse->detach();
-    _period->attach_ms<TickerLed*>(_cycle, TickerLed::_onPeriod, this);
+    _onPeriod(this);
+    _period->attach_ms<TickerLed *>(_cycle, TickerLed::_onPeriod, this);
     _active = true;
 }
 
@@ -102,6 +103,7 @@ void TickerLed::stop(void)
  * @param  t  Its own address
  */
 void TickerLed::_onPeriod(TickerLed* t) {
+    I::get().logger() << "[EWC LED] on Period" << endl;
     digitalWrite(t->_port, t->_turnOn);
     t->_pulse->once_ms<TickerLed*>(t->_duration, TickerLed::_onPulse, t);
     if (t->_callback) {
@@ -114,5 +116,6 @@ void TickerLed::_onPeriod(TickerLed* t) {
  * @param  t  Its own address
  */
 void TickerLed::_onPulse(TickerLed* t) {
+    I::get().logger() << "[EWC LED] on Pulse" << endl;
     digitalWrite(t->_port, !(t->_turnOn));
 }

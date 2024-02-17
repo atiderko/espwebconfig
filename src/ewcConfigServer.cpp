@@ -737,10 +737,9 @@ void ConfigServer::loop()
             if (!_connected_wifi) {
                 _connected_wifi = true;
                 I::get().logger() << F("[EWC CS]: connected IP: ") << WiFi.localIP().toString() << endl;
+                // Stop LED Ticker.
+                _led.stop();
             }
-            // Stop LED Ticker.
-            _led.stop();
-
         }
     }
 }

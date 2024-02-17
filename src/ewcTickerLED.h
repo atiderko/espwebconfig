@@ -27,7 +27,7 @@ limitations under the License.
 
 #ifndef LED_BUILTIN
 // Native pin for the arduino if LED_BUILTIN no defined
-#define LED_BUILTIN 2
+#define LED_BUILTIN 12
 #endif
 
 namespace EWC {
