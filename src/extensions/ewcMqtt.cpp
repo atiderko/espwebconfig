@@ -131,7 +131,7 @@ void Mqtt::_onMqttConfig(WebServer* request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(1024);
+    JsonDocument jsonDoc;
     fillJson(jsonDoc);
     String output;
     serializeJson(jsonDoc, output);
@@ -146,7 +146,7 @@ void Mqtt::_onMqttSave(WebServer* request)
     for (int i = 0; i < request->args(); i++) {
         I::get().logger() << "  " << request->argName(i) << ": " << request->arg(i) << endl;
     }
-    DynamicJsonDocument config(1024);
+    JsonDocument config;
     if (request->hasArg("mqtt_enabled")) {
         bool a = request->arg("mqtt_enabled").equals("true");
         config["mqtt"]["enabled"] = a;
@@ -179,7 +179,7 @@ void Mqtt::_onMqttState(WebServer* request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    StaticJsonDocument<JSON_OBJECT_SIZE(14)> jsonDoc;
+    JsonDocument jsonDoc;
     jsonDoc["enabled"] = paramEnabled;
     jsonDoc["connecting"] = _connecting;
     jsonDoc["connected"] = _mqttClient.connected();

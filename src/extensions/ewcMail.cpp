@@ -151,7 +151,7 @@ void Mail::_onMailConfig(WebServer* webserver)
         I::get().logger() << F("[Mail] not sufficient authentication") << endl;
         return webserver->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(512);
+    JsonDocument jsonDoc;
     fillJson(jsonDoc);
     String output;
     serializeJson(jsonDoc, output);
@@ -165,7 +165,7 @@ void Mail::_onMailState(WebServer* webserver)
         I::get().logger() << F("[Mail] not sufficient authentication") << endl;
         return webserver->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(512);
+    JsonDocument jsonDoc;
     jsonDoc["mail"]["test_send"] = _testMailSend;
     jsonDoc["mail"]["test_success"] = _testMailSuccess;
     jsonDoc["mail"]["test_result"] = _testMailResult;
@@ -182,7 +182,7 @@ void Mail::_onMailSave(WebServer* webserver, bool sendResponse)
         I::get().logger() << F("[Mail] not sufficient authentication") << endl;
         return webserver->requestAuthentication();
     }
-    DynamicJsonDocument config(1024);
+    JsonDocument config;
     if (webserver->hasArg("on_warning")) {
         config["mail"]["on_warning"] = webserver->arg("on_warning").equals("true");
     }

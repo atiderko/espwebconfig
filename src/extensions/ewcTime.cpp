@@ -170,7 +170,7 @@ void Time::_onTimeConfig(WebServer* request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(1024);
+    JsonDocument jsonDoc;
     fillJson(jsonDoc);
     String output;
     serializeJson(jsonDoc, output);
@@ -182,7 +182,7 @@ void Time::_onTimeSave(WebServer* request)
     if (!I::get().server().isAuthenticated(request)) {
         return request->requestAuthentication();
     }
-    DynamicJsonDocument config(1024);
+    JsonDocument config;
     if (request->hasArg("timezone") && !request->arg("timezone").isEmpty()) {
         config["time"]["timezone"] = request->arg("timezone").toInt();
     }

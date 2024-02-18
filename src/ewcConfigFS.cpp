@@ -128,7 +128,6 @@ void ConfigFS::setup()
 #endif
     I::get().logger() << F("[EWC ConfigFS]: Load configuration from ") << _filename << endl;
     File cfgFile = LittleFS.open(_filename, "r");
-    size_t fsize = 1024;
     if (cfgFile && !cfgFile.isDirectory())
     {
 #ifdef ESP8266
@@ -136,15 +135,14 @@ void ConfigFS::setup()
 #else
         I::get().logger() << F("[EWC ConfigFS]: file open: ") << cfgFile.path() << ", name: " << cfgFile.name() << endl;
 #endif
-        fsize = cfgFile.size();
-        DynamicJsonDocument jsondoc(fsize);
-        deserializeJson(jsondoc, cfgFile);
+        JsonDocument jsonDoc;
+        deserializeJson(jsonDoc, cfgFile);
         // add sub configurations
         I::get().logger() << F("[EWC ConfigFS]: Load subconfigurations, count: ") << _cfgInterfaces.size() << endl;
         for (std::size_t i = 0; i < _cfgInterfaces.size(); ++i)
         {
             I::get().logger() << F("[EWC ConfigFS]:  load [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
-            _cfgInterfaces[i]->setup(jsondoc, _resetDetected);
+            _cfgInterfaces[i]->setup(jsonDoc, _resetDetected);
         }
     }
 #ifdef ESP8266
@@ -169,7 +167,7 @@ void ConfigFS::loop()
 void ConfigFS::save()
 {
     I::get().logger() << F("[EWC ConfigFS]: save subconfigurations, count: ") << _cfgInterfaces.size() << endl;
-    DynamicJsonDocument doc(5120);
+    JsonDocument doc;
     for(std::size_t i = 0; i < _cfgInterfaces.size(); ++i) {
         I::get().logger() << F("[EWC ConfigFS]:  add [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
         _cfgInterfaces[i]->fillJson(doc);

@@ -441,7 +441,7 @@ void ConfigServer::_onAccessGet(WebServer* webserver)
     if (!isAuthenticated(webserver)) {
         return webserver->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(JSON_OBJECT_SIZE(16));
+    JsonDocument jsonDoc;
     JsonObject json = jsonDoc.to<JsonObject>();
     _config.fillJson(jsonDoc);
     String output;
@@ -493,8 +493,7 @@ void ConfigServer::_onGetInfo(WebServer* webserver)
     if (!isAuthenticated(webserver)) {
         return webserver->requestAuthentication();
     }
-    const size_t len = JSON_OBJECT_SIZE(32);
-    StaticJsonDocument<len> jsonDoc;
+    JsonDocument jsonDoc;
     JsonObject json = jsonDoc.to<JsonObject>();
     json["version"] = _version;
   	json["estab_ssid"] = WiFi.status() == WL_CONNECTED ? WiFi.SSID() : String(F("N/A"));
@@ -533,8 +532,6 @@ void ConfigServer::_onWiFiConnect(WebServer* webserver)
     for (int idx = 0; idx < webserver->args(); idx++) {
         I::get().logger() << "[EWC CS]: " << idx << ": " << webserver->argName(idx) << webserver->arg(idx) << endl;
     }
-    const char* ssid = webserver->arg("ssid").c_str();
-    const char* pass = webserver->arg("passphrase").c_str();
     if (webserver->hasArg("staip")) {
         I::get().logger() << F("[EWC CS]: static ip: ") << webserver->arg("staip") << endl;
         String ip = webserver->arg("staip");
@@ -561,6 +558,8 @@ void ConfigServer::_onWiFiConnect(WebServer* webserver)
         _optionalIPFromString(&_sta_static_dns2, dns2.c_str());
     }
     webserver->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), FPSTR(HTML_WIFI_STATE));
+    // const char* ssid = webserver->arg("ssid").c_str();
+    // const char* pass = webserver->arg("passphrase").c_str();
     _connect(webserver->arg("ssid").c_str(), webserver->arg("passphrase").c_str());
 }
 
@@ -578,14 +577,14 @@ void ConfigServer::_sendMenu(WebServer* webserver) {
     if (!isAuthenticated(webserver)) {
         return webserver->requestAuthentication();
     }
-    DynamicJsonDocument jsonDoc(2048);
+    JsonDocument jsonDoc;
     jsonDoc["brand"] = _brand;
     jsonDoc["branduri"] = _branduri;
     jsonDoc["language"] = _config.paramLanguage;
-    JsonArray elements = jsonDoc.createNestedArray("elements");
+    JsonArray elements = jsonDoc["elements"].to<JsonArray>();
     std::vector<MenuItem>::iterator it;
     for (it = _menu.begin(); it != _menu.end(); it++) {
-        JsonObject jsonElements = elements.createNestedObject();
+        JsonObject jsonElements = elements.add<JsonObject>();
         jsonElements["name"] = it->name;
         jsonElements["id"] = it->entry_id;
         jsonElements["href"] = it->link;
@@ -593,7 +592,7 @@ void ConfigServer::_sendMenu(WebServer* webserver) {
     }
     String output;
     serializeJson(jsonDoc, output);
-    I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << ", json: " << jsonDoc.memoryUsage() << endl;
+    I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << ", json overflowed: " << jsonDoc.overflowed() << endl;
     webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
@@ -603,8 +602,7 @@ void ConfigServer::_onWifiState(WebServer* webserver)
         return webserver->requestAuthentication();
     }
     I::get().logger() << "[EWC CS]: report WifiState, connected: " << (WiFi.status() == WL_CONNECTED) << endl;
-    const size_t len = JSON_OBJECT_SIZE(8);
-    DynamicJsonDocument jsonDoc(len);
+    JsonDocument jsonDoc;
     JsonObject json = jsonDoc.to<JsonObject>();
     json["ssid"] = WiFi.SSID();
     json["connected"] = WiFi.status() == WL_CONNECTED;
@@ -629,7 +627,7 @@ void ConfigServer::_onWifiScan(WebServer* webserver)
     }
     _startWiFiScan();
     int n = WiFi.scanComplete();
-    DynamicJsonDocument jsonDoc(2048);
+    JsonDocument jsonDoc;
     JsonObject json = jsonDoc.to<JsonObject>();
     if (n == WIFI_SCAN_FAILED) {
         I::get().logger() << F("[EWC CS]: scanNetworks returned: WIFI_SCAN_FAILED!") << endl;
@@ -644,7 +642,7 @@ void ConfigServer::_onWifiScan(WebServer* webserver)
         I::get().logger() << F("✘ [EWC CS]: No networks found") << endl;
         _wiFiState2Json(json, true, true, "No networks found");
     }
-    JsonArray networks = json.createNestedArray("networks");
+    JsonArray networks = jsonDoc["networks"].to<JsonArray>();
     if (n > 0) {
         _wiFiState2Json(json, true, false, "");
         std::vector<String> ssids;
@@ -662,7 +660,7 @@ void ConfigServer::_onWifiScan(WebServer* webserver)
 #endif
             // do not add the same station twice
             if (result && !ssid.isEmpty() && std::find(ssids.begin(), ssids.end(), ssid) == ssids.end()) {
-                JsonObject jsonNetwork = networks.createNestedObject();
+                JsonObject jsonNetwork = networks.add<JsonObject>();
                 jsonNetwork["ssid"] = ssid;
 #ifdef ESP8266
                 jsonNetwork["encrypted"] = encType == ENC_TYPE_NONE ? false : true;

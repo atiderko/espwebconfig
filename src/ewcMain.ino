@@ -56,7 +56,6 @@ void loop() {
     if (WiFi.status() == WL_CONNECTED) {
         if (!timePrinted) {
             I::get().logger() << "Check for NTP..." << endl;
-            time_.setupTime();
             if (time_.timeAvailable())
             {
                 timePrinted = true;
