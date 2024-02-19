@@ -54,6 +54,7 @@ public:
     void setup();
     void loop();
     void save();
+    void deleteFile();
     /** === Configurations of modules implement ConfigInterface === **/
     void addConfig(ConfigInterface& config);
     //ConfigInterface* sub_config(String name);

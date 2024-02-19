@@ -24,11 +24,12 @@ limitations under the License.
 #include <Arduino.h>
 #include <ewcConfigServer.h>
 #ifdef ESP8266
-# include <ESP8266WiFi.h>
+    #include <ESP8266WiFi.h>
 #elif defined(ESP32)
-# include <WiFi.h>
+    #include <WiFi.h>
+    #include <vector>
 #endif
-
+#include <Base64.h>
 
 namespace EWC {
     #define MAIL_SEND_TIMEOUT 30000 // timeout beim Senden von emails
@@ -44,6 +45,22 @@ enum MailStates {
     MAIL_ON_WARNING = 1,
     MAIL_ON_CHANGE = 2,
     MAIL_ON_EVENT = 3
+};
+
+class MailConfig {
+public:
+    String hello;
+    String auth;
+    String from;
+    String to;
+    MailConfig() {}
+    MailConfig(String smtpServer, String sender, String password, String receiver)
+    {
+        hello = "EHLO " + smtpServer + "\n";
+        auth = "AUTH LOGIN\n" + base64::encode(sender) + "\n" + base64::encode(password) + "\n";
+        from = "MAIL FROM: <" + sender + ">\r\n";
+        to = "RCPT TO: <" + receiver + ">\r\n";
+    }
 };
 
 class Mail : public EWC::ConfigInterface {
@@ -69,11 +86,11 @@ protected:
     WiFiClient _wifiClient;
     unsigned long _tsSendMail;
     unsigned int _countSend;
-    String _subjectToSend;
-    String _bodyToSend;
     bool _testMailSend;
     bool _testMailSuccess;
     String _testMailResult;
+    MailConfig _mailConfig;
+    String _mailData;
 
     // mail configuration parameter
     boolean _mailOnWarning;
@@ -90,7 +107,6 @@ protected:
     void _onMailSave(WebServer* webserver, bool sendResponse=true);
     void _onMailTest(WebServer* webserver);
     bool _send(const char* betreff, const char* body);
-    bool _criticalSend(const char* subject, const char* body);
     void _setTestResult(bool success, const char* result);
     void _fromJson(JsonDocument& config);
 };

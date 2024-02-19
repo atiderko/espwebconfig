@@ -61,14 +61,20 @@ void Time::setup(JsonDocument& config, bool resetConfig)
     EWC::I::get().server().insertMenuG("Time", "/time/setup", "menu_time", FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_TIME_SETUP_GZIP, sizeof(HTML_TIME_SETUP_GZIP), true, 0);
     EWC::I::get().server().webserver().on("/time/config.json", std::bind(&Time::_onTimeConfig, this, &EWC::I::get().server().webserver()));
     EWC::I::get().server().webserver().on("/time/config/save", std::bind(&Time::_onTimeSave, this, &EWC::I::get().server().webserver()));
-    if (!_paramManually) {
+    _setupTime();
+}
+
+void Time::_setupTime()
+{
+    if (!_paramManually)
+    {
         // Sync our clock to NTP
         I::get().logger() << F("[EWC Time] sync to ntp server...") << endl;
-        configTime(TZMAP[_paramTimezone-1][1] * 3600, TZMAP[_paramTimezone-1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
+        configTime(TZMAP[_paramTimezone - 1][1] * 3600, TZMAP[_paramTimezone - 1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
 #if defined(ESP32)
         xTaskCreate(
             this->getTimeTaskImpl, // Function that should be called
-            "Check time",        // Name of the task (for debugging)
+            "Check time",          // Name of the task (for debugging)
             2048,                  // Stack size (bytes)
             this,                  // Parameter to pass
             5,                     // Task priority
@@ -87,6 +93,8 @@ void Time::getTimeTask()
     struct tm timeinfo;
     if (getLocalTime(&timeinfo)) {
         _callbackTimeSet();
+    } else {
+        _setupTime();
     }
     vTaskDelete(NULL);
 #endif
@@ -249,6 +257,23 @@ String Time::str(time_t offsetSeconds)
     time_t rawtime = currentTime();
     rawtime += offsetSeconds;
     char buffer [80];
+    strftime(buffer, 80, "%FT%T", gmtime(&rawtime));
+    return String(buffer);
+}
+
+String Time::currentTimeStr(int timezone)
+{
+    time_t rawtime;
+    time(&rawtime);
+    struct tm *timeinfo;
+    timeinfo = localtime(&rawtime);
+    time_t dst = 0;
+    if (timeinfo->tm_isdst > 0)
+    {
+        dst = TZMAP[timezone - 1][0] * 3600;
+    }
+    rawtime += TZMAP[timezone - 1][1] * 3600 + dst;
+    char buffer[80];
     strftime(buffer, 80, "%FT%T", gmtime(&rawtime));
     return String(buffer);
 }

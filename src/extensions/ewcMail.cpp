@@ -19,11 +19,12 @@ limitations under the License.
 
 **************************************************************/
 #include "ewcMail.h"
+#include "ewcTime.h"
 #include <ewcRTC.h>
 #include <ewcConfigServer.h>
-#include <Base64.h>
+#include <vector>
 #include "generated/mailSetupHTML.h"
-#include "generated//mailStateHTML.h"
+#include "generated/mailStateHTML.h"
 
 using namespace EWC;
 
@@ -41,7 +42,7 @@ Mail::Mail()
     _mailPort = DEFAULT_MAIL_SMTP_PORT;
     _mailSender = DEFAULT_MAIL_SENDER;
     _mailPassword = DEFAULT_MAIL_SENDER_PW;
-    _mailReceiver = DEFAULT_MAIL_RECEIVER;    
+    _mailReceiver = DEFAULT_MAIL_RECEIVER;
 }
 
 Mail::~Mail()
@@ -66,12 +67,6 @@ void Mail::loop()
     if (!enabled() && !I::get().server().isConnected())
         return;
 
-    if (!_subjectToSend.isEmpty()) {
-        _send(_subjectToSend.c_str(), _bodyToSend.c_str());
-        _subjectToSend = "";
-        _bodyToSend = "";
-    }
-
     if (_wifiClient.available()) {
         while (_wifiClient.available()) {
             String line = _wifiClient.readStringUntil('\n');
@@ -83,6 +78,47 @@ void Mail::loop()
                     _setTestResult(true, "Successfully!");
                     _wifiClient.stop();
                 }
+            } else if (line.indexOf("Error") > -1) {
+                _setTestResult(false, line.c_str());
+                _wifiClient.stop();
+                _tsSendMail = 0;
+                _countSend = 0;
+                _mailData = "";
+            }
+            else if (line.startsWith("220"))
+            {
+                // HELLO accepted send Authentication
+                _wifiClient.print(_mailConfig.auth);
+            }
+            else if (line.startsWith("235"))
+            {
+                // Authenticated, send from/to params
+                _wifiClient.print(_mailConfig.from);
+                _wifiClient.print(_mailConfig.to);
+            }
+            else if (line.startsWith("250 2.1.5"))
+            {
+                // To accepted, send request for DATA
+                _wifiClient.print("DATA\r\n");
+            }
+            else if (line.startsWith("354"))
+            {
+                // DATA accepted, send mail data
+                _wifiClient.print(_mailData);
+            }
+            else if (line.startsWith("250 2.0.0"))
+            {
+                // DATA ok, quit
+                _wifiClient.print("QUIT\r\n");
+            }
+            else if (line.startsWith("221"))
+            {
+                // Mail send OK
+                _mailData = "";
+            }
+            else
+            {
+                EWC::I::get().logger() << F("Mail not handled response: ") << line << endl;
             }
         }
     } else {
@@ -142,6 +178,7 @@ void Mail::_fromJson(JsonDocument& config)
     if (!jv.isNull()) {
         _mailReceiver = jv.as<String>();
     }
+    _mailConfig = MailConfig(_mailServer, _mailSender, _mailPassword, _mailReceiver);
 }
 
 void Mail::_onMailConfig(WebServer* webserver)
@@ -222,13 +259,16 @@ void Mail::_onMailSave(WebServer* webserver, bool sendResponse)
 void Mail::_onMailTest(WebServer* webserver)
 {
     _onMailSave(webserver, false);
-    I::get().logger() << F("[Mail]: send test mail") << endl;
-    if (_criticalSend("Test Mail", "This is a test mail from your BBS.")) {
-        I::get().logger() << F("[Mail]: test mail ok") << endl;
+    I::get().logger() << F("[Mail]: send test mail...") << endl;
+    String body = String("This is a test mail from your ") + I::get().config().paramDeviceName;
+    if (_send("Test Mail", body.c_str()))
+    {
         _testMailSend = true;
         webserver->sendHeader("Location", F("/mail/state.html"));
         webserver->send(302, "text/plain", "");
-    } else {
+    }
+    else
+    {
         I::get().logger() << F("[Mail]: send test mail failed") << endl;
         I::get().server().sendPageFailed(webserver, F("Test Mail Result"), F("Send test mail failed, one mail already in queue!"), F("/mail/setup"));
     }
@@ -294,6 +334,17 @@ bool Mail::_send(const char* subject, const char* body) {
     I::get().logger() << "[Mail]: _send status: " << String(_wifiClient.status()) << endl;
 #else
 #endif
+    if (_mailConfig.hello.length() == 0)
+    {
+        I::get().logger() << F("[Mail]: not configured, skip mail with subject: ") << subject << endl;
+        _setTestResult(false, "Mail not configured");
+        return false;
+    }
+    if (_mailData.length() > 0) {
+        _setTestResult(false, "Mail already sending");
+        I::get().logger() << F("[Mail]: already sending, skip mail with subject: ") << subject << endl;
+        return false;
+    }
     if (!_wifiClient.connect(_mailServer.c_str(), _mailPort)) {
         _setTestResult(false, "Send mail failed");
         I::get().logger() << F("[Mail]: connect failed") << endl;
@@ -301,20 +352,18 @@ bool Mail::_send(const char* subject, const char* body) {
         return false;
     } else {
         _tsSendMail = millis();
+        _countSend = 1;
         I::get().logger() << F("[Mail]: connected, send...") << endl;
         EWC::I::get().logger() << F("✔ connected to the server: ") << _mailServer << F(" with port: ") << _mailPort << endl;
-        _wifiClient.printf("EHLO\nAUTH LOGIN\n");
-        _wifiClient.printf("%s\n%s\n", base64::encode(_mailSender).c_str(), base64::encode(_mailPassword).c_str());
-        _wifiClient.printf("MAIL From: %s\n", _mailSender.c_str());
-        _wifiClient.printf("RCPT To: <%s>\n", _mailReceiver.c_str());
-        _wifiClient.printf("DATA\n");
-        _wifiClient.printf("To: <%s>\n", _mailReceiver.c_str());
-        _wifiClient.printf("From: %s <%s>\n", I::get().config().paramDeviceName.c_str(), _mailSender.c_str());
-        _wifiClient.printf("Subject:%s - %s\n", I::get().config().paramDeviceName.c_str(), subject);
-        _wifiClient.println(body);
-        _wifiClient.println(".\nQUIT");
-        I::get().logger() << F("[Mail]: sent") << endl;
-        _countSend++;
+        _wifiClient.print(_mailConfig.hello);
+        // create DATA string
+        String data;
+        data += "From: " + I::get().config().paramDeviceName + " <" + _mailSender + ">\r\n";
+        data += "To: <" + _mailReceiver + ">\r\n";
+        data += "Subject: " + I::get().config().paramDeviceName + " - " + subject + "\r\n";
+        data += "Date: " + Time::currentTimeStr() + "\r\n";
+        data += "" + String(body) + "\r\n.\r\n";
+        _mailData = data;
         return true;
     }
     return false;
@@ -323,14 +372,4 @@ bool Mail::_send(const char* subject, const char* body) {
 bool Mail::sendFinished()
 {
     return _countSend == 0;
-}
-
-bool Mail::_criticalSend(const char* subject, const char* body)
-{
-    if (_subjectToSend.isEmpty()) {
-        _subjectToSend = subject;
-        _bodyToSend = body;
-        return true;
-    }
-    return false;
 }

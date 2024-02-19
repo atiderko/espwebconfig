@@ -127,6 +127,7 @@ void ConfigFS::setup()
     rtc.write(_resetUtcAddress, RESET_FLAG_CLEAR);
 #endif
     I::get().logger() << F("[EWC ConfigFS]: Load configuration from ") << _filename << endl;
+    JsonDocument jsonDoc;
     File cfgFile = LittleFS.open(_filename, "r");
     if (cfgFile && !cfgFile.isDirectory())
     {
@@ -135,15 +136,14 @@ void ConfigFS::setup()
 #else
         I::get().logger() << F("[EWC ConfigFS]: file open: ") << cfgFile.path() << ", name: " << cfgFile.name() << endl;
 #endif
-        JsonDocument jsonDoc;
         deserializeJson(jsonDoc, cfgFile);
-        // add sub configurations
-        I::get().logger() << F("[EWC ConfigFS]: Load subconfigurations, count: ") << _cfgInterfaces.size() << endl;
-        for (std::size_t i = 0; i < _cfgInterfaces.size(); ++i)
-        {
-            I::get().logger() << F("[EWC ConfigFS]:  load [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
-            _cfgInterfaces[i]->setup(jsonDoc, _resetDetected);
-        }
+    }
+    // add sub configurations
+    I::get().logger() << F("[EWC ConfigFS]: Load subconfigurations, count: ") << _cfgInterfaces.size() << endl;
+    for (std::size_t i = 0; i < _cfgInterfaces.size(); ++i)
+    {
+        I::get().logger() << F("[EWC ConfigFS]:  load [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
+        _cfgInterfaces[i]->setup(jsonDoc, _resetDetected);
     }
 #ifdef ESP8266
     // reset RTC
@@ -182,4 +182,10 @@ void ConfigFS::addConfig(ConfigInterface &config)
 {
     // TODO: add check to avoid add a config twice
     _cfgInterfaces.push_back(&config);
+}
+
+void ConfigFS::deleteFile()
+{
+    I::get().logger() << F("[EWC ConfigFS]: reset configuration file") << endl;
+    LittleFS.remove(_filename);
 }

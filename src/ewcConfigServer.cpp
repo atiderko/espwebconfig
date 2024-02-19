@@ -163,6 +163,7 @@ void ConfigServer::setup()
     if (_publicConfig) {
         _server.on("/config.json", std::bind(&ConfigServer::_sendFileContent, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), FPSTR(CONFIG_FILENAME)));
     }
+    _server.on("/device/reset", std::bind(&ConfigServer::_onDeviceReset, this, &_server));
     _server.on("/favicon.ico", std::bind(&ConfigServer::_sendFileContent, this, &_server, "/favicon.ico", "image/x-icon"));
     _server.onNotFound (std::bind(&ConfigServer::_onNotFound, this, &_server));
     _server.begin(); // Web server start
@@ -632,13 +633,13 @@ void ConfigServer::_onWifiScan(WebServer* webserver)
     if (n == WIFI_SCAN_FAILED) {
         I::get().logger() << F("[EWC CS]: scanNetworks returned: WIFI_SCAN_FAILED!") << endl;
         _wiFiState2Json(json, true, true, "scanNetworks returned: WIFI_SCAN_FAILED!");
-	  } else if(n == WIFI_SCAN_RUNNING) {
+    } else if(n == WIFI_SCAN_RUNNING) {
         I::get().logger() << F("[EWC CS]: scanNetworks returned: WIFI_SCAN_RUNNING!") << endl;
         _wiFiState2Json(json, false, false, "");
-	  } else if(n < 0) {
+    } else if(n < 0) {
         I::get().logger() << F("[EWC CS]: scanNetworks failed with unknown error code!") << endl;
         _wiFiState2Json(json, true, true, "scanNetworks failed with unknown error code!");
-	  } else if (n == 0) {
+    } else if (n == 0) {
         I::get().logger() << F("✘ [EWC CS]: No networks found") << endl;
         _wiFiState2Json(json, true, true, "No networks found");
     }
@@ -864,6 +865,13 @@ void ConfigServer::_onNotFound(WebServer* webserver) {
     webserver->sendHeader("Expires", "-1");
     webserver->sendHeader("Content-Length", String(message.length()));
     webserver->send(404, "text/plain", message);
+}
+
+void ConfigServer::_onDeviceReset(WebServer *webserver)
+{
+    I::get().logger() << F("[EWC CS]: delete config file") << endl;
+    I::get().configFS().deleteFile();
+    sendPageSuccess(webserver, "Delete configuration file", "Delete successful! Please, restart to apply AP changes!", "/");
 }
 
 /** Redirect to captive portal if we got a request for another domain. Return true in that case so the page handler do not try to handle the request again. */

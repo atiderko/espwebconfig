@@ -191,6 +191,7 @@ protected:
     void _onWifiState(WebServer* request);
     void _onWifiScan(WebServer* request);
     void _onNotFound(WebServer* request);
+    void _onDeviceReset(WebServer *request);
 
     /** === WiFi handler === **/
 #if defined(ESP8266)

@@ -26,7 +26,7 @@
             </div>
             <div>
                 <label id="lbl_receiver" for="receiver">Receiver:</label>
-                <input id="receiver" type="text" name="receiver" placeholder="receiver@mail.de" pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}'>
+                <input id="receiver" type="text" name="receiver" placeholder="receiver@mail.de" pattern="[^@\s]+@[^@\s]+\.[^@\s]+">
                 <label id="info_receiver">E-Mail address to receive notifications.</label>
             </div>
             <div>
@@ -39,7 +39,7 @@
             </div>
             <div>
                 <label id="lbl_sender" for="sender">Sender:</label>
-                <input id="sender" type="text" name="sender" placeholder="sender@mail.de" pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}'>
+                <input id="sender" type="text" name="sender" placeholder="sender@mail.de" pattern="[^@\s]+@[^@\s]+\.[^@\s]+">
             </div>
             <div>
                 <label id="lbl_passphrase" for="passphrase">Password</label>
