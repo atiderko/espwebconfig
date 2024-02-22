@@ -358,15 +358,6 @@ void ConfigServer::_wifiOnStationModeDisconnected(WiFiEvent_t event, WiFiEventIn
   }
 }
 
-void ConfigServer::_reconnectWiFi(ConfigServer *t)
-{
-  if (!t->isConnected())
-  {
-    I::get().logger() << F("[EWC CS]: reconnect to WiFi...") << endl;
-    t->_connect();
-  }
-}
-
 // void ConfigServer::_wifiOnStationModeAuthModeChanged(const WiFiEventStationModeAuthModeChanged& event)
 // {
 //     I::get().logger() << F("[EWC CS]: _wifiOnStationModeAuthModeChanged: ") << event.newMode << endl;
@@ -395,6 +386,15 @@ void ConfigServer::_wifiOnSoftAPModeStationDisconnected(WiFiEvent_t event, WiFiE
   }
 }
 #endif
+
+void ConfigServer::_reconnectWiFi(ConfigServer *t)
+{
+  if (!t->isConnected())
+  {
+    I::get().logger() << F("[EWC CS]: reconnect to WiFi...") << endl;
+    t->_connect();
+  }
+}
 
 void ConfigServer::insertMenu(const char *name, const char *uri, const char *entry_id, bool visible, int position)
 {
