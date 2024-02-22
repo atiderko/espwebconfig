@@ -1,4 +1,4 @@
-## Integration of __Time__ extension
+## Integration of **Time** extension
 
 ```cpp
 #include <Arduino.h>
@@ -13,7 +13,7 @@ void setup() {
     Serial.begin(115200);
     // add time configuration
     EWC::I::get().configFS().addConfig(ewcTime);
-    // start webserver
+    // start webServer
 	server.setup();
 }
 

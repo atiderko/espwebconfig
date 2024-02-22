@@ -34,11 +34,11 @@
           </tr>
           <tr>
             <td id="lbl_netwask">Netmask</td>
-            <td id="netwask"></td>
+            <td id="netmask"></td>
           </tr>
           <tr>
             <td id="lbl_softap_ip">SoftAP IP</td>
-            <td id="softap_ip"></td>
+            <td id="softApIp"></td>
           </tr>
           <tr>
             <td id="lbl_ap_mac">AP MAC</td>
@@ -82,7 +82,7 @@
       function fillinfo(data, url) {
         document.getElementById("wifi_mode").innerText = data["wifi_mode"] + '(' + data["wifi_status"] + ')';
         ["version", "estab_ssid","local_ip","gateway",
-        "netwask","softap_ip","ap_mac","sta_mac",
+        "netmask","softApIp","ap_mac","sta_mac",
         "channel","dbm","chip_id","cpu_freq","flash_size",
         "free_heap"].forEach(function(id,idy,arr) {
           document.getElementById(id).innerText = data[id];

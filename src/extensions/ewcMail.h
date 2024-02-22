@@ -1,6 +1,6 @@
 /**************************************************************
 
-This file is a part of BalkonBewaesserungsSteuerung
+This file is a part of
 https://github.com/atiderko/bbs
 
 Copyright [2020] Alexander Tiderko
@@ -24,31 +24,34 @@ limitations under the License.
 #include <Arduino.h>
 #include <ewcConfigServer.h>
 #ifdef ESP8266
-    #include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h>
 #elif defined(ESP32)
-    #include <WiFi.h>
-    #include <vector>
+#include <WiFi.h>
+#include <vector>
 #endif
 #include <Base64.h>
 
-namespace EWC {
-    #define MAIL_SEND_TIMEOUT 30000 // timeout beim Senden von emails
+namespace EWC
+{
+#define MAIL_SEND_TIMEOUT 30000 // timeout while send emails
 
-    const char DEFAULT_MAIL_SMTP[] = "";
-    const uint16_t DEFAULT_MAIL_SMTP_PORT = 25;
-    const char DEFAULT_MAIL_SENDER[] = "";
-    const char DEFAULT_MAIL_SENDER_PW[] = "";
-    const char DEFAULT_MAIL_RECEIVER[] = "";
+  const char DEFAULT_MAIL_SMTP[] = "";
+  const uint16_t DEFAULT_MAIL_SMTP_PORT = 25;
+  const char DEFAULT_MAIL_SENDER[] = "";
+  const char DEFAULT_MAIL_SENDER_PW[] = "";
+  const char DEFAULT_MAIL_RECEIVER[] = "";
 
-enum MailStates {
+  enum MailStates
+  {
     MAIL_SOMEONE = 0,
     MAIL_ON_WARNING = 1,
     MAIL_ON_CHANGE = 2,
     MAIL_ON_EVENT = 3
-};
+  };
 
-class MailConfig {
-public:
+  class MailConfig
+  {
+  public:
     String hello;
     String auth;
     String from;
@@ -56,33 +59,34 @@ public:
     MailConfig() {}
     MailConfig(String smtpServer, String sender, String password, String receiver)
     {
-        hello = "EHLO " + smtpServer + "\n";
-        auth = "AUTH LOGIN\n" + base64::encode(sender) + "\n" + base64::encode(password) + "\n";
-        from = "MAIL FROM: <" + sender + ">\r\n";
-        to = "RCPT TO: <" + receiver + ">\r\n";
+      hello = "EHLO " + smtpServer + "\n";
+      auth = "AUTH LOGIN\n" + base64::encode(sender) + "\n" + base64::encode(password) + "\n";
+      from = "MAIL FROM: <" + sender + ">\r\n";
+      to = "RCPT TO: <" + receiver + ">\r\n";
     }
-};
+  };
 
-class Mail : public EWC::ConfigInterface {
-public:
+  class Mail : public EWC::ConfigInterface
+  {
+  public:
     Mail();
     ~Mail();
     /** === ConfigInterface Methods === **/
-    void setup(JsonDocument& config, bool resetConfig=false);
-    void fillJson(JsonDocument& config);
+    void setup(JsonDocument &config, bool resetConfig = false);
+    void fillJson(JsonDocument &config);
 
     /** === OWN Methods === **/
     void loop();
 
     /** Checks if for given id mail send is enabled. **/
-    bool enabled(MailStates id=MAIL_SOMEONE);
-    bool sendWarning(const char* subject, const char* body);
-    bool sendChange(const char* subject, const char* body);
-    bool sendEvent(const char* subject, const char* body);
+    bool enabled(MailStates id = MAIL_SOMEONE);
+    bool sendWarning(const char *subject, const char *body);
+    bool sendChange(const char *subject, const char *body);
+    bool sendEvent(const char *subject, const char *body);
     /** Checks if for all mails send a response from server was received. **/
     bool sendFinished();
 
-protected:
+  protected:
     WiFiClient _wifiClient;
     unsigned long _tsSendMail;
     unsigned int _countSend;
@@ -102,13 +106,13 @@ protected:
     String _mailPassword;
     String _mailReceiver;
 
-    void _onMailConfig(WebServer* webserver);
-    void _onMailState(WebServer* webserver);
-    void _onMailSave(WebServer* webserver, bool sendResponse=true);
-    void _onMailTest(WebServer* webserver);
-    bool _send(const char* betreff, const char* body);
-    void _setTestResult(bool success, const char* result);
-    void _fromJson(JsonDocument& config);
-};
+    void _onMailConfig(WebServer *webServer);
+    void _onMailState(WebServer *webServer);
+    void _onMailSave(WebServer *webServer, bool sendResponse = true);
+    void _onMailTest(WebServer *webServer);
+    bool _send(const char *subject, const char *body);
+    void _setTestResult(bool success, const char *result);
+    void _fromJson(JsonDocument &config);
+  };
 };
 #endif

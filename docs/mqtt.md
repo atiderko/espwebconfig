@@ -1,4 +1,4 @@
-## Integration of __MQTT__ extension with Homie support
+## Integration of **MQTT** extension with Homie support
 
 ```cpp
 #include <Arduino.h>
@@ -30,7 +30,7 @@ void setup() {
     // and homie properties
     homieMqtt.addProperty("mynode", "my_property_id", "My Property", "integer", "0:100", "%");
     homieMqtt.addPropertySettable("mynode", "my_property_id_c1", "My callable property", "boolean", _onMqttCallback);
-    // start webserver
+    // start webServer
 	server.setup();
 }
 
@@ -51,4 +51,5 @@ void loop() {
     delay(1);
 }
 ```
-You can remove Homie dependency and use __AsyncMqttClient__ directly with _ewcMqtt.client()_.
+
+You can remove Homie dependency and use **AsyncMqttClient** directly with _ewcMqtt.client()_.

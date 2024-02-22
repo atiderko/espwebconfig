@@ -20,7 +20,7 @@ limitations under the License.
 Based on:
  *  @file   AutoConnect.cpp
  *  @author hieromon@gmail.com
- 
+
 
 **************************************************************/
 
@@ -31,15 +31,16 @@ using namespace EWC;
 
 void TickerLed::enable(bool enable, const uint8_t port, const uint8_t active, const uint32_t cycle, uint32_t duration)
 {
-    I::get().logger() << "[EWC LED] enable on port " << port << endl;
-    _port = port;
-    _turnOn = active;
-    _cycle = cycle;
-    setDuration(duration);
-    _enabled = enable;
-    if (!enable) {
-      stop();
-    }
+  I::get().logger() << "[EWC LED] enable on port " << port << endl;
+  _port = port;
+  _turnOn = active;
+  _cycle = cycle;
+  setDuration(duration);
+  _enabled = enable;
+  if (!enable)
+  {
+    stop();
+  }
 }
 
 /**
@@ -47,18 +48,23 @@ void TickerLed::enable(bool enable, const uint8_t port, const uint8_t active, co
  * @param cycle Cycle time in [ms]
  * @param duty  Duty cycle in [ms]
  */
-void TickerLed::start(const uint32_t cycle, const uint32_t duration) {
-    if (_enabled) {
+void TickerLed::start(const uint32_t cycle, const uint32_t duration)
+{
+  if (_enabled)
+  {
 
-        I::get().logger() << "[EWC LED] start: " << cycle << ", duration: " << duration  << endl;
-        _cycle = cycle;
-        if (duration <= _cycle) {
-            _duration = duration;
-        }
-        start();
-    } else {
-        I::get().logger() << "✘ [EWC LED] not enabled, skip start"  << endl;
+    I::get().logger() << "[EWC LED] start: " << cycle << ", duration: " << duration << endl;
+    _cycle = cycle;
+    if (duration <= _cycle)
+    {
+      _duration = duration;
     }
+    start();
+  }
+  else
+  {
+    I::get().logger() << "✘ [EWC LED] not enabled, skip start" << endl;
+  }
 }
 
 /**
@@ -66,34 +72,37 @@ void TickerLed::start(const uint32_t cycle, const uint32_t duration) {
  */
 void TickerLed::start(void)
 {
-    pinMode(_port, OUTPUT);
-    if (_period == nullptr) {
-        _period = new Ticker();
-        _pulse = new Ticker();
-    }
-    _pulse->detach();
-    // we have to start first cycle manually
-    _onPeriod(this);
-    // further cycles are triggered by a ticker timer
-    _period->attach_ms<TickerLed *>(_cycle, TickerLed::_onPeriod, this);
-    _active = true;
+  pinMode(_port, OUTPUT);
+  if (_period == nullptr)
+  {
+    _period = new Ticker();
+    _pulse = new Ticker();
+  }
+  _pulse->detach();
+  // we have to start first cycle manually
+  _onPeriod(this);
+  // further cycles are triggered by a ticker timer
+  _period->attach_ms<TickerLed *>(_cycle, TickerLed::_onPeriod, this);
+  _active = true;
 }
 
-void TickerLed::stop(void) 
+void TickerLed::stop(void)
 {
-    if (_period != nullptr) {
-        _period->detach();
-        _pulse->detach();
-        digitalWrite(_port, !_turnOn);
-        if (_active) {
-            I::get().logger() << "[EWC LED] stopped"  << endl;
-        }
-        delete _period;
-        delete _pulse;
-        _period = nullptr;
-        _pulse = nullptr;
+  if (_period != nullptr)
+  {
+    _period->detach();
+    _pulse->detach();
+    digitalWrite(_port, !_turnOn);
+    if (_active)
+    {
+      I::get().logger() << "[EWC LED] stopped" << endl;
     }
-    _active = false;
+    delete _period;
+    delete _pulse;
+    _period = nullptr;
+    _pulse = nullptr;
+  }
+  _active = false;
 }
 
 /**
@@ -104,18 +113,21 @@ void TickerLed::stop(void)
  * end of one cycle.
  * @param  t  Its own address
  */
-void TickerLed::_onPeriod(TickerLed* t) {
-    digitalWrite(t->_port, t->_turnOn);
-    t->_pulse->once_ms<TickerLed*>(t->_duration, TickerLed::_onPulse, t);
-    if (t->_callback) {
-        t->_callback();
-    }
+void TickerLed::_onPeriod(TickerLed *t)
+{
+  digitalWrite(t->_port, t->_turnOn);
+  t->_pulse->once_ms<TickerLed *>(t->_duration, TickerLed::_onPulse, t);
+  if (t->_callback)
+  {
+    t->_callback();
+  }
 }
 
 /**
  * Turn off the flicker signal
  * @param  t  Its own address
  */
-void TickerLed::_onPulse(TickerLed* t) {
-    digitalWrite(t->_port, !(t->_turnOn));
+void TickerLed::_onPulse(TickerLed *t)
+{
+  digitalWrite(t->_port, !(t->_turnOn));
 }

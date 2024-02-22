@@ -18,23 +18,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 **************************************************************/
-/** from homie Logget.hpp and StreamingOperator.hpp */
+/** from homie Logger.hpp and StreamingOperator.hpp */
+
 #ifndef EWC_STREAMING_OPERATOR_h
 #define EWC_STREAMING_OPERATOR_h
 
-
 #include <Arduino.h>
 
-namespace EWC {
+namespace EWC
+{
 
-template<class T>
-inline Print &operator <<(Print &stream, T arg)
-{ stream.print(arg); return stream; }
+  template <class T>
+  inline Print &operator<<(Print &stream, T arg)
+  {
+    stream.print(arg);
+    return stream;
+  }
 
-enum _EndLineCode { endl };
+  enum _EndLineCode
+  {
+    endl
+  };
 
-inline Print &operator <<(Print &stream, _EndLineCode arg)
-{ stream.println(); return stream; }
+  inline Print &operator<<(Print &stream, _EndLineCode arg)
+  {
+    stream.println();
+    return stream;
+  }
 
 };
 

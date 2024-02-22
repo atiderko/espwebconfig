@@ -13,5 +13,23 @@
   "workbench.colorCustomizations": {
     "activityBar.activeBackground": "#063813",
     "statusBar.background": "#063813"
-  }
+  },
+  "cSpell.words": [
+    "APIP",
+    "bssid",
+    "Efuse",
+    "EHLO",
+    "FPSTR",
+    "Mqtt",
+    "postload",
+    "PROGMEM",
+    "rssi",
+    "ssids",
+    "STACONNECTED",
+    "STADISCONNECTED",
+    "Tiderko",
+    "TZMAP",
+    "updatefw",
+    "wifiicons"
+  ]
 }

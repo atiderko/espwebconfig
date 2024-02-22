@@ -26,19 +26,19 @@ limitations under the License.
 #include "stdlib_noniso.h"
 
 #if defined(ESP8266)
-    #include "ESP8266WiFi.h"
-    #include "ESP8266WebServer.h"
-    # define WebServer ESP8266WebServer
-    // #include "ESPAsyncTCP.h"
-    #include "flash_hal.h"
-    #include "FS.h"
+#include "ESP8266WiFi.h"
+#include "ESP8266WebServer.h"
+#define WebServer ESP8266WebServer
+// #include "ESPAsyncTCP.h"
+#include "flash_hal.h"
+#include "FS.h"
 #elif defined(ESP32)
-    #include "WiFi.h"
-    #include "WebServer.h"
-    // #include "AsyncTCP.h"
-    #include "Update.h"
-    #include "esp_int_wdt.h"
-    #include "esp_task_wdt.h"
+#include "WiFi.h"
+#include "WebServer.h"
+// #include "AsyncTCP.h"
+#include "Update.h"
+#include "esp_int_wdt.h"
+#include "esp_task_wdt.h"
 #endif
 
 // #include <ESPAsyncWebServer.h>
@@ -46,27 +46,29 @@ limitations under the License.
 
 #include "../ewcConfigInterface.h"
 
-namespace EWC {
+namespace EWC
+{
 
-class Updater: public ConfigInterface {
+  class Updater : public ConfigInterface
+  {
 
-public:
+  public:
     Updater();
     ~Updater();
-    /** === ConfigInterface Methods === **/    
-    void setup(JsonDocument& config, bool resetConfig=false);
+    /** === ConfigInterface Methods === **/
+    void setup(JsonDocument &config, bool resetConfig = false);
     void loop();
-    void fillJson(JsonDocument& config);
+    void fillJson(JsonDocument &config);
 
-protected:
+  protected:
     bool _shouldReboot;
     long _tsReboot;
-    void _onUpdate(WebServer* server);
-    void _onUpdateUpload(WebServer* server);
-    void _onUpdateInfo(WebServer* server);
+    void _onUpdate(WebServer *server);
+    void _onUpdateUpload(WebServer *server);
+    void _onUpdateInfo(WebServer *server);
     void _initParams();
-    void _fromJson(JsonDocument& config);
-};
+    void _fromJson(JsonDocument &config);
+  };
 
 };
 #endif

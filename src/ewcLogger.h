@@ -18,27 +18,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 **************************************************************/
-/** from homie Logget.hpp and StreamingOperator.hpp */
+/** from homie Logger.hpp and StreamingOperator.hpp */
+
 #ifndef EWC_LOGGER_H
 #define EWC_LOGGER_H
 
 #include <Arduino.h>
 
-namespace EWC {
-class Logger : public Print {
+namespace EWC
+{
+  class Logger : public Print
+  {
 
   public:
     Logger();
     virtual size_t write(uint8_t character);
-    virtual size_t write(const uint8_t* buffer, size_t size);
+    virtual size_t write(const uint8_t *buffer, size_t size);
     void setLogging(bool enable);
 
   private:
-    void setPrinter(Print* printer);
+    void setPrinter(Print *printer);
 
     bool _loggingEnabled;
-    Print* _printer;
-};
+    Print *_printer;
+  };
 };
 
 #endif

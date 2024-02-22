@@ -42,16 +42,16 @@
                 <input id="dhcp" type="checkbox" name="dhcp" value="true" checked onclick="vsw(!this.checked, 'exp');">Enable DHCP</input>
             </div>
             <div class="exp">
-                <label id="lbl_staip" for="staip">IP Address</label>
-                <input id="staip" type="text" name="staip" value="">
+                <label id="lbl_staip" for="stationIP">IP Address</label>
+                <input id="stationIP" type="text" name="stationIP" value="">
             </div>
             <div class="exp">
-                <label id="lbl_gtway" for="gtway">Gateway</label>
-                <input id="gtway" type="text" name="gtway" value="">
+                <label id="lbl_gtway" for="gateway">Gateway</label>
+                <input id="gateway" type="text" name="gateway" value="">
             </div>
             <div class="exp">
-                <label id="lbl_ntmsk" for="ntmsk">Netmask</label>
-                <input id="ntmsk" type="text" name="ntmsk" value="">
+                <label id="lbl_ntmsk" for="netmask">Netmask</label>
+                <input id="netmask" type="text" name="netmask" value="">
             </div>
             <div class="exp">
                 <label id="lbl_dns1" for="dns1">DNS1</label>
@@ -69,7 +69,7 @@
 
   <script type="text/javascript">
     window.onload=function(){
-      ["staip","gtway","ntmsk","dns1","dns2"].forEach(function(n,o,t){
+      ["stationIP","gateway","netmask","dns1","dns2"].forEach(function(n,o,t){
         io=document.getElementById(n),io.placeholder='0.0.0.0',io.pattern='^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'});
       vsw(false, 'exp')};
     function onFocus(e){

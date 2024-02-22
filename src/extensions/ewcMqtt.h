@@ -19,42 +19,42 @@ limitations under the License.
 
 **************************************************************/
 
-// See AsynMqttClient: https://github.com/marvinroger/async-mqtt-client
+// See AsyncMqttClient: https://github.com/marvinroger/async-mqtt-client
 
 #ifndef EWC_MQTT_h
 #define EWC_MQTT_h
 
 #if defined(ESP8266)
-    #include "ESP8266WiFi.h"
-    #include "ESP8266WebServer.h"
-    # define WebServer ESP8266WebServer
+#include "ESP8266WiFi.h"
+#include "ESP8266WebServer.h"
+#define WebServer ESP8266WebServer
 #elif defined(ESP32)
-    #include "WiFi.h"
-    #include "WebServer.h"
+#include "WiFi.h"
+#include "WebServer.h"
 #endif
 #include <Arduino.h>
 #include <AsyncMqttClient.h>
 #include <Ticker.h>
 #include "../ewcConfigInterface.h"
 
-
-namespace EWC {
-
-class Mqtt : public ConfigInterface
+namespace EWC
 {
-public:
+
+  class Mqtt : public ConfigInterface
+  {
+  public:
     Mqtt();
     ~Mqtt();
 
-    AsyncMqttClient& client() { return _mqttClient; }
+    AsyncMqttClient &client() { return _mqttClient; }
 
-    /** === ConfigInterface Methods === **/    
-    void setup(JsonDocument& config, bool resetConfig=false);
-    void fillJson(JsonDocument& config);
+    /** === ConfigInterface Methods === **/
+    void setup(JsonDocument &config, bool resetConfig = false);
+    void fillJson(JsonDocument &config);
     bool paramEnabled;
     String paramDiscoveryPrefix;
 
-protected:
+  protected:
     AsyncMqttClient _mqttClient;
     Ticker _mqttReconnectTimer;
 #ifdef ESP8266
@@ -62,37 +62,35 @@ protected:
     WiFiEventHandler _wifiDisconnectHandler;
 #endif
 
-
     /** === Parameter === **/
     String _paramServer;
     uint16_t _paramPort;
     String _paramUser;
     String _paramPassword;
 
-
     void _initParams();
-    void _fromJson(JsonDocument& config);
-    void _onMqttConfig(WebServer* request);
-    void _onMqttState(WebServer* request);
-    void _onMqttSave(WebServer* request);
+    void _fromJson(JsonDocument &config);
+    void _onMqttConfig(WebServer *request);
+    void _onMqttState(WebServer *request);
+    void _onMqttSave(WebServer *request);
 
-    #if defined(ESP8266)
-    void _onWifiConnect(const WiFiEventStationModeGotIP& event);
-    void _onWifiDisconnect(const WiFiEventStationModeDisconnected& event);
-    #else
+#if defined(ESP8266)
+    void _onWifiConnect(const WiFiEventStationModeGotIP &event);
+    void _onWifiDisconnect(const WiFiEventStationModeDisconnected &event);
+#else
     void _onWifiConnect(WiFiEvent_t event, WiFiEventInfo_t info);
     void _onWifiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info);
-    #endif
+#endif
 
     void _connectToMqtt();
     void _onMqttDisconnect(AsyncMqttClientDisconnectReason reason);
     void _onMqttConnect(bool sessionPresent);
 
-private:
+  private:
     bool _connecting;
     bool _failed;
     String _failedReason;
-};
+  };
 
 };
 #endif

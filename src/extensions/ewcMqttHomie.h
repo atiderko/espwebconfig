@@ -1,6 +1,6 @@
 /**************************************************************
 
-This file is a part of BalkonBewaesserungsSteuerung
+This file is a part of
 https://github.com/atiderko/bbs
 
 Copyright [2020] Alexander Tiderko
@@ -25,11 +25,13 @@ limitations under the License.
 #include "ewcMqtt.h"
 #include "../ewcConfig.h"
 
-namespace EWC {
+namespace EWC
+{
 
-const char SEP[2] = "/";
+  const char SEP[2] = "/";
 
-struct HomieProperty {
+  struct HomieProperty
+  {
     String id;
     String name;
     String datatype;
@@ -38,79 +40,84 @@ struct HomieProperty {
     String unit;
     bool retained;
     bool settable;
-};
+  };
 
-struct HomieNode {
+  struct HomieNode
+  {
     String id;
     String name;
     std::vector<HomieProperty> properties;
 
     String type;
-};
+  };
 
-struct HomieDevice {
+  struct HomieDevice
+  {
     String prefix;
     String id;
     String name;
     String state;
     std::vector<HomieNode> nodes;
-};
+  };
 
-
-/** Stores the callback for the settable topic. */
-class CallbackTopic {
-public:
+  /** Stores the callback for the settable topic. */
+  class CallbackTopic
+  {
+  public:
     AsyncMqttClientInternals::OnMessageUserCallback callback;
     String topic;
 
-    CallbackTopic(String nodeId, String propertyId, AsyncMqttClientInternals::OnMessageUserCallback callbackFunc) {
-        _nodeId = nodeId;
-        _propertyId = propertyId;
-        callback = callbackFunc;
+    CallbackTopic(String nodeId, String propertyId, AsyncMqttClientInternals::OnMessageUserCallback callbackFunc)
+    {
+      _nodeId = nodeId;
+      _propertyId = propertyId;
+      callback = callbackFunc;
     }
 
-    void createTopic(String homiePrefix, String deviceId) {
-        topic = homiePrefix + SEP + deviceId + SEP + _nodeId + SEP + _propertyId + SEP + "set";
+    void createTopic(String homiePrefix, String deviceId)
+    {
+      topic = homiePrefix + SEP + deviceId + SEP + _nodeId + SEP + _propertyId + SEP + "set";
     }
 
-protected:
+  protected:
     String _nodeId;
     String _propertyId;
-};
+  };
 
-
-/** Stores configuration topic, which is send after connected to a brocker. */
-class MqttConfigTopic {
-public:
+  /** Stores configuration topic, which is send after connected to a broker. */
+  class MqttConfigTopic
+  {
+  public:
     MqttConfigTopic(String topic, String value, uint8_t qos, bool retain);
     ~MqttConfigTopic();
 
-    uint16_t publish(EWC::Mqtt& mqtt);
+    uint16_t publish(EWC::Mqtt &mqtt);
 
-private:
+  private:
     String _topic;
     String _value;
     uint8_t _qos;
     bool _retain;
-};
+  };
 
-class MqttHomie {
-public:
+  class MqttHomie
+  {
+  public:
     MqttHomie();
     ~MqttHomie();
 
-    void setup(EWC::Mqtt& mqtt, String deviceName, String deviceId="ewc-"+I::get().config().getChipId());
+    void setup(EWC::Mqtt &mqtt, String deviceName, String deviceId = "ewc-" + I::get().config().getChipId());
     /** Adds a node to the device. */
-    bool addNode(String id, String name, String type="");
+    bool addNode(String id, String name, String type = "");
     /** Adds property to an existing node. The node should be inserted first. */
-    bool addProperty(String nodeId, String propertyId, String name, String datatype, String format="", String unit="", bool retained=true);
+    bool addProperty(String nodeId, String propertyId, String name, String datatype, String format = "", String unit = "", bool retained = true);
     /** Adds a settable property to an existing node. The node should be inserted first. */
-    bool addPropertySettable(String nodeId, String propertyId, String name, String datatype, AsyncMqttClientInternals::OnMessageUserCallback callback, String format="", String unit="", bool retained=true);
+    bool addPropertySettable(String nodeId, String propertyId, String name, String datatype, AsyncMqttClientInternals::OnMessageUserCallback callback, String format = "", String unit = "", bool retained = true);
     /** Publishes a value a property. */
-    void publishState(String nodeId, String propertyId, String value, bool retain=false, uint8_t qos=1);
+    void publishState(String nodeId, String propertyId, String value, bool retain = false, uint8_t qos = 1);
 
-protected:
-    EWC::Mqtt* _ewcMqtt;
+  protected:
+    EWC::Mqtt *_ewcMqtt;
     String _homieStateTopic;
     std::vector<CallbackTopic> _callbacks;
     HomieDevice _homieDevice;
@@ -121,10 +128,8 @@ protected:
     uint16_t _waitForPacketId;
 
     void _onMqttConnect(bool sessionPresent);
-    void _onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total);
+    void _onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total);
     void _onMqttAck(uint16_t packetId);
-};
+  };
 };
 #endif
-
-

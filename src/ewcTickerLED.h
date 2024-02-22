@@ -30,45 +30,48 @@ limitations under the License.
 #define LED_BUILTIN 12
 #endif
 
-namespace EWC {
+namespace EWC
+{
 
-class TickerLed {
- public:
-	explicit TickerLed(const uint8_t port = LED_BUILTIN, const uint8_t active = LOW, const uint32_t cycle = 0, uint32_t duration = 0) 
-    : _cycle(cycle), _duration(duration), _port(port), _turnOn(active), _callback(nullptr) {
-    _enabled = false;
-    _active = false;
-    setDuration(_duration);
-  }
-  ~TickerLed() { stop(); }
+  class TickerLed
+  {
+  public:
+    explicit TickerLed(const uint8_t port = LED_BUILTIN, const uint8_t active = LOW, const uint32_t cycle = 0, uint32_t duration = 0)
+        : _cycle(cycle), _duration(duration), _port(port), _turnOn(active), _callback(nullptr)
+    {
+      _enabled = false;
+      _active = false;
+      setDuration(_duration);
+    }
+    ~TickerLed() { stop(); }
 
-  void enable(bool enable, const uint8_t port = LED_BUILTIN, const uint8_t active = LOW, const uint32_t cycle = 0, uint32_t duration = 0);
-  bool enabled() { return _enabled; }
-  bool active() { return _active; }
-  typedef std::function<void(void)> Callback_ft;
-  void start(const uint32_t cycle, const uint32_t duration);
-  // void start(const uint32_t cycle, const uint8_t width) { start(cycle, (uint32_t)((cycle * width) >> 8)); }
-  void stop(void);
-  void onPeriod(Callback_ft cb) { _callback = cb ;}
+    void enable(bool enable, const uint8_t port = LED_BUILTIN, const uint8_t active = LOW, const uint32_t cycle = 0, uint32_t duration = 0);
+    bool enabled() { return _enabled; }
+    bool active() { return _active; }
+    typedef std::function<void(void)> Callback_ft;
+    void start(const uint32_t cycle, const uint32_t duration);
+    // void start(const uint32_t cycle, const uint8_t width) { start(cycle, (uint32_t)((cycle * width) >> 8)); }
+    void stop(void);
+    void onPeriod(Callback_ft cb) { _callback = cb; }
 
- protected:
-  Ticker*    _period = nullptr;        //< Ticker for flicking cycle
-  Ticker*    _pulse = nullptr;         //< Ticker for pulse width generating
-  uint32_t  _cycle;         //< Cycle time in [ms]
-  uint32_t  _duration;      //< Pulse width in [ms]
-  bool _enabled;            //< True if enabled by enable(...)
-  void setCycle(const uint32_t cycle) { _cycle = cycle; }
-  void setDuration(const uint32_t duration) { _duration = duration <= _cycle ? duration : _duration; }
-  void start(void);
+  protected:
+    Ticker *_period = nullptr; //< Ticker for flicking cycle
+    Ticker *_pulse = nullptr;  //< Ticker for pulse width generating
+    uint32_t _cycle;           //< Cycle time in [ms]
+    uint32_t _duration;        //< Pulse width in [ms]
+    bool _enabled;             //< True if enabled by enable(...)
+    void setCycle(const uint32_t cycle) { _cycle = cycle; }
+    void setDuration(const uint32_t duration) { _duration = duration <= _cycle ? duration : _duration; }
+    void start(void);
 
- private:
-  static void _onPeriod(TickerLed* t);
-  static void _onPulse(TickerLed* t);
-  bool _active;             //< True if ticker was started, false if stopped
-  uint8_t     _port;        //< Port to output signal
-  uint8_t     _turnOn;      //< Signal to turn on
-  Callback_ft _callback;    //< An exit by every cycle
-};
+  private:
+    static void _onPeriod(TickerLed *t);
+    static void _onPulse(TickerLed *t);
+    bool _active;          //< True if ticker was started, false if stopped
+    uint8_t _port;         //< Port to output signal
+    uint8_t _turnOn;       //< Signal to turn on
+    Callback_ft _callback; //< An exit by every cycle
+  };
 
 }
 #endif

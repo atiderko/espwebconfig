@@ -25,53 +25,54 @@ limitations under the License.
 #include "ewcLogger.h"
 #include "ewcStreamingOperator.h"
 
-namespace EWC {
-class ConfigServer;
-class Config;
-class ConfigFS;
+namespace EWC
+{
+  class ConfigServer;
+  class Config;
+  class ConfigFS;
 #if defined(ESP8266)
-class RTC;
+  class RTC;
 #endif
-class TickerLed;
+  class TickerLed;
 
-/** The objects of the interface are initialized by ConfigServer.
- * The interface is globally reachable through I::get(). **/
-class InterfaceData {
-  friend ConfigServer;
+  /** The objects of the interface are initialized by ConfigServer.
+   * The interface is globally reachable through I::get(). **/
+  class InterfaceData
+  {
+    friend ConfigServer;
 
   public:
     InterfaceData() {}
 
-    ConfigServer& server() { return *_server; }
-    Config& config() { return *_config; }
-    ConfigFS& configFS() { return *_configFS; }
-    Logger& logger() { return *_logger; }
+    ConfigServer &server() { return *_server; }
+    Config &config() { return *_config; }
+    ConfigFS &configFS() { return *_configFS; }
+    Logger &logger() { return *_logger; }
 #if defined(ESP8266)
-    RTC& rtc() { return *_rtc; }
+    RTC &rtc() { return *_rtc; }
 #endif
-    TickerLed& led() { return *_led; }
+    TickerLed &led() { return *_led; }
 
   private:
-    ConfigServer* _server;
-    Config* _config;
-    ConfigFS* _configFS;
-    Logger* _logger;
+    ConfigServer *_server;
+    Config *_config;
+    ConfigFS *_configFS;
+    Logger *_logger;
 #if defined(ESP8266)
-    RTC* _rtc;
+    RTC *_rtc;
 #endif
-    TickerLed* _led;
-};
+    TickerLed *_led;
+  };
 
-
-class I {
+  class I
+  {
   public:
-    static InterfaceData& get() { return _interface; }
+    static InterfaceData &get() { return _interface; }
 
   private:
     // Initialized in ewcConfigServer.cpp
     static InterfaceData _interface;
-};
-
+  };
 
 };
 

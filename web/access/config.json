@@ -1,12 +1,12 @@
 {
-    "ewc": {
-        "dev_name": "Balkon",
-        "apname": "ewc-123ABC",
-        "appass": "",
-        "ap_start_always": false,
-        "basic_auth": false,
-        "httpuser": "admin",
-        "httppass": "admin",
-        "hostname": "ewc-123ABC"
-    }
+  "ewc": {
+    "dev_name": "Balkon",
+    "apName": "ewc-123ABC",
+    "apPass": "",
+    "ap_start_always": false,
+    "basic_auth": false,
+    "httpUser": "admin",
+    "httpPass": "admin",
+    "hostname": "ewc-123ABC"
+  }
 }

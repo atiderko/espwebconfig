@@ -1,4 +1,4 @@
-## Integration of __Updater__ extension
+## Integration of **Updater** extension
 
 ```cpp
 #include <Arduino.h>
@@ -12,7 +12,7 @@ void setup() {
     Serial.begin(115200);
     // add updater configuration
     EWC::I::get().configFS().addConfig(ewcUpdater);
-    // start webserver
+    // start webServer
 	server.setup();
 }
 

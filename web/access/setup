@@ -17,13 +17,13 @@
                 <input id="dev_name" type="text" name="dev_name" placeholder="Device Name">
             </div>
             <div>
-                <label id="lbl_apname" for="apname">AP Name</label>
-                <input id="apname" type="text" name="apname" placeholder="Name">
+                <label id="lbl_apname" for="apName">AP Name</label>
+                <input id="apName" type="text" name="apName" placeholder="Name">
             </div>
             <div>
-                <label id="lbl_appass" for="appass">AP Password</label>
-                <input id="appass" type="password" name="appass" placeholder="Passphrase">
-                <input id="appass-status" class="pwdcb" type="checkbox" aria-hidden="true" onClick="viewPassword('appass', 'appass-status')">
+                <label id="lbl_appass" for="apPass">AP Password</label>
+                <input id="apPass" type="password" name="apPass" placeholder="Passphrase">
+                <input id="apPass-status" class="pwdcb" type="checkbox" aria-hidden="true" onClick="viewPassword('apPass', 'apPass-status')">
             </div>
             <div>
               <input id="ap_start_always" type="checkbox" name="ap_start_always" value="true" checked><label id="lbl_ap_start_always">AP start always</label></input>
@@ -37,13 +37,13 @@
               <input id="basic_auth" type="checkbox" name="basic_auth" value="true" onclick="vsw(this.checked, 'http');"><label id="lbl_basic_auth">Enable HTTP authentification</label></input>
             </div>
             <div class="http">
-                <label id="lbl_httpuser" for="httpuser">HTTP User</label>
-                <input id="httpuser" type="text" name="httpuser" placeholder="Username">
+                <label id="lbl_httpuser" for="httpUser">HTTP User</label>
+                <input id="httpUser" type="text" name="httpUser" placeholder="Username">
             </div>
             <div class="http">
-                <label id="lbl_httppass" for="httppass">HTTP Password</label>
-                <input id="httppass" type="password" name="httppass" placeholder="Passphrase">
-                <input id="httpass-status" class="pwdcb" type="checkbox" aria-hidden="false" onClick="viewPassword('httppass', 'httpass-status')"/>
+                <label id="lbl_httppass" for="httpPass">HTTP Password</label>
+                <input id="httpPass" type="password" name="httpPass" placeholder="Passphrase">
+                <input id="httpass-status" class="pwdcb" type="checkbox" aria-hidden="false" onClick="viewPassword('httpPass', 'httpass-status')"/>
             </div>
           </div>
           <input id="npt_apply" type="submit" name="apply" value="Apply">
@@ -57,8 +57,8 @@
       function fillaccess(data, url) {
         document.getElementById("ap_start_always").checked = data["ewc"]["ap_start_always"];
         document.getElementById("basic_auth").checked = data["ewc"]["basic_auth"];
-        ["dev_name", "apname","appass","httpuser",
-        "httppass", "hostname"].forEach(function(id,idy,arr) {
+        ["dev_name", "apName","apPass","httpUser",
+        "httpPass", "hostname"].forEach(function(id,idy,arr) {
           document.getElementById(id).value = data["ewc"][id];
         });
         // setTimeout(getJSON.bind(null, "/access/config.json", "fillaccess"), 3000);

@@ -94,7 +94,7 @@ ConfigServer::ConfigServer(uint16_t port)
 #endif
   I::get()._led = &_led;
   _publicConfig = true;
-  _branduri = "/";
+  _brandUri = "/";
   _connected_wifi = false;
   _ap_disabled_after_timeout = false;
   _disconnect_state = 0;
@@ -269,7 +269,7 @@ void ConfigServer::_wifiOnStationModeDisconnected(const WiFiEventStationModeDisc
   case WIFI_DISCONNECT_REASON_AUTH_FAIL:
   {
     _disconnect_state = event.reason;
-    _disconnect_reason = "Authentification failed";
+    _disconnect_reason = "Authentication failed";
     break;
   }
   default:
@@ -338,7 +338,7 @@ void ConfigServer::_wifiOnStationModeDisconnected(WiFiEvent_t event, WiFiEventIn
   case wifi_err_reason_t::WIFI_REASON_AUTH_EXPIRE:
   {
     _disconnect_state = info.wifi_sta_disconnected.reason;
-    _disconnect_reason = "Authentification failed";
+    _disconnect_reason = "Authentication failed";
     break;
   }
   default:
@@ -496,71 +496,71 @@ String ConfigServer::_toMACAddressString(const uint8_t mac[])
   return macAddr;
 }
 
-void ConfigServer::_onAccessGet(WebServer *webserver)
+void ConfigServer::_onAccessGet(WebServer *webServer)
 {
-  if (!isAuthenticated(webserver))
+  if (!isAuthenticated(webServer))
   {
-    return webserver->requestAuthentication();
+    return webServer->requestAuthentication();
   }
   JsonDocument jsonDoc;
   JsonObject json = jsonDoc.to<JsonObject>();
   _config.fillJson(jsonDoc);
   String output;
   serializeJson(json, output);
-  webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+  webServer->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
-void ConfigServer::_onAccessSave(WebServer *webserver)
+void ConfigServer::_onAccessSave(WebServer *webServer)
 {
-  if (!isAuthenticated(webserver))
+  if (!isAuthenticated(webServer))
   {
-    return webserver->requestAuthentication();
+    return webServer->requestAuthentication();
   }
-  // I::get().logger() << "[EWC CS]: handle args: " << webserver->args() << endl;
-  // for (int i = 0; i < webserver->args(); i++) {
-  //     I::get().logger() << "[EWC CS]:   " << webserver->argName(i) << ": " << webserver->arg(i) << endl;
+  // I::get().logger() << "[EWC CS]: handle args: " << webServer->args() << endl;
+  // for (int i = 0; i < webServer->args(); i++) {
+  //     I::get().logger() << "[EWC CS]:   " << webServer->argName(i) << ": " << webServer->arg(i) << endl;
   // }
-  if (webserver->hasArg("dev_name"))
+  if (webServer->hasArg("dev_name"))
   {
-    _config.paramDeviceName = webserver->arg("dev_name");
+    _config.paramDeviceName = webServer->arg("dev_name");
   }
-  if (webserver->hasArg("apname"))
+  if (webServer->hasArg("apName"))
   {
-    _config.paramAPName = webserver->arg("apname");
+    _config.paramAPName = webServer->arg("apName");
   }
-  if (webserver->hasArg("appass"))
+  if (webServer->hasArg("apPass"))
   {
-    _config.setAPPass(webserver->arg("appass"));
+    _config.setAPPass(webServer->arg("apPass"));
   }
-  if (webserver->hasArg("ap_start_always"))
+  if (webServer->hasArg("ap_start_always"))
   {
-    _config.paramAPStartAlways = webserver->arg("ap_start_always").equals("true");
+    _config.paramAPStartAlways = webServer->arg("ap_start_always").equals("true");
   }
-  if (webserver->hasArg("basic_auth"))
+  if (webServer->hasArg("basic_auth"))
   {
-    _config.paramBasicAuth = webserver->arg("basic_auth").equals("true");
+    _config.paramBasicAuth = webServer->arg("basic_auth").equals("true");
   }
-  if (webserver->hasArg("httpuser"))
+  if (webServer->hasArg("httpUser"))
   {
-    _config.paramHttpUser = webserver->arg("httpuser");
+    _config.paramHttpUser = webServer->arg("httpUser");
   }
-  if (webserver->hasArg("httppass"))
+  if (webServer->hasArg("httpPass"))
   {
-    _config.paramHttpPassword = webserver->arg("httppass");
+    _config.paramHttpPassword = webServer->arg("httpPass");
   }
-  if (webserver->hasArg("hostname"))
+  if (webServer->hasArg("hostname"))
   {
-    _config.paramHostname = webserver->arg("hostname");
+    _config.paramHostname = webServer->arg("hostname");
   }
   I::get().configFS().save();
-  sendPageSuccess(webserver, "Security save", "Save successful! Please, restart to apply AP changes!", "/access/setup");
+  sendPageSuccess(webServer, "Security save", "Save successful! Please, restart to apply AP changes!", "/access/setup");
 }
 
-void ConfigServer::_onGetInfo(WebServer *webserver)
+void ConfigServer::_onGetInfo(WebServer *webServer)
 {
-  if (!isAuthenticated(webserver))
+  if (!isAuthenticated(webServer))
   {
-    return webserver->requestAuthentication();
+    return webServer->requestAuthentication();
   }
   JsonDocument jsonDoc;
   JsonObject json = jsonDoc.to<JsonObject>();
@@ -570,8 +570,8 @@ void ConfigServer::_onGetInfo(WebServer *webserver)
   json["wifi_status"] = String(WiFi.status());
   json["local_ip"] = WiFi.localIP().toString();
   json["gateway"] = WiFi.gatewayIP().toString();
-  json["netwask"] = WiFi.subnetMask().toString();
-  json["softap_ip"] = WiFi.softAPIP().toString();
+  json["netmask"] = WiFi.subnetMask().toString();
+  json["softApIp"] = WiFi.softAPIP().toString();
   uint8_t macAddress[6];
   WiFi.softAPmacAddress(macAddress);
   json["ap_mac"] = ConfigServer::_toMACAddressString(macAddress);
@@ -590,75 +590,75 @@ void ConfigServer::_onGetInfo(WebServer *webserver)
   json["free_heap"] = String(ESP.getFreeHeap());
   String output;
   serializeJson(json, output);
-  webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+  webServer->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
-void ConfigServer::_onWiFiConnect(WebServer *webserver)
+void ConfigServer::_onWiFiConnect(WebServer *webServer)
 {
-  if (!isAuthenticated(webserver))
+  if (!isAuthenticated(webServer))
   {
-    return webserver->requestAuthentication();
+    return webServer->requestAuthentication();
   }
-  for (int idx = 0; idx < webserver->args(); idx++)
+  for (int idx = 0; idx < webServer->args(); idx++)
   {
-    I::get().logger() << "[EWC CS]: " << idx << ": " << webserver->argName(idx) << webserver->arg(idx) << endl;
+    I::get().logger() << "[EWC CS]: " << idx << ": " << webServer->argName(idx) << webServer->arg(idx) << endl;
   }
-  if (webserver->hasArg("staip"))
+  if (webServer->hasArg("stationIP"))
   {
-    I::get().logger() << F("[EWC CS]: static ip: ") << webserver->arg("staip") << endl;
-    String ip = webserver->arg("staip");
+    I::get().logger() << F("[EWC CS]: static ip: ") << webServer->arg("stationIP") << endl;
+    String ip = webServer->arg("stationIP");
     _optionalIPFromString(&_sta_static_ip, ip.c_str());
   }
-  if (webserver->hasArg("gtway"))
+  if (webServer->hasArg("gateway"))
   {
-    I::get().logger() << F("[EWC CS]: static gateway") << webserver->arg("gtway") << endl;
-    String gw = webserver->arg("gtway");
+    I::get().logger() << F("[EWC CS]: static gateway") << webServer->arg("gateway") << endl;
+    String gw = webServer->arg("gateway");
     _optionalIPFromString(&_sta_static_gw, gw.c_str());
   }
-  if (webserver->hasArg("ntmsk"))
+  if (webServer->hasArg("netmask"))
   {
-    I::get().logger() << F("[EWC CS]: static netmask") << webserver->arg("ntmsk") << endl;
-    String sn = webserver->arg("ntmsk");
+    I::get().logger() << F("[EWC CS]: static netmask") << webServer->arg("netmask") << endl;
+    String sn = webServer->arg("netmask");
     _optionalIPFromString(&_sta_static_sn, sn.c_str());
   }
-  if (webserver->hasArg("dns1"))
+  if (webServer->hasArg("dns1"))
   {
-    I::get().logger() << F("[EWC CS]: static DNS 1") << webserver->arg("dns1") << endl;
-    String dns1 = webserver->arg("dns1");
+    I::get().logger() << F("[EWC CS]: static DNS 1") << webServer->arg("dns1") << endl;
+    String dns1 = webServer->arg("dns1");
     _optionalIPFromString(&_sta_static_dns1, dns1.c_str());
   }
-  if (webserver->hasArg("dns2"))
+  if (webServer->hasArg("dns2"))
   {
-    I::get().logger() << F("[EWC CS]: static DNS 2") << webserver->arg("dns2") << endl;
-    String dns2 = webserver->arg("dns2");
+    I::get().logger() << F("[EWC CS]: static DNS 2") << webServer->arg("dns2") << endl;
+    String dns2 = webServer->arg("dns2");
     _optionalIPFromString(&_sta_static_dns2, dns2.c_str());
   }
-  webserver->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), FPSTR(HTML_WIFI_STATE));
-  // const char* ssid = webserver->arg("ssid").c_str();
-  // const char* pass = webserver->arg("passphrase").c_str();
-  _connect(webserver->arg("ssid").c_str(), webserver->arg("passphrase").c_str());
+  webServer->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), FPSTR(HTML_WIFI_STATE));
+  // const char* ssid = webServer->arg("ssid").c_str();
+  // const char* pass = webServer->arg("passphrase").c_str();
+  _connect(webServer->arg("ssid").c_str(), webServer->arg("passphrase").c_str());
 }
 
-void ConfigServer::_onWiFiDisconnect(WebServer *webserver)
+void ConfigServer::_onWiFiDisconnect(WebServer *webServer)
 {
-  if (!isAuthenticated(webserver))
+  if (!isAuthenticated(webServer))
   {
-    return webserver->requestAuthentication();
+    return webServer->requestAuthentication();
   }
-  webserver->sendHeader("Location", "/wifi/setup");
-  webserver->send(302, "text/plain", "");
+  webServer->sendHeader("Location", "/wifi/setup");
+  webServer->send(302, "text/plain", "");
   WiFi.disconnect(false);
 }
 
-void ConfigServer::_sendMenu(WebServer *webserver)
+void ConfigServer::_sendMenu(WebServer *webServer)
 {
-  if (!isAuthenticated(webserver))
+  if (!isAuthenticated(webServer))
   {
-    return webserver->requestAuthentication();
+    return webServer->requestAuthentication();
   }
   JsonDocument jsonDoc;
   jsonDoc["brand"] = _brand;
-  jsonDoc["branduri"] = _branduri;
+  jsonDoc["brandUri"] = _brandUri;
   jsonDoc["language"] = _config.paramLanguage;
   JsonArray elements = jsonDoc["elements"].to<JsonArray>();
   std::vector<MenuItem>::iterator it;
@@ -673,14 +673,14 @@ void ConfigServer::_sendMenu(WebServer *webserver)
   String output;
   serializeJson(jsonDoc, output);
   I::get().logger() << "[EWC CS]: ESP heap: _sendMenu: " << ESP.getFreeHeap() << ", json overflowed: " << jsonDoc.overflowed() << endl;
-  webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+  webServer->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
-void ConfigServer::_onWifiState(WebServer *webserver)
+void ConfigServer::_onWifiState(WebServer *webServer)
 {
-  if (!isAuthenticated(webserver))
+  if (!isAuthenticated(webServer))
   {
-    return webserver->requestAuthentication();
+    return webServer->requestAuthentication();
   }
   I::get().logger() << "[EWC CS]: report WifiState, connected: " << (WiFi.status() == WL_CONNECTED) << endl;
   JsonDocument jsonDoc;
@@ -691,7 +691,7 @@ void ConfigServer::_onWifiState(WebServer *webserver)
   json["reason"] = _disconnect_reason;
   String output;
   serializeJson(json, output);
-  webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+  webServer->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
 void _wiFiState2Json(JsonObject &json, bool finished, bool failed, const char *reason)
@@ -701,11 +701,11 @@ void _wiFiState2Json(JsonObject &json, bool finished, bool failed, const char *r
   json["reason"] = reason;
 }
 
-void ConfigServer::_onWifiScan(WebServer *webserver)
+void ConfigServer::_onWifiScan(WebServer *webServer)
 {
-  if (!isAuthenticated(webserver))
+  if (!isAuthenticated(webServer))
   {
-    return webserver->requestAuthentication();
+    return webServer->requestAuthentication();
   }
   _startWiFiScan();
   int n = WiFi.scanComplete();
@@ -770,7 +770,7 @@ void ConfigServer::_onWifiScan(WebServer *webserver)
     }
     String output;
     serializeJson(json, output);
-    webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+    webServer->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
     // WiFi.scanDelete();
     return;
   }
@@ -781,7 +781,7 @@ void ConfigServer::_onWifiScan(WebServer *webserver)
   }
   String output;
   serializeJson(json, output);
-  webserver->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+  webServer->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
 }
 
 void ConfigServer::loop()
@@ -792,7 +792,7 @@ void ConfigServer::loop()
   {
     if (WiFi.status() != WL_CONNECTED)
     {
-      // after _msConfigPortalTimeout the portal will be disbaled
+      // after _msConfigPortalTimeout the portal will be disabled
       // this can be enabled after restart or successful connect
       if (!_ap_disabled_after_timeout)
       {
@@ -863,25 +863,25 @@ void ConfigServer::setBrand(const char *brand, const char *version)
   _version = String(version);
 }
 
-void ConfigServer::sendContentP(WebServer *webserver, const String &contentType, PGM_P content)
+void ConfigServer::sendContentP(WebServer *webServer, const String &contentType, PGM_P content)
 {
-  if (!isAuthenticated(webserver))
+  if (!isAuthenticated(webServer))
   {
-    return webserver->requestAuthentication();
+    return webServer->requestAuthentication();
   }
-  _sendContentNoAuthP(webserver, contentType, content);
+  _sendContentNoAuthP(webServer, contentType, content);
 }
 
-void ConfigServer::sendContentG(WebServer *webserver, const String &contentType, const uint8_t *content, size_t len)
+void ConfigServer::sendContentG(WebServer *webServer, const String &contentType, const uint8_t *content, size_t len)
 {
-  if (!isAuthenticated(webserver))
+  if (!isAuthenticated(webServer))
   {
-    return webserver->requestAuthentication();
+    return webServer->requestAuthentication();
   }
-  _sendContentNoAuthG(webserver, contentType, content, len);
+  _sendContentNoAuthG(webServer, contentType, content, len);
 }
 
-void ConfigServer::sendPageSuccess(WebServer *webserver, String title, String summary, String urlBack, String details, String nameBack, String urlForward, String nameForward)
+void ConfigServer::sendPageSuccess(WebServer *webServer, String title, String summary, String urlBack, String details, String nameBack, String urlForward, String nameForward)
 {
   String result(FPSTR(HTML_EWC_SUCCESS));
   result.replace("{{TITLE}}", title);
@@ -891,10 +891,10 @@ void ConfigServer::sendPageSuccess(WebServer *webserver, String title, String su
   result.replace("{{BACK_NAME}}", nameBack);
   result.replace("{{FORWARD}}", urlForward);
   result.replace("{{FWD_NAME}}", nameForward);
-  webserver->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
+  webServer->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
 }
 
-void ConfigServer::sendPageFailed(WebServer *webserver, String title, String summary, String urlBack, String details, String nameBack, String urlForward, String nameForward)
+void ConfigServer::sendPageFailed(WebServer *webServer, String title, String summary, String urlBack, String details, String nameBack, String urlForward, String nameForward)
 {
   String result(FPSTR(HTML_EWC_FAIL));
   result.replace("{{TITLE}}", title);
@@ -904,110 +904,110 @@ void ConfigServer::sendPageFailed(WebServer *webserver, String title, String sum
   result.replace("{{BACK_NAME}}", nameBack);
   result.replace("{{FORWARD}}", urlForward);
   result.replace("{{FWD_NAME}}", nameForward);
-  webserver->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
+  webServer->send(200, FPSTR(PROGMEM_CONFIG_TEXT_HTML), result);
 }
 
-void ConfigServer::sendRedirect(WebServer *webserver, String url)
+void ConfigServer::sendRedirect(WebServer *webServer, String url)
 {
-  webserver->sendHeader("Location", url);
-  webserver->send(302, "text/plain", "");
+  webServer->sendHeader("Location", url);
+  webServer->send(302, "text/plain", "");
 }
 
-void ConfigServer::_sendFileContent(WebServer *webserver, const String &contentType, const String &filename)
+void ConfigServer::_sendFileContent(WebServer *webServer, const String &contentType, const String &filename)
 {
-  if (!isAuthenticated(webserver))
+  if (!isAuthenticated(webServer))
   {
-    return webserver->requestAuthentication();
+    return webServer->requestAuthentication();
   }
   I::get().logger() << F("[EWC CS]: Handle sendFileContent: ") << filename << endl;
   File reqFile = LittleFS.open(filename, "r");
   if (reqFile && !reqFile.isDirectory())
   {
-    webserver->streamFile(reqFile, contentType);
+    webServer->streamFile(reqFile, contentType);
     reqFile.close();
     return;
   }
-  _onNotFound(webserver);
+  _onNotFound(webServer);
 }
 
-void ConfigServer::_sendContentNoAuthP(WebServer *webserver, const String &contentType, PGM_P content)
+void ConfigServer::_sendContentNoAuthP(WebServer *webServer, const String &contentType, PGM_P content)
 {
   if (ESP.getFreeHeap() <= strlen_P(content))
   {
-    I::get().logger() << F("✘ [EWC CS]: Not enough memory to reply request ") << webserver->uri() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << strlen_P(content) << endl;
-    webserver->send(200, "text/plain", F("Not enough memory"));
+    I::get().logger() << F("✘ [EWC CS]: Not enough memory to reply request ") << webServer->uri() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << strlen_P(content) << endl;
+    webServer->send(200, "text/plain", F("Not enough memory"));
   }
   else
   {
-    webserver->send(200, contentType.c_str(), content);
+    webServer->send(200, contentType.c_str(), content);
   }
 }
 
-void ConfigServer::_sendContentNoAuthG(WebServer *webserver, const String &contentType, const uint8_t *content, size_t len)
+void ConfigServer::_sendContentNoAuthG(WebServer *webServer, const String &contentType, const uint8_t *content, size_t len)
 {
-  I::get().logger() << F("[EWC CS]: send content for ") << webserver->uri() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << len << endl;
+  I::get().logger() << F("[EWC CS]: send content for ") << webServer->uri() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << len << endl;
   if (ESP.getFreeHeap() <= 4000)
   {
-    I::get().logger() << F("✘ [EWC CS]: Not enough memory to reply request ") << webserver->uri() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << len << endl;
-    sendRedirect(webserver, webserver->uri());
-    webserver->send(406, "text/plain", F("Not enough memory"));
+    I::get().logger() << F("✘ [EWC CS]: Not enough memory to reply request ") << webServer->uri() << F("; free: ") << ESP.getFreeHeap() << F(", needed: ") << len << endl;
+    sendRedirect(webServer, webServer->uri());
+    webServer->send(406, "text/plain", F("Not enough memory"));
   }
   else
   {
     I::get().logger() << F("content type: ") << contentType << endl;
-    webserver->sendHeader("Content-Encoding", "gzip");
-    webserver->sendHeader("Content-Disposition", "inline");
+    webServer->sendHeader("Content-Encoding", "gzip");
+    webServer->sendHeader("Content-Disposition", "inline");
 #ifdef ESP8266
-    webserver->send(200, contentType.c_str(), content, len);
+    webServer->send(200, contentType.c_str(), content, len);
 #else
-    webserver->send(200, contentType.c_str(), String(content, len));
+    webServer->send(200, contentType.c_str(), String(content, len));
 #endif
   }
 }
 
-void ConfigServer::_onNotFound(WebServer *webserver)
+void ConfigServer::_onNotFound(WebServer *webServer)
 {
   I::get().logger() << F("[EWC CS]: Handle not found") << endl;
-  if (_captivePortal(webserver))
+  if (_captivePortal(webServer))
   { // If captive portal redirect instead of displaying the error page.
     return;
   }
   String message = "File Not Found\n\n";
   message += "URI: ";
-  message += webserver->uri();
+  message += webServer->uri();
   message += "\nMethod: ";
-  message += (webserver->method() == HTTP_GET) ? "GET" : "POST";
+  message += (webServer->method() == HTTP_GET) ? "GET" : "POST";
   message += "\nArguments: ";
-  message += webserver->args();
+  message += webServer->args();
   message += "\n";
-  for (int i = 0; i < webserver->args(); i++)
+  for (int i = 0; i < webServer->args(); i++)
   {
-    message += " " + webserver->argName(i) + ": " + webserver->arg(i) + "\n";
+    message += " " + webServer->argName(i) + ": " + webServer->arg(i) + "\n";
   }
-  webserver->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  webserver->sendHeader("Pragma", "no-cache");
-  webserver->sendHeader("Expires", "-1");
-  webserver->sendHeader("Content-Length", String(message.length()));
-  webserver->send(404, "text/plain", message);
+  webServer->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  webServer->sendHeader("Pragma", "no-cache");
+  webServer->sendHeader("Expires", "-1");
+  webServer->sendHeader("Content-Length", String(message.length()));
+  webServer->send(404, "text/plain", message);
 }
 
-void ConfigServer::_onDeviceReset(WebServer *webserver)
+void ConfigServer::_onDeviceReset(WebServer *webServer)
 {
   I::get().logger() << F("[EWC CS]: delete config file") << endl;
   I::get().configFS().deleteFile();
-  sendPageSuccess(webserver, "Delete configuration file", "Delete successful! Please, restart to apply AP changes!", "/");
+  sendPageSuccess(webServer, "Delete configuration file", "Delete successful! Please, restart to apply AP changes!", "/");
 }
 
 /** Redirect to captive portal if we got a request for another domain. Return true in that case so the page handler do not try to handle the request again. */
-bool ConfigServer::_captivePortal(WebServer *webserver)
+bool ConfigServer::_captivePortal(WebServer *webServer)
 {
-  if (!_isIp(webserver->hostHeader()))
+  if (!_isIp(webServer->hostHeader()))
   {
-    I::get().logger() << F("[EWC CS]: Request host is not an IP: ") << webserver->hostHeader() << endl;
-    I::get().logger() << F("[EWC CS]: Request redirected to captive portal: ") << _toStringIp(webserver->client().localIP()) << endl;
-    webserver->sendHeader("Location", String("http://") + _toStringIp(webserver->client().localIP()) + "/wifi/setup");
-    webserver->send(302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
-    webserver->client().stop();             // Stop is needed because we sent no content length
+    I::get().logger() << F("[EWC CS]: Request host is not an IP: ") << webServer->hostHeader() << endl;
+    I::get().logger() << F("[EWC CS]: Request redirected to captive portal: ") << _toStringIp(webServer->client().localIP()) << endl;
+    webServer->sendHeader("Location", String("http://") + _toStringIp(webServer->client().localIP()) + "/wifi/setup");
+    webServer->send(302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    webServer->client().stop();             // Stop is needed because we sent no content length
     return true;
   }
   return false;
@@ -1022,9 +1022,9 @@ void ConfigServer::_startWiFiScan(bool force)
   }
 }
 
-bool ConfigServer::isAuthenticated(WebServer *webserver)
+bool ConfigServer::isAuthenticated(WebServer *webServer)
 {
-  return !(_config.paramBasicAuth && !webserver->authenticate(_config.paramHttpUser.c_str(), _config.paramHttpPassword.c_str()));
+  return !(_config.paramBasicAuth && !webServer->authenticate(_config.paramHttpUser.c_str(), _config.paramHttpPassword.c_str()));
 }
 
 /** Is this an IP? */

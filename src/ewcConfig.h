@@ -25,30 +25,30 @@ limitations under the License.
 #include <Arduino.h>
 #include "ewcConfigInterface.h"
 
+namespace EWC
+{
 
-namespace EWC {
+  const char VERSION[] PROGMEM = "0.1.0";
+  const char DEFAULT_HTTP_USER[] = "admin";
+  const char DEFAULT_HTTP_PASSWORD[] = "";
+  const unsigned long WIFI_SCAN_DELAY = 10000;
 
-const char VERSION[] PROGMEM = "0.1.0";
-const char DEFAULT_HTTP_USER[] = "admin";
-const char DEFAULT_HTTP_PASSWORD[] = "";
-const unsigned long WIFI_SCAN_DELAY = 10000;
-
-enum BootMode {
+  enum BootMode
+  {
     NORMAL = 0x10101010,
     STANDALONE = 0x12121212,
     CONFIGURATION = 0x02020202
-};
+  };
 
-
-class Config : public ConfigInterface
-{
-public:
+  class Config : public ConfigInterface
+  {
+  public:
     Config();
     ~Config();
 
-    /** === ConfigInterface Methods === **/    
-    void setup(JsonDocument& config, bool resetConfig=false);
-    void fillJson(JsonDocument& config);
+    /** === ConfigInterface Methods === **/
+    void setup(JsonDocument &config, bool resetConfig = false);
+    void fillJson(JsonDocument &config);
 
     /** === BOOT mode handling  === **/
     void setBootMode(BootMode mode);
@@ -57,7 +57,7 @@ public:
 
     /** === Parameter === **/
     String paramAPName;
-    const String& getAPPass() { return _paramAPPass; }
+    const String &getAPPass() { return _paramAPPass; }
     void setAPPass(String pass);
     String paramDeviceName;
     bool paramAPStartAlways;
@@ -69,15 +69,15 @@ public:
     String paramLanguage;
     String getChipId();
 
-protected:
-    uint8_t _bootmodeUtcAddress;
+  protected:
+    uint8_t _bootModeUtcAddress;
     BootMode _bootMode;
 
     String _paramAPPass;
 
     void _initParams();
-    void _fromJson(JsonDocument& doc);
-};
+    void _fromJson(JsonDocument &doc);
+  };
 
 };
 #endif

@@ -32,41 +32,46 @@ EWC::Mqtt mqtt_;
 bool timePrinted;
 using namespace EWC;
 
-void setup() {
-    Serial.begin(115200);
-    Serial.println();
-    // optional: add page for OTA updates
-    EWC::I::get().configFS().addConfig(updater_);
-    // optional: add page to setup time
-    EWC::I::get().configFS().addConfig(time_);
-    // optional: add page for MQTT settings and async client
-    EWC::I::get().configFS().addConfig(mqtt_);
-    // optional: update brand and version
-    server.setBrand("EWC", "1.0.1");
-    // optional: enable LED for wifi state
-    EWC::I::get().led().enable(true, LED_BUILTIN, LOW);
-    // start web server
-	server.setup();
+void setup()
+{
+  Serial.begin(115200);
+  Serial.println();
+  // optional: add page for OTA updates
+  EWC::I::get().configFS().addConfig(updater_);
+  // optional: add page to setup time
+  EWC::I::get().configFS().addConfig(time_);
+  // optional: add page for MQTT settings and async client
+  EWC::I::get().configFS().addConfig(mqtt_);
+  // optional: update brand and version
+  server.setBrand("EWC", "1.0.1");
+  // optional: enable LED for wifi state
+  EWC::I::get().led().enable(true, LED_BUILTIN, LOW);
+  // start web server
+  server.setup();
 }
 
-
-void loop() {
-    // process web and dns requests
-    server.loop();
-    if (WiFi.status() == WL_CONNECTED) {
-        if (!timePrinted) {
-            I::get().logger() << "Check for NTP..." << endl;
-            if (time_.timeAvailable())
-            {
-                timePrinted = true;
-                // print current time
-                I::get().logger() << "Current time:" << time_.str() << endl;
-                // or current time in seconds
-                I::get().logger() << "  as seconds:" << time_.currentTime() << endl;
-            }
-        }
-    } else {
-        // or if not yet connected
+void loop()
+{
+  // process web and dns requests
+  server.loop();
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    if (!timePrinted)
+    {
+      I::get().logger() << "Check for NTP..." << endl;
+      if (time_.timeAvailable())
+      {
+        timePrinted = true;
+        // print current time
+        I::get().logger() << "Current time:" << time_.str() << endl;
+        // or current time in seconds
+        I::get().logger() << "  as seconds:" << time_.currentTime() << endl;
+      }
     }
-    delay(1);
+  }
+  else
+  {
+    // or if not yet connected
+  }
+  delay(1);
 }

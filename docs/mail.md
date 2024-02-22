@@ -1,4 +1,4 @@
-## Integration of __Mail__ extension
+## Integration of **Mail** extension
 
 ```cpp
 #include <Arduino.h>
@@ -13,7 +13,7 @@ void setup() {
     Serial.begin(115200);
     // add mail configuration
     EWC::I::get().configFS().addConfig(ewcMail);
-    // start webserver
+    // start webServer
 	server.setup();
 }
 
