@@ -20,6 +20,7 @@
     "Efuse",
     "EHLO",
     "FPSTR",
+    "homeassistant",
     "Mqtt",
     "postload",
     "PROGMEM",
