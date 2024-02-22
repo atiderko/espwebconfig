@@ -88,6 +88,7 @@ ConfigServer::ConfigServer(uint16_t port)
   I::get()._server = this;
   I::get()._config = &_config;
   I::get()._configFS = &_configFS;
+  I::get()._time = &_time;
   I::get()._logger = &_logger;
 #ifdef ESP8266
   I::get()._rtc = &_rtc;
@@ -106,6 +107,7 @@ ConfigServer::ConfigServer(uint16_t port)
 void ConfigServer::setup()
 {
   I::get().logger() << F("[EWC CS]: setup configFS") << endl;
+  _configFS.addConfig(_time);
   _configFS.setup();
   WiFi.setAutoConnect(false);
   if (_configFS.resetDetected())

@@ -34,6 +34,7 @@ typedef std::function<void()> WebServerHandlerFunction;
 #include <Ticker.h>
 
 #include <DNSServer.h>
+#include "extensions/ewcTime.h"
 #include "ewcConfigFS.h"
 #include "ewcLogger.h"
 #include "ewcConfig.h"
@@ -144,6 +145,7 @@ namespace EWC
 #endif
     Ticker _reconnectTimer;
     TickerLed _led;
+    Time _time;
     Config _config;
     String _brand;
     String _version;

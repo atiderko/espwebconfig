@@ -1,7 +1,7 @@
 /**************************************************************
 
 This file is a part of
-https://github.com/atiderko/bbs
+https://github.com/atiderko/espwebconfig
 
 Copyright [2020] Alexander Tiderko
 

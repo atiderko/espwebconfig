@@ -34,6 +34,7 @@ namespace EWC
   class RTC;
 #endif
   class TickerLed;
+  class Time;
 
   /** The objects of the interface are initialized by ConfigServer.
    * The interface is globally reachable through I::get(). **/
@@ -47,21 +48,23 @@ namespace EWC
     ConfigServer &server() { return *_server; }
     Config &config() { return *_config; }
     ConfigFS &configFS() { return *_configFS; }
-    Logger &logger() { return *_logger; }
+    Logger &logger();
 #if defined(ESP8266)
     RTC &rtc() { return *_rtc; }
 #endif
     TickerLed &led() { return *_led; }
+    Time &time() { return *_time; }
 
   private:
-    ConfigServer *_server;
-    Config *_config;
-    ConfigFS *_configFS;
-    Logger *_logger;
+    ConfigServer *_server = nullptr;
+    Config *_config = nullptr;
+    ConfigFS *_configFS = nullptr;
+    Logger *_logger = nullptr;
 #if defined(ESP8266)
     RTC *_rtc;
 #endif
-    TickerLed *_led;
+    TickerLed *_led = nullptr;
+    Time *_time = nullptr;
   };
 
   class I

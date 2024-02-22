@@ -184,6 +184,7 @@ void ConfigFS::save()
 void ConfigFS::addConfig(ConfigInterface &config)
 {
   // TODO: add check to avoid add a config twice
+  I::get().logger() << F("[EWC ConfigFS]:  add: ") << config.name() << endl;
   _cfgInterfaces.push_back(&config);
 }
 

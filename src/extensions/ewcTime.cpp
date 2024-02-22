@@ -70,7 +70,8 @@ void Time::_setupTime()
   {
     // Sync our clock to NTP
     I::get().logger() << F("[EWC Time] sync to ntp server...") << endl;
-    configTime(TZMAP[_paramTimezone - 1][1] * 3600, TZMAP[_paramTimezone - 1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
+    // configTime(TZMAP[_paramTimezone - 1][1] * 3600, TZMAP[_paramTimezone - 1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
+    configTime(0, 0, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
 #if defined(ESP32)
     xTaskCreate(
         this->getTimeTaskImpl, // Function that should be called
@@ -120,6 +121,8 @@ void Time::fillJson(JsonDocument &config)
 void Time::_initParams()
 {
   _paramTimezone = 31;
+  _zoneOffset = TZMAP[_paramTimezone - 1][1] * 3600;
+  _dstOffset = TZMAP[_paramTimezone - 1][0] * 3600;
   _paramManually = false;
   _paramDate = "21.10.2020";
   _paramTime = "21:00";
@@ -139,6 +142,8 @@ void Time::_fromJson(JsonDocument &config)
       if (_paramTimezone != tz)
       {
         _paramTimezone = tz;
+        _zoneOffset = TZMAP[_paramTimezone - 1][1] * 3600;
+        _dstOffset = TZMAP[_paramTimezone - 1][0] * 3600;
       }
     }
   }
@@ -178,7 +183,8 @@ void Time::_fromJson(JsonDocument &config)
   {
     // Sync our clock to NTP
     I::get().logger() << "[EWC Time] sync to ntp server..." << endl;
-    configTime(TZMAP[_paramTimezone - 1][1] * 3600, TZMAP[_paramTimezone - 1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
+    // configTime(TZMAP[_paramTimezone - 1][1] * 3600, TZMAP[_paramTimezone - 1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
+    configTime(0, 0, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
   }
 }
 
@@ -267,43 +273,42 @@ time_t Time::currentTime()
   {
     return millis() / 1000 - _manualOffset;
   }
-  time_t rawtime;
-  time(&rawtime);
-  struct tm *timeinfo;
-  timeinfo = localtime(&rawtime);
+  time_t rawTime;
+  time(&rawTime);
+  struct tm *timeInfo;
+  timeInfo = localtime(&rawTime);
   time_t dst = 0;
-  if (timeinfo->tm_isdst > 0)
+  if (timeInfo->tm_isdst > 0)
   {
-    I::get().logger() << "[EWC Time] Daylight Saving Time is in effect" << endl;
-    dst = TZMAP[_paramTimezone - 1][0] * 3600;
+    dst = _dstOffset;
   }
-  rawtime += TZMAP[_paramTimezone - 1][1] * 3600 + dst;
-  return rawtime;
+  rawTime += _zoneOffset + dst;
+  return rawTime;
 }
 
 String Time::str(time_t offsetSeconds)
 {
-  time_t rawtime = currentTime();
-  rawtime += offsetSeconds;
+  time_t rawTime = currentTime();
+  rawTime += offsetSeconds;
   char buffer[80];
-  strftime(buffer, 80, "%FT%T", gmtime(&rawtime));
+  strftime(buffer, 80, "%FT%T", gmtime(&rawTime));
   return String(buffer);
 }
 
 String Time::currentTimeStr(int timezone)
 {
-  time_t rawtime;
-  time(&rawtime);
-  struct tm *timeinfo;
-  timeinfo = localtime(&rawtime);
+  time_t rawTime;
+  time(&rawTime);
+  struct tm *timeInfo;
+  timeInfo = localtime(&rawTime);
   time_t dst = 0;
-  if (timeinfo->tm_isdst > 0)
+  if (timeInfo->tm_isdst > 0)
   {
-    dst = TZMAP[timezone - 1][0] * 3600;
+    // dst = TZMAP[timezone - 1][0] * 3600;
   }
-  rawtime += TZMAP[timezone - 1][1] * 3600 + dst;
+  // rawTime += TZMAP[timezone - 1][1] * 3600 + dst;
   char buffer[80];
-  strftime(buffer, 80, "%FT%T", gmtime(&rawtime));
+  strftime(buffer, 80, "%FT%T", gmtime(&rawTime));
   return String(buffer);
 }
 
@@ -328,9 +333,9 @@ time_t Time::shiftDisturb(time_t offsetSeconds)
   {
     time_t m24 = 24 * 60;
     time_t ctime = currentTime();
-    struct tm *timeinfo;
-    timeinfo = gmtime(&ctime);
-    time_t cmin = timeinfo->tm_hour * 60 + timeinfo->tm_min;
+    struct tm *timeInfo;
+    timeInfo = gmtime(&ctime);
+    time_t cmin = timeInfo->tm_hour * 60 + timeInfo->tm_min;
     time_t minFrom = _dndToMin(_paramDndFrom);
     time_t minTo = _dndToMin(_paramDndTo);
     cmin += offsetSeconds / 60;
