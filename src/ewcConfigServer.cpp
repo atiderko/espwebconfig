@@ -101,6 +101,7 @@ void ConfigServer::setup()
 {
     I::get().logger() << F("[EWC CS]: setup configFS") << endl;
     _configFS.setup();
+    WiFi.setAutoConnect(false);
     if (_configFS.resetDetected()) {
         WiFi.disconnect(true);
     }
@@ -207,12 +208,13 @@ void ConfigServer::_connect(const char* ssid, const char* pass)
         I::get().logger() << F("[EWC CS]:   Local IP: ") << WiFi.localIP() << endl;
     }
     if (ssid != nullptr && strlen(ssid) > 0) {
-        //trying to fix connection in progress hanging
+        // trying to fix connection in progress hanging
         I::get().logger() << F("[EWC CS]: Try to connect with new credentials with SSID: ") << ssid << endl;
         WiFi.disconnect(false);
         WiFi.begin(ssid, pass);
     } else {
         I::get().logger() << F("[EWC CS]: Try to connect with saved credentials for SSID: ") << WiFi.SSID() << endl;
+        WiFi.disconnect(false);
         WiFi.begin();
     }
     // Start Ticker according to the WiFi condition with Ticker is available.
@@ -251,7 +253,12 @@ void ConfigServer::_wifiOnStationModeDisconnected(const WiFiEventStationModeDisc
             }
         }
     }
-    WiFi.reconnect();
+    // start timer for reconnect if not active
+    if (!_reconnectTimer.active())
+    {
+        I::get().logger() << F("[EWC CS]: start reconnect Timer in 7 sec") << endl;
+        _reconnectTimer.once(10, ConfigServer::_reconnectWiFi, this);
+    }
 }
 
 // void ConfigServer::_wifiOnStationModeAuthModeChanged(const WiFiEventStationModeAuthModeChanged& event)
@@ -314,7 +321,19 @@ void ConfigServer::_wifiOnStationModeDisconnected(WiFiEvent_t event, WiFiEventIn
             }
         }
     }
-    WiFi.reconnect();
+    // start timer for reconnect if not active
+    if (!_reconnectTimer.active()) {
+        I::get().logger() << F("[EWC CS]: start reconnect Timer in 7 sec (reason for the disconnect does not matter)") << endl;
+        _reconnectTimer.once(10, ConfigServer::_reconnectWiFi, this);
+    }
+}
+
+void ConfigServer::_reconnectWiFi(ConfigServer *t)
+{
+    if (!t->isConnected()) {
+        I::get().logger() << F("[EWC CS]: reconnect to WiFi...") << endl;
+        t->_connect();
+    }
 }
 
 // void ConfigServer::_wifiOnStationModeAuthModeChanged(const WiFiEventStationModeAuthModeChanged& event)

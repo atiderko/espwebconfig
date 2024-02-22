@@ -109,6 +109,7 @@ void Mqtt::_fromJson(JsonDocument& config)
     }
     if (paramEnabled) {
         // set contact informations
+        const char* server = _paramServer.c_str();
         _mqttClient.setServer(_paramServer.c_str(), _paramPort);
         if (_paramUser.length() > 0) {
             const char* pass = nullptr;
@@ -118,9 +119,12 @@ void Mqtt::_fromJson(JsonDocument& config)
             _mqttClient.setCredentials(_paramUser.c_str(), pass);
         }
         // reconnect
-        if (_mqttClient.connected()) {
+        if (_mqttClient.connected())
+        {
             _mqttClient.disconnect(true);
-        } else {
+        }
+        else if (I::get().server().isConnected())
+        {
             _connectToMqtt();
         }
     }
@@ -194,7 +198,7 @@ void Mqtt::_onMqttState(WebServer* request)
 
 
 void Mqtt::_connectToMqtt() {
-    I::get().logger() << F("[EWC MQTT] Connecting to MQTT...") << endl;
+    I::get().logger() << F("[EWC MQTT] Connecting to MQTT...") << _paramServer << ":" << _paramPort << endl;
     _connecting = true;
     _mqttClient.connect();
 }

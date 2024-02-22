@@ -31,6 +31,7 @@ limitations under the License.
     #include <WebServer.h>
 #endif
 typedef std::function<void ()> WebServerHandlerFunction;
+#include <Ticker.h>
 
 #include <DNSServer.h>
 #include "ewcConfigFS.h"
@@ -140,6 +141,7 @@ protected:
 #ifdef ESP8266
     RTC _rtc;
 #endif
+    Ticker _reconnectTimer;
     TickerLed _led;
     Config _config;
     String _brand;
@@ -213,6 +215,7 @@ protected:
     static String _toMACAddressString(const uint8_t mac[]);
     bool _isIp(const String& str);
     String _toStringIp(const IPAddress& ip);
+    static void _reconnectWiFi(ConfigServer *t);
 
     template <class T>
     auto _optionalIPFromString(T* obj, const char* s) -> decltype(  obj->fromString(s)  ) {
