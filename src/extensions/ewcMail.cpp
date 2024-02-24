@@ -384,6 +384,7 @@ bool Mail::_send(const char *subject, const char *body)
     I::get().logger() << F("[Mail]: already sending, skip mail with subject: ") << subject << endl;
     return false;
   }
+  EWC::I::get().logger() << F("[Mail] connect to the server: ") << _mailServer << F(":") << _mailPort << endl;
   if (!_wifiClient.connect(_mailServer.c_str(), _mailPort))
   {
     _setTestResult(false, "Send mail failed");
@@ -393,10 +394,10 @@ bool Mail::_send(const char *subject, const char *body)
   }
   else
   {
+    EWC::I::get().logger() << F("✔ connected to the server: ") << _mailServer << F(":") << _mailPort << endl;
     _tsSendMail = millis();
     _countSend = 1;
     I::get().logger() << F("[Mail]: connected, send...") << endl;
-    EWC::I::get().logger() << F("✔ connected to the server: ") << _mailServer << F(" with port: ") << _mailPort << endl;
     _wifiClient.print(_mailConfig.hello);
     // create DATA string
     String data;

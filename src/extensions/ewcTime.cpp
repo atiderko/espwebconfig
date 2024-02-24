@@ -93,8 +93,8 @@ void Time::getTimeTask()
 {
 #if defined(ESP32)
   // Sync our clock to NTP
-  struct tm timeinfo;
-  if (getLocalTime(&timeinfo))
+  struct tm timeInfo;
+  if (getLocalTime(&timeInfo))
   {
     _callbackTimeSet();
   }
