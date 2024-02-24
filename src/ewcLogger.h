@@ -35,11 +35,13 @@ namespace EWC
     virtual size_t write(uint8_t character);
     virtual size_t write(const uint8_t *buffer, size_t size);
     void setLogging(bool enable);
+    bool enabled() { return _loggingEnabled; }
 
   private:
     void setPrinter(Print *printer);
 
     bool _loggingEnabled;
+    uint32_t _baudRate = 115200;
     Print *_printer;
   };
 };

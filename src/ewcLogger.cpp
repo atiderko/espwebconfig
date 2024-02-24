@@ -31,6 +31,18 @@ Logger::Logger()
 void Logger::setLogging(bool enable)
 {
   _loggingEnabled = enable;
+  if (!enable)
+  {
+    if (Serial.available())
+    {
+      _baudRate = Serial.baudRate();
+      Serial.end();
+    }
+  }
+  else
+  {
+    Serial.begin(_baudRate);
+  }
 }
 
 void Logger::setPrinter(Print *printer)

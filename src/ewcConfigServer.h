@@ -227,7 +227,7 @@ namespace EWC
     }
     auto _optionalIPFromString(...) -> bool
     {
-      Serial.println("NO fromString METHOD ON IPAddress, you need ESP8266 core 2.1.0 or newer for Custom IP configuration to work.");
+      I::get().logger() << F("NO fromString METHOD ON IPAddress, you need ESP8266 core 2.1.0 or newer for Custom IP configuration to work.") << endl;
       return false;
     }
   };

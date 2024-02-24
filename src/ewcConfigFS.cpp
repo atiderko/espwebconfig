@@ -30,17 +30,17 @@ using namespace EWC;
 #ifdef ESP32
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 {
-  Serial.printf("Listing directory: %s\r\n", dirname);
+  I::get().logger() << F("Listing directory: ") << dirname << endl;
 
   File root = fs.open(dirname);
   if (!root)
   {
-    Serial.println("- failed to open directory");
+    I::get().logger() << F(" - failed to open directory") << endl;
     return;
   }
   if (!root.isDirectory())
   {
-    Serial.println(" - not a directory");
+    I::get().logger() << F(" - not a directory") << endl;
     return;
   }
 
@@ -49,12 +49,10 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
   {
     if (file.isDirectory())
     {
-      Serial.print("  DIR : ");
-
-      Serial.print(file.name());
-      time_t t = file.getLastWrite();
-      struct tm *tmStruct = localtime(&t);
-      Serial.printf("  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmStruct->tm_year) + 1900, (tmStruct->tm_mon) + 1, tmStruct->tm_mday, tmStruct->tm_hour, tmStruct->tm_min, tmStruct->tm_sec);
+      I::get().logger() << F(" DIR: ") << file.name() << endl;
+      // time_t t = file.getLastWrite();
+      // struct tm *tmStruct = localtime(&t);
+      // Serial.printf("  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmStruct->tm_year) + 1900, (tmStruct->tm_mon) + 1, tmStruct->tm_mday, tmStruct->tm_hour, tmStruct->tm_min, tmStruct->tm_sec);
 
       if (levels)
       {
@@ -63,14 +61,11 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
     }
     else
     {
-      Serial.print("  FILE: ");
-      Serial.print(file.name());
-      Serial.print("  SIZE: ");
+      I::get().logger() << F("  FILE: ") << file.name() << "  SIZE: " << file.size() << endl;
 
-      Serial.print(file.size());
-      time_t t = file.getLastWrite();
-      struct tm *tmStruct = localtime(&t);
-      Serial.printf("  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmStruct->tm_year) + 1900, (tmStruct->tm_mon) + 1, tmStruct->tm_mday, tmStruct->tm_hour, tmStruct->tm_min, tmStruct->tm_sec);
+      // time_t t = file.getLastWrite();
+      // struct tm *tmStruct = localtime(&t);
+      // Serial.printf("  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmStruct->tm_year) + 1900, (tmStruct->tm_mon) + 1, tmStruct->tm_mday, tmStruct->tm_hour, tmStruct->tm_min, tmStruct->tm_sec);
     }
     file = root.openNextFile();
   }
