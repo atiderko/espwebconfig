@@ -23,12 +23,12 @@ limitations under the License.
 using namespace EWC;
 
 Logger::Logger()
-    : _loggingEnabled(true),
+    : _loggingEnabled(false),
       _printer(&Serial)
 {
 }
 
-void Logger::setLogging(bool enable)
+void Logger::setLogging(bool enable, uint32_t baudRate)
 {
   _loggingEnabled = enable;
   if (!enable)
@@ -41,6 +41,7 @@ void Logger::setLogging(bool enable)
   }
   else
   {
+    _baudRate = baudRate;
     Serial.begin(_baudRate);
   }
 }

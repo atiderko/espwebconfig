@@ -34,7 +34,7 @@ namespace EWC
     Logger();
     virtual size_t write(uint8_t character);
     virtual size_t write(const uint8_t *buffer, size_t size);
-    void setLogging(bool enable);
+    void setLogging(bool enable, uint32_t baudRate = 115200);
     bool enabled() { return _loggingEnabled; }
 
   private:
