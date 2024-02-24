@@ -124,7 +124,7 @@ void Mail::loop()
       }
       else
       {
-        EWC::I::get().logger() << F("Mail not handled response: ") << line << endl;
+        // EWC::I::get().logger() << F("Mail not handled response: ") << line << endl;
       }
     }
   }

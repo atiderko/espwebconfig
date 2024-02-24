@@ -95,6 +95,12 @@ div .noorder {
 .noorder input[type=text]:invalid{
     background:#fce4d6
 }
+.noorder input[type=number]{
+  width:auto
+}
+.noorder input[type=number]:invalid{
+  background:#fce4d6
+}
 
 .noorder div, .exp{
     padding:2px 0px 10px 0px
@@ -416,7 +422,7 @@ input[type=button],input[type=submit],button[type=submit]:active{
     outline:none;
     text-decoration:none
 }
-input[type=text],input[type=password], .aux-page select{
+input[type=text],input[type=number],input[type=password], .aux-page select{
     background-color:#fff;
     border:1px solid #ccc;
     border-radius:2px;
@@ -424,7 +430,7 @@ input[type=text],input[type=password], .aux-page select{
 /**    margin:8px 0 8px 0;**/
     padding:10px
 }
-input[type=text],input[type=password]{
+input[type=text],input[type=number],input[type=password]{
     font-weight:300;
     -webkit-transition:all 0.20s ease-in;
     -moz-transition:all 0.20s ease-in;
@@ -432,7 +438,7 @@ input[type=text],input[type=password]{
     -ms-transition:all 0.20s ease-in;
     transition:all 0.20s ease-in
 }
-input[type=text]:focus,input[type=password]:focus{
+input[type=text]:focus,input[type=number]:focus,input[type=password]:focus{
     outline:none;
     border-color:#5C9DED;
     box-shadow:0 0 3px #4B8CDC
