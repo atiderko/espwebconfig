@@ -295,23 +295,6 @@ String Time::str(time_t offsetSeconds)
   return String(buffer);
 }
 
-String Time::currentTimeStr(int timezone)
-{
-  time_t rawTime;
-  time(&rawTime);
-  struct tm *timeInfo;
-  timeInfo = localtime(&rawTime);
-  time_t dst = 0;
-  if (timeInfo->tm_isdst > 0)
-  {
-    // dst = TZMAP[timezone - 1][0] * 3600;
-  }
-  // rawTime += TZMAP[timezone - 1][1] * 3600 + dst;
-  char buffer[80];
-  strftime(buffer, 80, "%FT%T", gmtime(&rawTime));
-  return String(buffer);
-}
-
 bool Time::dndEnabled()
 {
   return _paramDndEnabled;

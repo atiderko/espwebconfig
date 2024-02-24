@@ -64,7 +64,6 @@ namespace EWC
      * returns the count of seconds until end of DnD period (included offsetSeconds). **/
     time_t shiftDisturb(time_t offsetSeconds = 0);
     const String &dndTo();
-    static String currentTimeStr(int timezone = 31);
 
   protected:
     bool _ntpAvailable;
