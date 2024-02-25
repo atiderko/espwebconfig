@@ -89,7 +89,6 @@ namespace EWC
   protected:
     WiFiClient _wifiClient;
     unsigned long _tsSendMail;
-    unsigned int _countSend;
     bool _testMailSend;
     bool _testMailSuccess;
     String _testMailResult;

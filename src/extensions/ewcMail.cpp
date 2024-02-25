@@ -32,7 +32,6 @@ Mail::Mail()
     : ConfigInterface("mail")
 {
   _tsSendMail = 0;
-  _countSend = 0;
   _testMailSend = false;
   _testMailSuccess = false;
   _mailOnWarning = true;
@@ -76,20 +75,15 @@ void Mail::loop()
       if (line.indexOf("Bye") > -1)
       { // if reply from server contains "Bye" send was successful
         EWC::I::get().logger() << F("******* mail sent *******") << endl;
-        _countSend--;
-        if (_countSend == 0)
-        {
-          _setTestResult(true, "Successfully!");
-          _wifiClient.stop();
-        }
+        _mailData = "";
+        _setTestResult(true, "Successfully!");
+        _wifiClient.stop();
       }
       else if (line.indexOf("Error") > -1)
       {
         _setTestResult(false, line.c_str());
         _wifiClient.stop();
         _tsSendMail = 0;
-        _countSend = 0;
-        _mailData = "";
       }
       else if (line.startsWith("220"))
       {
@@ -136,7 +130,7 @@ void Mail::loop()
       _setTestResult(false, "Timeout while receiving ACK");
       // reset after timeout
       _tsSendMail = 0;
-      _countSend = 0;
+      _mailData = "";
     }
   }
 }
@@ -225,7 +219,7 @@ void Mail::_onMailState(WebServer *webServer)
   jsonDoc["mail"]["test_send"] = _testMailSend;
   jsonDoc["mail"]["test_success"] = _testMailSuccess;
   jsonDoc["mail"]["test_result"] = _testMailResult;
-  jsonDoc["mail"]["sending"] = _countSend > 0;
+  jsonDoc["mail"]["sending"] = _mailData.length() > 0;
   String output;
   serializeJson(jsonDoc, output);
   webServer->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
@@ -363,6 +357,7 @@ void Mail::_setTestResult(bool success, const char *result)
     _testMailSuccess = success;
     _testMailResult = result;
     _testMailSend = false;
+    _mailData = "";
   }
 }
 
@@ -396,7 +391,6 @@ bool Mail::_send(const char *subject, const char *body)
   {
     EWC::I::get().logger() << F("✔ connected to the server: ") << _mailServer << F(":") << _mailPort << endl;
     _tsSendMail = millis();
-    _countSend = 1;
     I::get().logger() << F("[Mail]: connected, send...") << endl;
     _wifiClient.print(_mailConfig.hello);
     // create DATA string
@@ -414,5 +408,5 @@ bool Mail::_send(const char *subject, const char *body)
 
 bool Mail::sendFinished()
 {
-  return _countSend == 0;
+  return _mailData.length() == 0;
 }
