@@ -51,7 +51,7 @@ namespace EWC
     void setup(JsonDocument &config, bool resetConfig = false);
     void fillJson(JsonDocument &config);
 
-    bool timeAvailable() { return _ntpAvailable; }
+    bool timeAvailable();
     void setLocalTime(String &date, String &time);
     /** Current time as string.
      * param offsetSeconds: Offset in seconds to now **/
@@ -66,7 +66,6 @@ namespace EWC
     const String &dndTo();
 
   protected:
-    bool _ntpAvailable;
     time_t _manualOffset; //< used for manually time
 
     /** === Parameter === **/
@@ -89,8 +88,6 @@ namespace EWC
     time_t _dndToMin(String &hmTime);
     boolean _summertimeEU(int year, byte month, byte day, byte hour, byte tzHours);
 
-    void getTimeTask();
-    static void getTimeTaskImpl(void *);
     void _setupTime();
   };
 

@@ -34,14 +34,8 @@ limitations under the License.
 
 using namespace EWC;
 
-void Time::getTimeTaskImpl(void *_this)
-{
-  static_cast<Time *>(_this)->getTimeTask();
-}
-
 Time::Time() : ConfigInterface("time")
 {
-  _ntpAvailable = false;
   _paramManually = false;
   _manualOffset = 0;
 }
@@ -72,38 +66,11 @@ void Time::_setupTime()
     I::get().logger() << F("[EWC Time] sync to ntp server...") << endl;
     // configTime(TZMAP[_paramTimezone - 1][1] * 3600, TZMAP[_paramTimezone - 1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
     configTime(0, 0, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
-#if defined(ESP32)
-    xTaskCreate(
-        this->getTimeTaskImpl, // Function that should be called
-        "Check time",          // Name of the task (for debugging)
-        2048,                  // Stack size (bytes)
-        this,                  // Parameter to pass
-        5,                     // Task priority
-        NULL                   // Task handle
-    );
-#endif
   }
   else
   {
     I::get().logger() << F("[EWC Time] current time: ") << str() << endl;
   }
-}
-
-void Time::getTimeTask()
-{
-#if defined(ESP32)
-  // Sync our clock to NTP
-  struct tm timeInfo;
-  if (getLocalTime(&timeInfo))
-  {
-    _callbackTimeSet();
-  }
-  else
-  {
-    _setupTime();
-  }
-  vTaskDelete(NULL);
-#endif
 }
 
 void Time::fillJson(JsonDocument &config)
@@ -179,19 +146,7 @@ void Time::_fromJson(JsonDocument &config)
   {
     _paramDndTo = jv.as<String>();
   }
-  if (!_paramManually)
-  {
-    // Sync our clock to NTP
-    I::get().logger() << "[EWC Time] sync to ntp server..." << endl;
-    // configTime(TZMAP[_paramTimezone - 1][1] * 3600, TZMAP[_paramTimezone - 1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
-    configTime(0, 0, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
-  }
-}
-
-void Time::_callbackTimeSet(void)
-{
-  I::get().logger() << "[EWC Time] ntp time set to " << str() << endl;
-  _ntpAvailable = true;
+  _setupTime();
 }
 
 void Time::_onTimeConfig(WebServer *request)
@@ -256,6 +211,19 @@ void Time::_onTimeSave(WebServer *request)
   String details;
   serializeJsonPretty(config["time"], details);
   I::get().server().sendPageSuccess(request, "EWC Time save", "Save successful!", "/time/setup", "<pre id=\"json\">" + details + "</pre>");
+}
+
+bool Time::timeAvailable()
+{
+  struct tm timeInfo;
+  time_t now;
+  time(&now);
+  localtime_r(&now, &timeInfo);
+  if (timeInfo.tm_year > (2016 - 1900))
+  {
+    return true;
+  }
+  return false;
 }
 
 void Time::setLocalTime(String &date, String &time)
