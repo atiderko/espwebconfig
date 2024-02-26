@@ -17,6 +17,10 @@
                 <input id="dev_name" type="text" name="dev_name" placeholder="Device Name">
             </div>
             <div>
+              <input id="enable_serial_log" type="checkbox" name="enable_serial_log" value="true" checked><label id="lbl_enable_serial_log">Enable serial log</label></input>
+              <label id="info_enable_serial_log">Prints logs to serial port</label>
+            </div>
+            <div>
                 <label id="lbl_apname" for="apName">AP Name</label>
                 <input id="apName" type="text" name="apName" placeholder="Name">
             </div>
@@ -55,6 +59,7 @@
     <script type="text/javascript">
       window.onload=function(){vsw(false, 'http');};
       function fillaccess(data, url) {
+        document.getElementById("enable_serial_log").checked = data["ewc"]["enable_serial_log"];
         document.getElementById("ap_start_always").checked = data["ewc"]["ap_start_always"];
         document.getElementById("basic_auth").checked = data["ewc"]["basic_auth"];
         ["dev_name", "apName","apPass","httpUser",

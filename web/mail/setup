@@ -22,7 +22,7 @@
               <label id="info_on_change">Send on state changes, e.g. function mode is changed</label>
             </div>
             <div>
-              <input id="on_event" type="checkbox" name="on_event" value="false"><label id="lbl_on_event">Send on each event</label></input>
+              <input id="on_event" type="checkbox" name="on_event" value="true"><label id="lbl_on_event">Send on each event</label></input>
             </div>
             <div>
                 <label id="lbl_receiver" for="receiver">Receiver:</label>

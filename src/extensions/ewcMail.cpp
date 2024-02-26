@@ -237,14 +237,20 @@ void Mail::_onMailSave(WebServer *webServer, bool sendResponse)
   if (webServer->hasArg("on_warning"))
   {
     config["mail"]["on_warning"] = webServer->arg("on_warning").equals("true");
+  } else {
+    config["mail"]["on_warning"] = false;
   }
   if (webServer->hasArg("on_change"))
   {
     config["mail"]["on_change"] = webServer->arg("on_change").equals("true");
+  } else {
+    config["mail"]["on_change"] = false;
   }
   if (webServer->hasArg("on_event"))
   {
     config["mail"]["on_event"] = webServer->arg("on_event").equals("true");
+  } else {
+    config["mail"]["on_event"] = false;
   }
   if (webServer->hasArg("smtp") && !webServer->arg("smtp").isEmpty())
   {

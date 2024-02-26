@@ -526,6 +526,12 @@ void ConfigServer::_onAccessSave(WebServer *webServer)
   {
     _config.paramDeviceName = webServer->arg("dev_name");
   }
+  if (webServer->hasArg("enable_serial_log"))
+  {
+    I::get().logger().setLogging(webServer->arg("enable_serial_log").equals("true"));
+  } else {
+    I::get().logger().setLogging(false);
+  }
   if (webServer->hasArg("apName"))
   {
     _config.paramAPName = webServer->arg("apName");
@@ -537,10 +543,14 @@ void ConfigServer::_onAccessSave(WebServer *webServer)
   if (webServer->hasArg("ap_start_always"))
   {
     _config.paramAPStartAlways = webServer->arg("ap_start_always").equals("true");
+  } else {
+    _config.paramAPStartAlways = false;
   }
   if (webServer->hasArg("basic_auth"))
   {
     _config.paramBasicAuth = webServer->arg("basic_auth").equals("true");
+  } else {
+    _config.paramBasicAuth = false;
   }
   if (webServer->hasArg("httpUser"))
   {

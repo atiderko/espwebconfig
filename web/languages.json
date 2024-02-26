@@ -209,6 +209,12 @@
     },
     "btn_test_send": {
         "de": "Testen"
+    },
+    "lbl_enable_serial_log": {
+      "de": "Aktiviere Log"
+    },
+    "info_enable_serial_log": {
+      "de": "Aktiviert seriellen Port für die Log Ausgaben."
     }
 
 }
