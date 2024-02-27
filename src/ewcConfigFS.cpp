@@ -74,7 +74,6 @@ ConfigFS::ConfigFS(String filename)
 {
   _filename = filename;
   _resetDetected = false;
-  _resetFileRemoved = false;
 }
 
 ConfigFS::~ConfigFS()
@@ -127,8 +126,6 @@ void ConfigFS::setup()
       _resetDetected = true;
       // delete configuration file
       LittleFS.remove(_filename);
-      // delete reset file
-      LittleFS.remove(resetFileName);
       delay(2000);
     }
   }
@@ -142,6 +139,9 @@ void ConfigFS::setup()
     I::get().logger() << F("[EWC ConfigFS]: wait for reset") << endl;
     delay(2000);
   }
+  I::get().logger() << F("[EWC ConfigFS]: delete reset file") << endl;
+  LittleFS.remove(resetFileName);
+
   I::get().logger() << F("[EWC ConfigFS]: Load configuration from ") << _filename << endl;
   JsonDocument jsonDoc;
   File cfgFile = LittleFS.open(_filename, "r");
@@ -162,13 +162,6 @@ void ConfigFS::setup()
 
 void ConfigFS::loop()
 {
-  if (!_resetFileRemoved)
-  {
-    _resetFileRemoved = true;
-    I::get().logger() << F("[EWC ConfigFS]: delete reset file") << endl;
-    String resetFileName = RESET_FILENAME;
-    LittleFS.remove(resetFileName);
-  }
 }
 
 // ConfigInterface* Config::sub_config(String name) {

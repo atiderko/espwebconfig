@@ -62,7 +62,6 @@ namespace EWC
     bool _resetDetected;
     String _filename;
     std::vector<ConfigInterface *> _cfgInterfaces;
-    bool _resetFileRemoved;
   };
 
 };

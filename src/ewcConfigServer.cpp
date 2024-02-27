@@ -177,7 +177,7 @@ void ConfigServer::setup()
   {
     _server.on("/config.json", std::bind(&ConfigServer::_sendFileContent, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), FPSTR(CONFIG_FILENAME)));
   }
-  _server.on("/device/reset", std::bind(&ConfigServer::_onDeviceReset, this, &_server));
+  // _server.on("/device/reset", std::bind(&ConfigServer::_onDeviceReset, this, &_server));
   _server.on("/favicon.ico", std::bind(&ConfigServer::_sendFileContent, this, &_server, "/favicon.ico", "image/x-icon"));
   _server.onNotFound(std::bind(&ConfigServer::_onNotFound, this, &_server));
   _server.begin(); // Web server start
@@ -185,8 +185,6 @@ void ConfigServer::setup()
 
 void ConfigServer::_startAP()
 {
-  // run configFS loop to delete reset file
-  _configFS.loop();
   // Start ticker with AP_STA
   _led.start(1000, 16);
   I::get().logger() << endl;
