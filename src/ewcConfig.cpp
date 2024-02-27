@@ -92,6 +92,7 @@ void Config::setup(JsonDocument &config, bool resetConfig)
 void Config::fillJson(JsonDocument &config)
 {
   config["ewc"]["enable_serial_log"] = I::get().logger().enabled();
+  config["ewc"]["enable_serial_log_disabled"] = disableLogSetting;
   config["ewc"]["dev_name"] = paramDeviceName;
   config["ewc"]["apName"] = paramAPName;
   config["ewc"]["apPass"] = _paramAPPass;
@@ -119,6 +120,11 @@ void Config::_fromJson(JsonDocument &doc)
   if (!jv.isNull())
   {
     I::get().logger().setLogging(jv.as<bool>());
+  }
+  jv = doc["ewc"]["enable_serial_log_disabled"];
+  if (!jv.isNull())
+  {
+    disableLogSetting = jv.as<bool>();
   }
   jv = doc["ewc"]["apName"];
   if (!jv.isNull())

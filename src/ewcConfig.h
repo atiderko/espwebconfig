@@ -68,6 +68,7 @@ namespace EWC
     String paramHostname;
     String paramLanguage;
     String getChipId();
+    bool disableLogSetting = false;
 
   protected:
     uint8_t _bootModeUtcAddress;
