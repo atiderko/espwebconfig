@@ -90,9 +90,6 @@ ConfigServer::ConfigServer(uint16_t port)
   I::get()._configFS = &_configFS;
   I::get()._time = &_time;
   I::get()._logger = &_logger;
-#ifdef ESP8266
-  I::get()._rtc = &_rtc;
-#endif
   I::get()._led = &_led;
   _publicConfig = true;
   _brandUri = "/";
@@ -188,6 +185,8 @@ void ConfigServer::setup()
 
 void ConfigServer::_startAP()
 {
+  // run configFS loop to delete reset file
+  _configFS.loop();
   // Start ticker with AP_STA
   _led.start(1000, 16);
   I::get().logger() << endl;
@@ -252,7 +251,10 @@ void ConfigServer::_connect(const char *ssid, const char *pass)
 void ConfigServer::_wifiOnStationModeConnected(const WiFiEventStationModeConnected &event)
 {
   I::get().logger() << F("[EWC CS]: _wifiOnStationModeConnected: ") << event.ssid << endl;
-  _config.setBootMode(BootMode::NORMAL);
+  if (!_config.paramAPStartAlways)
+  {
+    _config.setBootMode(BootMode::NORMAL);
+  }
   _ap_disabled_after_timeout = false;
 }
 
@@ -529,7 +531,9 @@ void ConfigServer::_onAccessSave(WebServer *webServer)
   if (webServer->hasArg("enable_serial_log"))
   {
     I::get().logger().setLogging(webServer->arg("enable_serial_log").equals("true"));
-  } else {
+  }
+  else
+  {
     I::get().logger().setLogging(false);
   }
   if (webServer->hasArg("apName"))
@@ -543,13 +547,17 @@ void ConfigServer::_onAccessSave(WebServer *webServer)
   if (webServer->hasArg("ap_start_always"))
   {
     _config.paramAPStartAlways = webServer->arg("ap_start_always").equals("true");
-  } else {
+  }
+  else
+  {
     _config.paramAPStartAlways = false;
   }
   if (webServer->hasArg("basic_auth"))
   {
     _config.paramBasicAuth = webServer->arg("basic_auth").equals("true");
-  } else {
+  }
+  else
+  {
     _config.paramBasicAuth = false;
   }
   if (webServer->hasArg("httpUser"))
@@ -798,7 +806,10 @@ void ConfigServer::_onWifiScan(WebServer *webServer)
 
 void ConfigServer::loop()
 {
-  _dnsServer.processNextRequest();
+  if (WiFi.getMode() == WIFI_AP_STA)
+  {
+    _dnsServer.processNextRequest();
+  }
   _server.handleClient();
   if (!_config.paramWifiDisabled)
   {

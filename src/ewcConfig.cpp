@@ -20,18 +20,14 @@ limitations under the License.
 **************************************************************/
 
 #include <LittleFS.h>
-#include "ewcConfig.h"
-#ifdef ESP8266
-#include "ewcRtc.h"
-#endif
+#include "ewcConfigFS.h"
 #include "ewcLogger.h"
+#include "ewcConfig.h"
 
 using namespace EWC;
 
 Config::Config() : ConfigInterface("ewc")
 {
-  // initialize utc addresses in setup method
-  _bootModeUtcAddress = 0;
   _bootMode = BootMode::CONFIGURATION;
   _initParams();
 }
@@ -42,9 +38,7 @@ Config::~Config()
 
 void Config::setup(JsonDocument &config, bool resetConfig)
 {
-#ifdef ESP8266
   I::get().logger() << F("[EWC Config]: setup EWC config") << endl;
-  _bootModeUtcAddress = I::get().rtc().get();
   if (resetConfig)
   {
     I::get().logger() << F("[EWC Config]: reset -> set boot mode to CONFIGURATION") << endl;
@@ -52,9 +46,11 @@ void Config::setup(JsonDocument &config, bool resetConfig)
   }
   else
   {
-    I::get().logger() << F("[EWC Config]: read boot mode flag from ") << _bootModeUtcAddress << endl;
+    String fileName = BOOT_MODE_FILENAME;
+    I::get().logger() << F("[EWC Config]: read boot mode from file ") << fileName << endl;
+
     // read boot mode
-    uint32_t boot_mode = I::get().rtc().read(_bootModeUtcAddress);
+    uint32_t boot_mode = I::get().configFS().readFrom(fileName).toInt();
     if (boot_mode == BootMode::NORMAL)
     {
       I::get().logger() << F("[EWC Config]: boot flag is NORMAL: ") << boot_mode << endl;
@@ -73,10 +69,9 @@ void Config::setup(JsonDocument &config, bool resetConfig)
     else
     {
       I::get().logger() << F("[EWC Config]: reset boot flag to ") << _bootMode << endl;
-      I::get().rtc().write(_bootModeUtcAddress, _bootMode);
+      setBootMode(_bootMode);
     }
   }
-#endif
   I::get().logger() << F("[EWC Config]: read configuration") << endl;
   if (resetConfig)
   {
@@ -173,10 +168,10 @@ void Config::setBootMode(BootMode mode)
 {
   if (mode != getBootMode())
   {
-    I::get().logger() << F("[EWC Config]: write boot mode ") << (uint32_t)mode << " to: " << _bootModeUtcAddress << endl;
-#ifdef ESP8266
-    I::get().rtc().write(_bootModeUtcAddress, mode);
-#endif
+    _bootMode = mode;
+    String fileName = BOOT_MODE_FILENAME;
+    I::get().logger() << F("[EWC Config]: write boot mode ") << (uint32_t)mode << " to: " << fileName << endl;
+    I::get().configFS().saveTo(fileName, String(mode));
   }
 }
 

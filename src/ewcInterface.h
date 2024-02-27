@@ -30,9 +30,6 @@ namespace EWC
   class ConfigServer;
   class Config;
   class ConfigFS;
-#if defined(ESP8266)
-  class RTC;
-#endif
   class TickerLed;
   class Time;
 
@@ -49,9 +46,6 @@ namespace EWC
     Config &config() { return *_config; }
     ConfigFS &configFS() { return *_configFS; }
     Logger &logger();
-#if defined(ESP8266)
-    RTC &rtc() { return *_rtc; }
-#endif
     TickerLed &led() { return *_led; }
     Time &time() { return *_time; }
 
@@ -60,9 +54,6 @@ namespace EWC
     Config *_config = nullptr;
     ConfigFS *_configFS = nullptr;
     Logger *_logger = nullptr;
-#if defined(ESP8266)
-    RTC *_rtc;
-#endif
     TickerLed *_led = nullptr;
     Time *_time = nullptr;
   };

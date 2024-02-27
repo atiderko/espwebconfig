@@ -20,9 +20,7 @@ limitations under the License.
 **************************************************************/
 #include <LittleFS.h>
 #include "ewcConfigFS.h"
-#ifdef ESP8266
-#include "ewcRtc.h"
-#endif
+#include "ewcTickerLED.h"
 #include "ewcLogger.h"
 
 using namespace EWC;
@@ -75,9 +73,8 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 ConfigFS::ConfigFS(String filename)
 {
   _filename = filename;
-  // initialize utc addresses in setup method
-  _resetUtcAddress = 0;
   _resetDetected = false;
+  _resetFileRemoved = false;
 }
 
 ConfigFS::~ConfigFS()
@@ -87,10 +84,8 @@ ConfigFS::~ConfigFS()
 
 void ConfigFS::setup()
 {
+  String resetFileName = RESET_FILENAME;
   I::get().logger() << F("[EWC ConfigFS]: setup config container") << endl;
-#ifdef ESP8266
-  _resetUtcAddress = I::get().rtc().get();
-#endif
   I::get().logger() << F("[EWC ConfigFS]: initialize LittleFS") << endl;
 #ifdef ESP8266
   LittleFS.begin();
@@ -107,32 +102,52 @@ void ConfigFS::setup()
   //     I::get().logger() << "  found file: " << root.name() << endl;
   // }
 #endif
-#ifdef ESP8266
-  I::get().logger() << F("[EWC ConfigFS]: read reset flag") << endl;
-  RTC &rtc = I::get().rtc();
-  if (rtc.read(_resetUtcAddress) == RESET_FLAG)
+  String resetContent;
+  File resetFile = LittleFS.open(resetFileName, "r");
+  if (resetFile && !resetFile.isDirectory())
   {
-    // double reset press detected
-    _resetDetected = true;
-    // reset configuration
-    I::get().logger() << F("\n[EWC ConfigFS]: RESET detected, remove configuration") << endl;
-    // TODO: delete configuration file
+    I::get().logger() << F("[EWC ConfigFS]: file open: ") << resetFile.name() << endl;
+    resetContent = resetFile.readString();
+    if (resetContent.compareTo("1") == 0)
+    {
+      I::get().logger() << F("[EWC ConfigFS]: update reset file") << endl;
+      resetFile.close();
+      resetFile = LittleFS.open(resetFileName, "w");
+      resetFile.write('2');
+      resetFile.close();
+      I::get().led().start(2000, 2000);
+      I::get().logger() << F("[EWC ConfigFS]: wait for reset") << endl;
+      delay(2000);
+    }
+    else if (resetContent.compareTo("2") == 0)
+    {
+      resetFile.close();
+      I::get().logger() << F("\n[EWC ConfigFS]: RESET detected, remove configuration") << endl;
+      I::get().led().start(100, 50);
+      _resetDetected = true;
+      // delete configuration file
+      LittleFS.remove(_filename);
+      // delete reset file
+      LittleFS.remove(resetFileName);
+      delay(2000);
+    }
   }
-  rtc.write(_resetUtcAddress, RESET_FLAG);
-  delay(1000);
-  I::get().logger() << F("[EWC ConfigFS]: clear reset flag") << endl;
-  rtc.write(_resetUtcAddress, RESET_FLAG_CLEAR);
-#endif
+  else
+  {
+    I::get().logger() << F("[EWC ConfigFS]: create reset file") << endl;
+    resetFile = LittleFS.open(resetFileName, "w");
+    resetFile.write('1');
+    resetFile.close();
+    I::get().led().start(2000, 2000);
+    I::get().logger() << F("[EWC ConfigFS]: wait for reset") << endl;
+    delay(2000);
+  }
   I::get().logger() << F("[EWC ConfigFS]: Load configuration from ") << _filename << endl;
   JsonDocument jsonDoc;
   File cfgFile = LittleFS.open(_filename, "r");
   if (cfgFile && !cfgFile.isDirectory())
   {
-#ifdef ESP8266
     I::get().logger() << F("[EWC ConfigFS]: file open: ") << cfgFile.name() << endl;
-#else
-    I::get().logger() << F("[EWC ConfigFS]: file open: ") << cfgFile.path() << ", name: " << cfgFile.name() << endl;
-#endif
     deserializeJson(jsonDoc, cfgFile);
   }
   // add sub configurations
@@ -140,19 +155,20 @@ void ConfigFS::setup()
   for (std::size_t i = 0; i < _cfgInterfaces.size(); ++i)
   {
     I::get().logger() << F("[EWC ConfigFS]:  load [") << i << F("]: ") << _cfgInterfaces[i]->name() << endl;
-    _cfgInterfaces[i]->setup(jsonDoc, _resetDetected);
+    _cfgInterfaces[i]->setup(jsonDoc, false);
+    // _cfgInterfaces[i]->setup(jsonDoc, _resetDetected);
   }
-#ifdef ESP8266
-  // reset RTC
-  if (_resetDetected)
-  {
-    I::get().rtc().reset();
-  }
-#endif
 }
 
 void ConfigFS::loop()
 {
+  if (!_resetFileRemoved)
+  {
+    _resetFileRemoved = true;
+    I::get().logger() << F("[EWC ConfigFS]: delete reset file") << endl;
+    String resetFileName = RESET_FILENAME;
+    LittleFS.remove(resetFileName);
+  }
 }
 
 // ConfigInterface* Config::sub_config(String name) {
@@ -163,7 +179,7 @@ void ConfigFS::loop()
 
 void ConfigFS::save()
 {
-  I::get().logger() << F("[EWC ConfigFS]: save subconfigurations, count: ") << _cfgInterfaces.size() << endl;
+  I::get().logger() << F("[EWC ConfigFS]: save sub-configurations, count: ") << _cfgInterfaces.size() << endl;
   JsonDocument doc;
   for (std::size_t i = 0; i < _cfgInterfaces.size(); ++i)
   {
@@ -174,6 +190,8 @@ void ConfigFS::save()
   File file = LittleFS.open(_filename, "w");
   // Write a prettified JSON document to the file
   serializeJsonPretty(doc, file);
+  if (file)
+    file.close();
 }
 
 void ConfigFS::addConfig(ConfigInterface &config)
@@ -187,4 +205,31 @@ void ConfigFS::deleteFile()
 {
   I::get().logger() << F("[EWC ConfigFS]: reset configuration file") << endl;
   LittleFS.remove(_filename);
+}
+
+String ConfigFS::readFrom(String fileName)
+{
+  File file = LittleFS.open(fileName, "r");
+  if (file)
+  {
+    String data = file.readString();
+    file.close();
+    return data;
+  }
+  return "";
+}
+
+bool ConfigFS::saveTo(String fileName, String data)
+{
+  File file = LittleFS.open(fileName, "w");
+  if (file)
+  {
+    for (unsigned int i = 0; i < data.length(); i++)
+    {
+      file.write(data[i]);
+    }
+    file.close();
+    return true;
+  }
+  return false;
 }

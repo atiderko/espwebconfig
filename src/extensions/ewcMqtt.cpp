@@ -217,6 +217,8 @@ void Mqtt::_onMqttState(WebServer *request)
 
 void Mqtt::_connectToMqtt()
 {
+  if (!paramEnabled)
+    return;
   I::get().logger() << F("[EWC MQTT] Connecting to MQTT...") << _paramServer << ":" << _paramPort << endl;
   _connecting = true;
   _mqttClient.connect();

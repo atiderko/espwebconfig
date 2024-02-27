@@ -24,11 +24,9 @@ limitations under the License.
 #include <ArduinoJSON.h>
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
-#include <coredecls.h> // settimeofday_cb()
 #else
 #include <WiFi.h>
 #include <WiFiUdp.h>
-// #include <time.h> // settimeofday_cb()
 #endif
 #include "generated/timeSetupHTML.h"
 
@@ -46,9 +44,6 @@ Time::~Time()
 
 void Time::setup(JsonDocument &config, bool resetConfig)
 {
-#ifdef ESP8266
-  settimeofday_cb(std::bind(&Time::_callbackTimeSet, this));
-#endif
   I::get().logger() << F("[EWC Time] setup") << endl;
   _initParams();
   _fromJson(config);

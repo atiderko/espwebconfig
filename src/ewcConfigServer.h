@@ -25,7 +25,6 @@ limitations under the License.
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #define WebServer ESP8266WebServer
-#include "ewcRTC.h"
 #elif defined(ESP32)
 #include <WiFi.h>
 #include <WebServer.h>
@@ -140,9 +139,6 @@ namespace EWC
     DNSServer _dnsServer;
     ConfigFS _configFS;
     Logger _logger;
-#ifdef ESP8266
-    RTC _rtc;
-#endif
     Ticker _reconnectTimer;
     TickerLed _led;
     Time _time;

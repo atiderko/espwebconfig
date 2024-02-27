@@ -32,12 +32,13 @@ namespace EWC
   const char DEFAULT_HTTP_USER[] = "admin";
   const char DEFAULT_HTTP_PASSWORD[] = "";
   const unsigned long WIFI_SCAN_DELAY = 10000;
+  const char BOOT_MODE_FILENAME[] PROGMEM = "/boot.mode";
 
   enum BootMode
   {
-    NORMAL = 0x10101010,
-    STANDALONE = 0x12121212,
-    CONFIGURATION = 0x02020202
+    NORMAL = 1,
+    STANDALONE = 2,
+    CONFIGURATION = 3
   };
 
   class Config : public ConfigInterface
@@ -71,7 +72,6 @@ namespace EWC
     bool disableLogSetting = false;
 
   protected:
-    uint8_t _bootModeUtcAddress;
     BootMode _bootMode;
 
     String _paramAPPass;

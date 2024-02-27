@@ -14,11 +14,11 @@ There are already many cool web-based configuration libraries out there, but I h
 - Increased stability by avoiding AsyncWebServer
 - Pages are filled on the client site by JavaScript
 - Logging using **<<-operator** // _based on [Homie](https://github.com/homieiot/homie-esp8266)_
-- Reset configuration by double press on reset button // _based on https://github.com/datacute/DoubleResetDetector_
-- Interface to store runtime data in RTC memory.
+- Reset configuration by triple press on reset button // _based on https://github.com/datacute/DoubleResetDetector_, but with LittleFS
 - Option to add own languages.
 - Extensions for **OTA Update**, **MQTT**, **Time** or **E-Mail** setup pages.
 - Optional: [MQTT Homie](https://homieiot.github.io) integration for simple setup of property discovery.
+- Optional: MQTT Homeassistant integration for simple setup of property discovery.
 - Create you own pages and test the functionality with a webServer of your choice. Include the HTML, CSS, JS or SVG files as auto generated header files // _based on [ESPUI](https://github.com/s00500/ESPUI)_
 
 ## Installation

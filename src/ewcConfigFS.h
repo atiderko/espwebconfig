@@ -38,10 +38,7 @@ https://github.com/datacute/DoubleResetDetector
 namespace EWC
 {
 
-// used to read from UTC address returned by RTC class
-#define RESET_FLAG 0x12121212
-#define RESET_FLAG_CLEAR 0x10000001
-
+  const char RESET_FILENAME[] PROGMEM = "/reset.lock";
   const char CONFIG_FILENAME[] PROGMEM = "/ewc.json";
 
   class ConfigFS
@@ -58,12 +55,14 @@ namespace EWC
     void addConfig(ConfigInterface &config);
     // ConfigInterface* sub_config(String name);
     bool resetDetected() { return _resetDetected; }
+    String readFrom(String fileName);
+    bool saveTo(String fileName, String data);
 
   protected:
-    uint8_t _resetUtcAddress;
     bool _resetDetected;
     String _filename;
     std::vector<ConfigInterface *> _cfgInterfaces;
+    bool _resetFileRemoved;
   };
 
 };

@@ -20,7 +20,6 @@ limitations under the License.
 **************************************************************/
 #include "ewcMail.h"
 #include "ewcTime.h"
-#include <ewcRTC.h>
 #include <ewcConfigServer.h>
 #include <vector>
 #include "generated/mailSetupHTML.h"
@@ -237,19 +236,25 @@ void Mail::_onMailSave(WebServer *webServer, bool sendResponse)
   if (webServer->hasArg("on_warning"))
   {
     config["mail"]["on_warning"] = webServer->arg("on_warning").equals("true");
-  } else {
+  }
+  else
+  {
     config["mail"]["on_warning"] = false;
   }
   if (webServer->hasArg("on_change"))
   {
     config["mail"]["on_change"] = webServer->arg("on_change").equals("true");
-  } else {
+  }
+  else
+  {
     config["mail"]["on_change"] = false;
   }
   if (webServer->hasArg("on_event"))
   {
     config["mail"]["on_event"] = webServer->arg("on_event").equals("true");
-  } else {
+  }
+  else
+  {
     config["mail"]["on_event"] = false;
   }
   if (webServer->hasArg("smtp") && !webServer->arg("smtp").isEmpty())
@@ -383,6 +388,11 @@ bool Mail::_send(const char *subject, const char *body)
   {
     _setTestResult(false, "Mail already sending");
     I::get().logger() << F("[Mail]: already sending, skip mail with subject: ") << subject << endl;
+    return false;
+  }
+  if (_mailServer.length() == 0)
+  {
+    I::get().logger() << F("[Mail]: server not configured, skip send") << subject << endl;
     return false;
   }
   EWC::I::get().logger() << F("[Mail] connect to the server: ") << _mailServer << F(":") << _mailPort << endl;
