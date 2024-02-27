@@ -34,8 +34,11 @@ using namespace EWC;
 
 void setup()
 {
-  Serial.begin(115200);
-  Serial.println();
+  EWC::I::get().logger().setBaudRate(115200);
+  EWC::I::get().logger().setLogging(true);
+  // optional: enable LED for wifi state and reset detection support.
+  // place it on top
+  EWC::I::get().led().enable(true, LED_BUILTIN, LOW);
   // optional: add page for OTA updates
   EWC::I::get().configFS().addConfig(updater_);
   // optional: add page to setup time
@@ -44,8 +47,6 @@ void setup()
   EWC::I::get().configFS().addConfig(mqtt_);
   // optional: update brand and version
   server.setBrand("EWC", "1.0.1");
-  // optional: enable LED for wifi state
-  EWC::I::get().led().enable(true, LED_BUILTIN, LOW);
   // start web server
   server.setup();
 }
