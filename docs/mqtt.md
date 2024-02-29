@@ -20,7 +20,9 @@ void _onMqttCallback(char* topic, char* payload, AsyncMqttClientMessagePropertie
 
 
 void setup() {
-    Serial.begin(115200);
+    EWC::I::get().logger().setBaudRate(115200);
+    EWC::I::get().logger().setLogging(true);
+
     // add MQTT configuration
     I::get().configFS().addConfig(ewcMqtt);
     // setup homie device

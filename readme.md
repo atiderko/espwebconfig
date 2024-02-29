@@ -63,7 +63,7 @@ except ImportError:
 env.Execute("$PYTHONEXE $PROJECT_DIR/.pio/libdeps/d1_mini/espwebconfig/scripts/generate_headers.py -p $PROJECT_DIR -n")
 ```
 
-See [BBS](https://github.com/atiderko/bbs) project for example integration.
+See [PVZero](https://github.com/JoTid/PVZero/tree/develop) or [BBS](https://github.com/atiderko/bbs) project for example integration.
 
 ## Integration
 
@@ -76,9 +76,11 @@ Below you see the simplest sketch with full functionality.
 EWC::ConfigServer server;
 
 void setup() {
-    Serial.begin(115200);
+    EWC::I::get().logger().setBaudRate(115200);
+    EWC::I::get().logger().setLogging(true);
+
     // start webServer
-	server.setup();
+    server.setup();
 }
 
 
@@ -113,7 +115,7 @@ Default _Info_ (/ewc/info) and _Access-Configuration_ (/access/setup) pages:
 
 ## Language customization
 
-Copy _web/languages.json_ to _web_ folder of your project. Extend/replace the content of the JSON file with your launguage.
+Copy _web/languages.json_ to _web_ folder of your project. Extend/replace the content of the JSON file with your language.
 Add following code to your code.
 
 ```cpp

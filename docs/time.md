@@ -10,11 +10,12 @@ EWC::Time ewcTime;
 bool timePrinted = false;
 
 void setup() {
-    Serial.begin(115200);
+    EWC::I::get().logger().setBaudRate(115200);
+    EWC::I::get().logger().setLogging(true);
     // add time configuration
     EWC::I::get().configFS().addConfig(ewcTime);
     // start webServer
-	server.setup();
+    server.setup();
 }
 
 

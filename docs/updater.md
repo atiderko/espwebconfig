@@ -9,11 +9,13 @@ EWC::ConfigServer server;
 EWC::Updater ewcUpdater;
 
 void setup() {
-    Serial.begin(115200);
+    EWC::I::get().logger().setBaudRate(115200);
+    EWC::I::get().logger().setLogging(true);
+
     // add updater configuration
     EWC::I::get().configFS().addConfig(ewcUpdater);
     // start webServer
-	server.setup();
+    server.setup();
 }
 
 

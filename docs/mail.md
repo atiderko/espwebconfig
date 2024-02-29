@@ -10,11 +10,13 @@ EWC::Mail ewcMail;
 bool mailSend = false;
 
 void setup() {
-    Serial.begin(115200);
+    EWC::I::get().logger().setBaudRate(115200);
+    EWC::I::get().logger().setLogging(true);
+
     // add mail configuration
     EWC::I::get().configFS().addConfig(ewcMail);
     // start webServer
-	server.setup();
+    server.setup();
 }
 
 
