@@ -19,6 +19,7 @@ limitations under the License.
 
 **************************************************************/
 #include <LittleFS.h>
+#include "ewcConfig.h"
 #include "ewcConfigFS.h"
 #include "ewcTickerLED.h"
 #include "ewcLogger.h"
@@ -101,26 +102,23 @@ void ConfigFS::setup()
   //     I::get().logger() << "  found file: " << root.name() << endl;
   // }
 #endif
-  String resetContent;
+  bool bootModeChanged = false;
+  String resetString;
   File resetFile = LittleFS.open(resetFileName, "r");
   if (resetFile && !resetFile.isDirectory())
   {
     I::get().logger() << F("[EWC ConfigFS]: file open: ") << resetFile.name() << endl;
-    resetContent = resetFile.readString();
-    if (resetContent.compareTo("1") == 0)
-    {
-      I::get().logger() << F("[EWC ConfigFS]: update reset file") << endl;
-      resetFile.close();
-      resetFile = LittleFS.open(resetFileName, "w");
-      resetFile.write('2');
-      resetFile.close();
-      I::get().led().start(2000, 2000);
-      I::get().logger() << F("[EWC ConfigFS]: wait for reset") << endl;
-      delay(2000);
+    resetString = resetFile.readString();
+    resetFile.close();
+    int resetCount = resetString.toInt();
+    I::get().logger() << F("\n[EWC ConfigFS]: resetString: ") << resetString << F(", resetCount: ") << resetCount << endl;
+    if (resetCount == 2) {
+      I::get().logger() << F("\n[EWC ConfigFS]: change boot mode to configuration") << endl;
+      I::get().led().start(250, 25);
+      bootModeChanged = true;
+      I::get().config().setBootMode(BootMode::CONFIGURATION, true);
     }
-    else if (resetContent.compareTo("2") == 0)
-    {
-      resetFile.close();
+    if (resetCount == 5) {
       I::get().logger() << F("\n[EWC ConfigFS]: RESET detected, remove configuration") << endl;
       I::get().led().start(100, 50);
       _resetDetected = true;
@@ -128,6 +126,16 @@ void ConfigFS::setup()
       LittleFS.remove(_filename);
       delay(2000);
     }
+    resetCount += 1;
+    I::get().logger() << F("[EWC ConfigFS]: update reset file with ") << String(resetCount)[0] << endl;
+    resetFile = LittleFS.open(resetFileName, "w");
+    resetFile.write(String(resetCount)[0]);
+    resetFile.close();
+    if (!bootModeChanged && !_resetDetected) {
+      I::get().led().start(2000, 2000);
+    }
+    I::get().logger() << F("[EWC ConfigFS]: wait for reset") << endl;
+    delay(2000);
   }
   else
   {

@@ -51,6 +51,7 @@ void Config::setup(JsonDocument &config, bool resetConfig)
 
     // read boot mode
     uint32_t boot_mode = I::get().configFS().readFrom(fileName).toInt();
+    I::get().logger() << F("[EWC Config]: boot_mode: ") << boot_mode << endl;
     if (boot_mode == BootMode::NORMAL)
     {
       I::get().logger() << F("[EWC Config]: boot flag is NORMAL: ") << boot_mode << endl;
@@ -164,9 +165,9 @@ void Config::_fromJson(JsonDocument &doc)
 //     return NULL;
 // }
 
-void Config::setBootMode(BootMode mode)
+void Config::setBootMode(BootMode mode, bool forceWrite)
 {
-  if (mode != getBootMode())
+  if (mode != getBootMode() || forceWrite)
   {
     _bootMode = mode;
     String fileName = BOOT_MODE_FILENAME;

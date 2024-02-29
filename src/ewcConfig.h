@@ -52,7 +52,7 @@ namespace EWC
     void fillJson(JsonDocument &config);
 
     /** === BOOT mode handling  === **/
-    void setBootMode(BootMode mode);
+    void setBootMode(BootMode mode, bool forceWrite = false);
     BootMode getBootMode() { return _bootMode; }
     bool wifiDisabled() { return _bootMode == BootMode::STANDALONE; }
 
