@@ -99,12 +99,12 @@ ConfigServer::ConfigServer(uint16_t port)
   _disconnect_reason = "";
   _softAPClientCount = 0;
   _configFS.addConfig(_config);
+  _configFS.addConfig(_time);
 }
 
 void ConfigServer::setup()
 {
   I::get().logger() << F("[EWC CS]: setup configFS") << endl;
-  _configFS.addConfig(_time);
   _configFS.setup();
   WiFi.setAutoConnect(false);
   if (_configFS.resetDetected())
