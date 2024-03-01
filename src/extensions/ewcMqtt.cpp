@@ -116,7 +116,6 @@ void Mqtt::_fromJson(JsonDocument &config)
   if (paramEnabled)
   {
     // set contact informations
-    const char *server = _paramServer.c_str();
     _mqttClient.setServer(_paramServer.c_str(), _paramPort);
     if (_paramUser.length() > 0)
     {
