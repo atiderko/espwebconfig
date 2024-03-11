@@ -1,5 +1,6 @@
 {
     "time": {
+        "ntp_enabled": false,
         "timezone": 31,
         "manually": false,
         "mdate": "",

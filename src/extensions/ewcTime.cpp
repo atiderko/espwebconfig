@@ -28,6 +28,7 @@ limitations under the License.
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #endif
+#include "lwip/apps/sntp.h"
 #include "generated/timeSetupHTML.h"
 
 using namespace EWC;
@@ -35,6 +36,7 @@ using namespace EWC;
 Time::Time() : ConfigInterface("time")
 {
   _paramManually = false;
+  _paramNtpEnabled = false;
   _manualOffset = 0;
 }
 
@@ -60,7 +62,7 @@ void Time::_setupTime()
     // Sync our clock to NTP
     I::get().logger() << F("[EWC Time] sync to ntp server...") << endl;
     // configTime(TZMAP[_paramTimezone - 1][1] * 3600, TZMAP[_paramTimezone - 1][0] * 3600, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
-    configTime(0, 0, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
+    // configTime(0, 0, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
   }
   else
   {
@@ -71,6 +73,7 @@ void Time::_setupTime()
 void Time::fillJson(JsonDocument &config)
 {
   config["time"]["timezone"] = _paramTimezone;
+  config["time"]["ntp_enabled"] = _paramNtpEnabled;
   config["time"]["manually"] = _paramManually;
   config["time"]["mdate"] = _paramDate;
   config["time"]["mtime"] = _paramTime;
@@ -85,6 +88,7 @@ void Time::_initParams()
   _paramTimezone = 31;
   _zoneOffset = TZMAP[_paramTimezone - 1][1] * 3600;
   _dstOffset = TZMAP[_paramTimezone - 1][0] * 3600;
+  _paramNtpEnabled = false;
   _paramManually = false;
   _paramDate = "21.10.2020";
   _paramTime = "21:00";
@@ -119,13 +123,27 @@ void Time::_fromJson(JsonDocument &config)
   {
     _paramTime = jv.as<String>();
   }
+  bool ntpEnabled = false;
+  jv = config["time"]["ntp_enabled"];
+  if (!jv.isNull())
+  {
+    ntpEnabled = jv.as<bool>();
+  }
+  _paramNtpEnabled = ntpEnabled;
+  if (_paramNtpEnabled) {
+    configTime(0, 0, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
+  } else {
+    sntp_stop();
+  }
+  bool manually = false;
   jv = config["time"]["manually"];
   if (!jv.isNull())
   {
-    _paramManually = jv.as<bool>();
+    manually = jv.as<bool>();
     // set time
     setLocalTime(_paramDate, _paramTime);
   }
+  _paramManually = manually;
   jv = config["time"]["dnd_enabled"];
   if (!jv.isNull())
   {
@@ -221,20 +239,25 @@ bool Time::timeAvailable()
   return false;
 }
 
+void Time::setLocalTime(uint64_t unixtime)
+{
+  _manualOffset = unixtime - millis() / 1000;
+}
+
 void Time::setLocalTime(String &date, String &time)
 {
   struct tm ti;
   sscanf(date.c_str(), "%d.%d.%d", &ti.tm_mday, &ti.tm_mon, &ti.tm_year);
   sscanf(time.c_str(), "%d:%d", &ti.tm_hour, &ti.tm_min);
   time_t t = mktime(&ti);
-  _manualOffset = t - millis() / 1000;
+  _manualOffset = t - millis() / 1000 - _zoneOffset;
 }
 
 time_t Time::currentTime()
 {
-  if (_paramManually)
+  if (_paramManually || !isNtpEnabled())
   {
-    return millis() / 1000 - _manualOffset;
+    return millis() / 1000 + _manualOffset + _zoneOffset;
   }
   time_t rawTime;
   time(&rawTime);
@@ -255,6 +278,7 @@ String Time::str(time_t offsetSeconds)
   rawTime += offsetSeconds;
   char buffer[80];
   strftime(buffer, 80, "%FT%T", gmtime(&rawTime));
+
   return String(buffer);
 }
 

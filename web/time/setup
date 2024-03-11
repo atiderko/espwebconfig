@@ -17,7 +17,7 @@
                 <label id="lbl_current" for="timezone">Current Time</label>
                 <label id="current">---</label>
             </div>
-            <div class="notexp">
+            <div class="ntpOpt">
                 <label id="lbl_timezone" for="timezone">Timezone</label>
                 <select id="timezone" name="timezone" size="1">
                   <option value="1">(GMT-12:00) International Date Line West</option>
@@ -105,14 +105,17 @@
                 </select>
             </div>
             <div>
-                <input id="manually" type="checkbox" name="manually" value="true" onclick="vswe(this.checked);"><label id="lbl_manually">Manually time</label></input>
+              <input id="ntp_enabled" type="checkbox" name="ntp_enabled" value="true" onclick="if (this.checked) {document.getElementById('manually').checked = false; vsw(false, 'mOpt');}"><label id="lbl_ntp_enabled">Enable NTP</label></input>
+            </div>
+            <div>
+                <input id="manually" type="checkbox" name="manually" value="true" onclick="vsw(this.checked, 'mOpt');  if (this.checked) {document.getElementById('ntp_enabled').checked = false;}"><label id="lbl_manually">Manually time</label></input>
                 <label id="info_manually">You need to setup manually time after each restart!</label>
             </div>
-            <div class="exp">
+            <div class="mOpt">
                 <label id="lbl_date" for="date">Date</label>
                 <input id="mdate" type="date" name="mdate" required>
             </div>
-            <div class="exp">
+            <div class="mOpt">
                 <label id="lbl_time" for="time">Time</label>
                 <input id="mtime" type="time" name="mtime" required>
             </div>
@@ -135,16 +138,16 @@
   <script type="text/javascript">
     window.onload=function(){vswe(false); vsw(false, "dnd");};
     function vswe(e){
-      vsw(e, "exp");
-      vsw(!e, "notexp");
+      vsw(e, "mOpt");
     }
   </script>
   <script>jsons = [ ["/time/config.json", "fillTimeConfig"] ];</script>
   <script src="/js/postload.js"></script>
   <script type="text/javascript">
     function fillTimeConfig(data, url) {
+      document.getElementById("ntp_enabled").checked = data["time"]["ntp_enabled"];
       document.getElementById("manually").checked = data["time"]["manually"];
-      vswe(data["time"]["manually"]);
+      vsw(data["time"]["manually"], "mOpt");
       document.getElementById("dnd_enabled").checked = data["time"]["dnd_enabled"];
       vsw(data["time"]["dnd_enabled"], "dnd");
       document.getElementById("current").innerText = data["time"]["current"];

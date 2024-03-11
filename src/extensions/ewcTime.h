@@ -52,6 +52,7 @@ namespace EWC
     void fillJson(JsonDocument &config);
 
     bool timeAvailable();
+    void setLocalTime(uint64_t);
     void setLocalTime(String &date, String &time);
     /** Current time as string.
      * param offsetSeconds: Offset in seconds to now **/
@@ -64,6 +65,8 @@ namespace EWC
      * returns the count of seconds until end of DnD period (included offsetSeconds). **/
     time_t shiftDisturb(time_t offsetSeconds = 0);
     const String &dndTo();
+    bool isNtpEnabled() { return _paramNtpEnabled; }
+    bool isManually() { return _paramManually; }
 
   protected:
     time_t _manualOffset; //< used for manually time
@@ -72,6 +75,7 @@ namespace EWC
     int _paramTimezone;
     long _zoneOffset;
     long _dstOffset;
+    bool _paramNtpEnabled;
     bool _paramManually;
     String _paramDate;
     String _paramTime;
