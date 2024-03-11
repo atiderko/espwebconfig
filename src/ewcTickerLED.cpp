@@ -29,13 +29,23 @@ Based on:
 
 using namespace EWC;
 
-void TickerLed::enable(bool enable, const uint8_t port, const uint8_t active, const uint32_t cycle, uint32_t duration)
+void TickerLed::init(bool enable, const uint8_t port, const uint8_t active, const uint32_t cycle, uint32_t duration)
 {
-  I::get().logger() << "[EWC LED] enable on port " << port << endl;
+  I::get().logger() << "[EWC LED] init on port " << port << endl;
   _port = port;
   _turnOn = active;
   _cycle = cycle;
   setDuration(duration);
+  _enabled = enable;
+  if (!enable)
+  {
+    stop();
+  }
+}
+
+void TickerLed::enable(bool enable)
+{
+  I::get().logger() << "[EWC LED] enable " << enable << endl;
   _enabled = enable;
   if (!enable)
   {

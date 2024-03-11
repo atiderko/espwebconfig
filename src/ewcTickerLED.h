@@ -45,7 +45,8 @@ namespace EWC
     }
     ~TickerLed() { stop(); }
 
-    void enable(bool enable, const uint8_t port = LED_BUILTIN, const uint8_t active = LOW, const uint32_t cycle = 0, uint32_t duration = 0);
+    void init(bool enable, const uint8_t port = LED_BUILTIN, const uint8_t active = LOW, const uint32_t cycle = 0, uint32_t duration = 0);
+    void enable(bool enable);
     bool enabled() { return _enabled; }
     bool active() { return _active; }
     typedef std::function<void(void)> Callback_ft;
