@@ -23,27 +23,71 @@ limitations under the License.
 #ifndef EWC_LOGGER_H
 #define EWC_LOGGER_H
 
+#include <mutex>
 #include <Arduino.h>
 
 namespace EWC
 {
+  enum _EndLineCode
+  {
+    endl
+  };
+
+  /** Thread safe logger class. The lock is initialized with startLock().
+   * The lock is released by every method of the logger, with the exception of the << operator and setTimeStr().
+   */
   class Logger : public Print
   {
 
   public:
     Logger();
-    virtual size_t write(uint8_t character);
-    virtual size_t write(const uint8_t *buffer, size_t size);
-    void setBaudRate(uint32_t baudRate) { _baudRate = baudRate; }
+    void disableMutex();
+    void setBaudRate(uint32_t baudRate);
     void setLogging(bool enable);
-    bool enabled() { return _loggingEnabled; }
+    void timePrefix(bool enable);
+    bool enabled();
+    template <class T>
+    inline Logger &operator<<(T arg)
+    {
+      if (_loggingEnabled)
+      {
+        if (_newLine)
+        {
+          _printer->print(_timeStr);
+          _printer->print("| ");
+          _newLine = false;
+        }
+        _printer->print(arg);
+      }
+      return *this;
+    }
+    inline Logger &operator<<(_EndLineCode arg)
+    {
+      if (_loggingEnabled)
+      {
+        _printer->println();
+        deleteLockGuard();
+      }
+      return *this;
+    }
+    // ----- used by ewcInterface -----
+    void setTimeStr(String timeStr);
+    void startLock();
 
   private:
-    void setPrinter(Print *printer);
+    void deleteLockGuard();
+    virtual size_t write(uint8_t character);
+    virtual size_t write(const uint8_t *buffer, size_t size);
 
+    std::mutex _mutex;
+    std::lock_guard<std::mutex> *_lockGuard = NULL;
+    bool _useMutex = true;
     bool _loggingEnabled = false;
+    bool _timePrefix = true;
+    bool _newLine = true;
     uint32_t _baudRate = 115200;
     Print *_printer;
+    String _timeStr;
   };
 };
 

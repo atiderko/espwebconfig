@@ -23,7 +23,6 @@ limitations under the License.
 
 #include "Arduino.h"
 #include "ewcLogger.h"
-#include "ewcStreamingOperator.h"
 
 namespace EWC
 {

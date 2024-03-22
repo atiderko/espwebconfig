@@ -28,12 +28,8 @@ Logger &InterfaceData::logger()
 {
   if (_logger)
   {
-    if (_time)
-    {
-      // print timestamp in front of each log
-      _logger->print(_time->str());
-      _logger->print(" ");
-    }
+    _logger->startLock();
+    _logger->setTimeStr(_time->str());
   }
   return *_logger;
 }
