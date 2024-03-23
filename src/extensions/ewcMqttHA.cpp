@@ -197,9 +197,9 @@ bool MqttHA::addPropertySettable(String component, String uniqueId, String name,
 
 void MqttHA::_onMqttConnect(bool sessionPresent)
 {
-#ifdef ESP32
-  std::lock_guard<std::mutex> lck(_mutex);
-#endif
+  // #ifdef ESP32
+  //   std::lock_guard<std::mutex> lck(_mutex);
+  // #endif
   _properties.clear();
   I::get().logger() << F("[MqttHA] setup on connect, session present: ") << sessionPresent << endl;
   I::get().logger() << "[MqttHA]: ESP heap: _onMqttConnect: " << ESP.getFreeHeap() << endl;
