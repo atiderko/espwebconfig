@@ -38,7 +38,7 @@ void setup()
   EWC::I::get().logger().setLogging(true);
   // optional: enable LED for wifi state and reset detection support.
   // place it on top
-  EWC::I::get().led().enable(true, LED_BUILTIN, LOW);
+  EWC::I::get().led().init(true, LED_BUILTIN, LOW);
   // optional: add page for OTA updates
   EWC::I::get().configFS().addConfig(updater_);
   // optional: add page to setup time
