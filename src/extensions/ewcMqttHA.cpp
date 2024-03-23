@@ -163,6 +163,10 @@ bool MqttHA::_hasProperty(String uniqueId)
 
 bool MqttHA::addProperty(String component, String uniqueId, String name, String deviceClass, String objectId, String unit, bool retained)
 {
+#ifdef ESP32
+  std::lock_guard<std::mutex> lck(_mutex);
+#endif
+
   if (_hasProperty(uniqueId))
   {
     I::get().logger() << F("✘ [MqttHA] can not add property with id: ") << uniqueId << F(", already exists!") << endl;
@@ -176,6 +180,10 @@ bool MqttHA::addProperty(String component, String uniqueId, String name, String 
 
 bool MqttHA::addPropertySettable(String component, String uniqueId, String name, String deviceClass, String objectId, AsyncMqttClientInternals::OnMessageUserCallback callback, String unit, bool retained)
 {
+#ifdef ESP32
+  std::lock_guard<std::mutex> lck(_mutex);
+#endif
+
   if (_hasProperty(uniqueId))
   {
     I::get().logger() << F("✘ [MqttHA] can not add settable property with id: ") << uniqueId << F(", already exists!") << endl;
@@ -189,6 +197,9 @@ bool MqttHA::addPropertySettable(String component, String uniqueId, String name,
 
 void MqttHA::_onMqttConnect(bool sessionPresent)
 {
+#ifdef ESP32
+  std::lock_guard<std::mutex> lck(_mutex);
+#endif
   _properties.clear();
   I::get().logger() << F("[MqttHA] setup on connect, session present: ") << sessionPresent << endl;
   I::get().logger() << "[MqttHA]: ESP heap: _onMqttConnect: " << ESP.getFreeHeap() << endl;
@@ -223,6 +234,9 @@ void MqttHA::_onMqttConnect(bool sessionPresent)
 
 void MqttHA::publishState(String uniqueId, String value, bool retain, uint8_t qos)
 {
+#ifdef ESP32
+  std::lock_guard<std::mutex> lck(_mutex);
+#endif
   for (auto itc = _properties.begin(); itc != _properties.end(); itc++)
   {
     if (strcmp(uniqueId.c_str(), itc->uniqueId.c_str()) == 0)
@@ -235,6 +249,9 @@ void MqttHA::publishState(String uniqueId, String value, bool retain, uint8_t qo
 
 void MqttHA::_onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total)
 {
+#ifdef ESP32
+  std::lock_guard<std::mutex> lck(_mutex);
+#endif
   I::get().logger() << F("[MqttHA] onMqttMessage; topic: ") << topic << F("; payload: ") << payload << endl;
   for (auto itc = _properties.begin(); itc != _properties.end(); itc++)
   {
@@ -260,6 +277,9 @@ void MqttHA::_onMqttMessage(char *topic, char *payload, AsyncMqttClientMessagePr
 
 void MqttHA::_onMqttAck(uint16_t packetId)
 {
+#ifdef ESP32
+  std::lock_guard<std::mutex> lck(_mutex);
+#endif
   I::get().logger() << F("[MqttHA]: received ack for ") << packetId << endl;
   if (packetId == _waitForPacketId)
   {

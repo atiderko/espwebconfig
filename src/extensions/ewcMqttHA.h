@@ -22,6 +22,9 @@ limitations under the License.
 #define BBS_MQTT_HA_H
 
 #include <Arduino.h>
+#ifdef ESP32
+#include <mutex>
+#endif
 #include "ewcMqtt.h"
 #include "../ewcConfig.h"
 
@@ -135,6 +138,9 @@ namespace EWC
 
   protected:
     EWC::Mqtt *_ewcMqtt;
+#ifdef ESP32
+    std::mutex _mutex;
+#endif
     HADevice _mqttDevice;
     String _homieStateTopic;
     String _statusTopic;
