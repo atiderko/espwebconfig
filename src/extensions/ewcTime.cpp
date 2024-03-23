@@ -130,9 +130,12 @@ void Time::_fromJson(JsonDocument &config)
     ntpEnabled = jv.as<bool>();
   }
   _paramNtpEnabled = ntpEnabled;
-  if (_paramNtpEnabled) {
+  if (_paramNtpEnabled)
+  {
     configTime(0, 0, "0.europe.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
-  } else {
+  }
+  else
+  {
     sntp_stop();
   }
   bool manually = false;
@@ -228,8 +231,10 @@ void Time::_onTimeSave(WebServer *request)
 
 bool Time::timeAvailable()
 {
-  if (_paramManually || !isNtpEnabled()) {
-    if (_manualOffset > 1704067200) {  // since 01.01.2024T00:00:00
+  if (_paramManually || !isNtpEnabled())
+  {
+    if (_manualOffset > 1704067200)
+    { // since 01.01.2024T00:00:00
       return true;
     }
   }
