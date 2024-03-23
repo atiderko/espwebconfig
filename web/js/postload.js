@@ -6,7 +6,6 @@ jsons.push(["/menu.json", "menu"]);
 
 let language = "en";
 let langmap = {};
-let running_json = false;
 let cjson_url = undefined;
 console.log("load json files: " + jsons);
 _loadJson();
@@ -19,13 +18,10 @@ function getJSON(uri, callback) {
 }
 
 function _loadJson() {
-  console.log(
-    "_loadJson, running_json: " + running_json + ", url: " + cjson_url
-  );
   if (cjson_url === undefined) {
     let tuple = jsons.pop();
-    console.log("_loadJson, tuple: " + tuple);
     if (tuple != undefined) {
+      console.log("_loadJson, tuple: " + tuple);
       let url = tuple[0];
       cjson_url = url;
       let func = tuple[1];
@@ -114,9 +110,9 @@ function updateLanguageKey(id) {
     if (value != undefined) {
       item = document.getElementById(id);
       if (item != undefined) {
-        console.log(id, ":", value);
-        console.log(id, ":", item.tagName);
-        console.log(id, ":", item.text);
+        // console.log(id, ":", value);
+        // console.log(id, ":", item.tagName);
+        // console.log(id, ":", item.text);
         if (item.tagName.toUpperCase() == "BUTTON") {
           if (item.innerHTML) {
             item.innerHTML = value;
