@@ -112,15 +112,17 @@ void ConfigFS::setup()
     resetFile.close();
     int resetCount = resetString.toInt();
     I::get().logger() << F("\n[EWC ConfigFS]: resetString: ") << resetString << F(", resetCount: ") << resetCount << endl;
-    if (resetCount == 2) {
+    if (resetCount == 2)
+    {
       I::get().logger() << F("\n[EWC ConfigFS]: change boot mode to configuration") << endl;
-      I::get().led().start(250, 25);
+      I::get().led().start(LED_ORANGE, 250, 125);
       bootModeChanged = true;
       I::get().config().setBootMode(BootMode::CONFIGURATION, true);
     }
-    if (resetCount == 5) {
+    if (resetCount == 5)
+    {
       I::get().logger() << F("\n[EWC ConfigFS]: RESET detected, remove configuration") << endl;
-      I::get().led().start(100, 50);
+      I::get().led().start(LED_RED, 250, 125);
       _resetDetected = true;
       // delete configuration file
       LittleFS.remove(_filename);
@@ -131,8 +133,9 @@ void ConfigFS::setup()
     resetFile = LittleFS.open(resetFileName, "w");
     resetFile.write(String(resetCount)[0]);
     resetFile.close();
-    if (!bootModeChanged && !_resetDetected) {
-      I::get().led().start(2000, 2000);
+    if (!bootModeChanged && !_resetDetected)
+    {
+      I::get().led().start(LED_GREEN, 2000, 2000);
     }
     I::get().logger() << F("[EWC ConfigFS]: wait for reset") << endl;
     delay(2000);
@@ -143,7 +146,7 @@ void ConfigFS::setup()
     resetFile = LittleFS.open(resetFileName, "w");
     resetFile.write('1');
     resetFile.close();
-    I::get().led().start(2000, 2000);
+    I::get().led().start(LED_GREEN, 2000, 2000);
     I::get().logger() << F("[EWC ConfigFS]: wait for reset") << endl;
     delay(2000);
   }

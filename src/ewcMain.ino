@@ -25,6 +25,10 @@ limitations under the License.
 #include "extensions/ewcTime.h"
 #include "extensions/ewcMqtt.h"
 
+#ifndef LED_BUILTIN
+#define LED_BUILTIN 13
+#endif
+
 EWC::ConfigServer server;
 EWC::Updater updater_;
 EWC::Time time_;
@@ -38,7 +42,7 @@ void setup()
   EWC::I::get().logger().setLogging(true);
   // optional: enable LED for wifi state and reset detection support.
   // place it on top
-  EWC::I::get().led().init(true, LED_BUILTIN, LOW);
+  EWC::I::get().led().init(true, LOW, LED_BUILTIN);
   // optional: add page for OTA updates
   EWC::I::get().configFS().addConfig(updater_);
   // optional: add page to setup time

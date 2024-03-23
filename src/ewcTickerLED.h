@@ -19,59 +19,73 @@ limitations under the License.
 
 **************************************************************/
 
-#ifndef EWC_TICKER_H
-#define EWC_TICKER_H
+#ifndef EWC_TICKER_LED_H
+#define EWC_TICKER_LED_H
 
 #include <Arduino.h>
 #include <Ticker.h>
 
-#ifndef LED_BUILTIN
-// Native pin for the arduino if LED_BUILTIN no defined
-#define LED_BUILTIN 12
-#endif
-
 namespace EWC
 {
+
+  typedef enum
+  {
+    LED_GREEN = 0,
+    LED_RED,
+    LED_GREEN_RED,
+    LED_ORANGE
+  } ticker_twin_led_mode_t;
 
   class TickerLed
   {
   public:
-    explicit TickerLed(const uint8_t port = LED_BUILTIN, const uint8_t active = LOW, const uint32_t cycle = 0, uint32_t duration = 0)
-        : _cycle(cycle), _duration(duration), _port(port), _turnOn(active), _callback(nullptr)
+    explicit TickerLed(const uint8_t active = LOW, const uint8_t portGreen = 13, const uint8_t portRed = 12)
+        : _portGreen(portGreen), _portRed(portRed), _signalOn(active)
     {
       _enabled = false;
       _active = false;
-      setDuration(_duration);
+      _greenOn = false;
+      _redOn = false;
     }
     ~TickerLed() { stop(); }
 
-    void init(bool enable, const uint8_t port = LED_BUILTIN, const uint8_t active = LOW, const uint32_t cycle = 0, uint32_t duration = 0);
+    void init(bool enable, const uint8_t active = LOW, const uint8_t portGreen = 13, const uint8_t portRed = 12);
     void enable(bool enable);
     bool enabled() { return _enabled; }
     bool active() { return _active; }
-    typedef std::function<void(void)> Callback_ft;
-    void start(const uint32_t cycle, const uint32_t duration);
-    // void start(const uint32_t cycle, const uint8_t width) { start(cycle, (uint32_t)((cycle * width) >> 8)); }
+    /**
+     * Start ticker cycle
+     * @param mode      Which LED's are on
+     * @param cycle     Cycle time in [ms]
+     * @param duration  Duty cycle in [ms]
+     */
+    void start(const ticker_twin_led_mode_t mode, const uint32_t cycle, const uint32_t duration, const uint32_t max_cycle_count = 0);
     void stop(void);
-    void onPeriod(Callback_ft cb) { _callback = cb; }
 
   protected:
-    Ticker *_period = nullptr; //< Ticker for flicking cycle
-    Ticker *_pulse = nullptr;  //< Ticker for pulse width generating
-    uint32_t _cycle;           //< Cycle time in [ms]
-    uint32_t _duration;        //< Pulse width in [ms]
-    bool _enabled;             //< True if enabled by enable(...)
+    Ticker *_period = nullptr;   //< Ticker for flicking cycle
+    Ticker *_pulse = nullptr;    //< Ticker for pulse width generating
+    uint32_t _cycle = 500;       //< Cycle time in [ms]
+    uint32_t _duration = 100;    //< Pulse width in [ms]
+    uint32_t _maxCycleCount = 0; //< after this count of cycles the timer will be disabled
+    uint32_t _cycleCount = 0;    //< counter for current cycle counts
+    bool _enabled;               //< True if enabled by enable(...)
     void setCycle(const uint32_t cycle) { _cycle = cycle; }
-    void setDuration(const uint32_t duration) { _duration = duration <= _cycle ? duration : _duration; }
+    void setDuration(const uint32_t duration);
     void start(void);
 
   private:
     static void _onPeriod(TickerLed *t);
     static void _onPulse(TickerLed *t);
-    bool _active;          //< True if ticker was started, false if stopped
-    uint8_t _port;         //< Port to output signal
-    uint8_t _turnOn;       //< Signal to turn on
-    Callback_ft _callback; //< An exit by every cycle
+    void _greenSwitch(bool state);
+    void _redSwitch(bool state);
+    bool _active;       //< True if ticker was started, false if stopped
+    bool _greenOn;      //< True if green led is enabled
+    bool _redOn;        //< True if red led is enabled
+    uint8_t _portGreen; //< Port to output signal for green LED
+    uint8_t _portRed;   //< Port to output signal for red LED
+    uint8_t _signalOn;  //< Signal to turn on led
+    ticker_twin_led_mode_t _mode;
   };
 
 }

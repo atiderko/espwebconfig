@@ -186,7 +186,7 @@ void ConfigServer::setup()
 void ConfigServer::_startAP()
 {
   // Start ticker with AP_STA
-  _led.start(1000, 16);
+  _led.start(LED_ORANGE, 1000, 100);
   I::get().logger() << endl;
   _msConfigPortalStart = _config.paramAPStartAlways ? 0 : millis();
   I::get().logger() << F("[EWC CS]: Configuring access point... ") << _config.paramAPName << endl;
@@ -241,7 +241,7 @@ void ConfigServer::_connect(const char *ssid, const char *pass)
   // Start Ticker according to the WiFi condition with Ticker is available.
   if (WiFi.status() != WL_CONNECTED)
   {
-    _led.start(1000, 256);
+    _led.start(LED_GREEN, 1000, 256);
   }
 }
 
@@ -859,7 +859,7 @@ void ConfigServer::loop()
             {
               I::get().logger() << F("✘ [EWC CS]: config portal timeout: disable AP") << endl;
               WiFi.mode(WIFI_STA);
-              _led.start(1000, 256);
+              _led.start(LED_GREEN, 1000, 256);
             }
           }
         }

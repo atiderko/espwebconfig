@@ -24,18 +24,17 @@ Based on:
 
 **************************************************************/
 
-#include "ewcTickerLED.h"
+#include "ewcTickerLed.h"
 #include "ewcInterface.h"
 
 using namespace EWC;
 
-void TickerLed::init(bool enable, const uint8_t port, const uint8_t active, const uint32_t cycle, uint32_t duration)
+void TickerLed::init(bool enable, const uint8_t active, const uint8_t portGreen, const uint8_t portRed)
 {
-  I::get().logger() << "[EWC LED] init on port " << port << endl;
-  _port = port;
-  _turnOn = active;
-  _cycle = cycle;
-  setDuration(duration);
+  I::get().logger() << "[EWC LED] init ports green=" << portGreen << ", red=" << portRed << endl;
+  _portGreen = portGreen;
+  _portRed = portRed;
+  _signalOn = active;
   _enabled = enable;
   if (!enable)
   {
@@ -53,22 +52,33 @@ void TickerLed::enable(bool enable)
   }
 }
 
-/**
- * Start ticker cycle
- * @param cycle Cycle time in [ms]
- * @param duty  Duty cycle in [ms]
- */
-void TickerLed::start(const uint32_t cycle, const uint32_t duration)
+void TickerLed::setDuration(const uint32_t duration)
+{
+  _duration = duration;
+  if (duration >= _cycle)
+  {
+    _duration = _cycle / 2;
+  }
+  if (_mode == LED_GREEN_RED)
+  {
+    if (_duration > _cycle / 2)
+    {
+      _duration = _cycle / 2;
+    }
+  }
+}
+
+void TickerLed::start(const ticker_twin_led_mode_t mode, const uint32_t cycle, const uint32_t duration, const uint32_t maxCycleCount)
 {
   if (_enabled)
   {
 
-    I::get().logger() << "[EWC LED] start: " << cycle << ", duration: " << duration << endl;
+    I::get().logger() << "[EWC LED] start in mode: " << mode << ", cycle: " << cycle << ", duration: " << duration << endl;
+    _maxCycleCount = maxCycleCount;
+    _cycleCount = 0;
     _cycle = cycle;
-    if (duration <= _cycle)
-    {
-      _duration = duration;
-    }
+    _mode = mode;
+    setDuration(duration);
     start();
   }
   else
@@ -82,7 +92,8 @@ void TickerLed::start(const uint32_t cycle, const uint32_t duration)
  */
 void TickerLed::start(void)
 {
-  pinMode(_port, OUTPUT);
+  pinMode(_portGreen, OUTPUT);
+  pinMode(_portRed, OUTPUT);
   if (_period == nullptr)
   {
     _period = new Ticker();
@@ -101,16 +112,24 @@ void TickerLed::stop(void)
   if (_period != nullptr)
   {
     _period->detach();
-    _pulse->detach();
-    digitalWrite(_port, !_turnOn);
+    delete _period;
+    _period = nullptr;
+    if (_pulse != nullptr)
+    {
+      _pulse->detach();
+      delete _pulse;
+      _pulse = nullptr;
+    }
+    digitalWrite(_portGreen, !_signalOn);
+    digitalWrite(_portRed, !_signalOn);
+    _greenOn = false;
+    _redOn = false;
+    _maxCycleCount = 0;
+    _cycleCount = 0;
     if (_active)
     {
       I::get().logger() << "[EWC LED] stopped" << endl;
     }
-    delete _period;
-    delete _pulse;
-    _period = nullptr;
-    _pulse = nullptr;
   }
   _active = false;
 }
@@ -125,12 +144,33 @@ void TickerLed::stop(void)
  */
 void TickerLed::_onPeriod(TickerLed *t)
 {
-  digitalWrite(t->_port, t->_turnOn);
-  t->_pulse->once_ms<TickerLed *>(t->_duration, TickerLed::_onPulse, t);
-  if (t->_callback)
+  switch (t->_mode)
   {
-    t->_callback();
+  case LED_GREEN:
+    t->_greenSwitch(true);
+    break;
+  case LED_RED:
+    t->_redSwitch(true);
+    break;
+  case LED_GREEN_RED:
+    t->_greenSwitch(true);
+    break;
+  case LED_ORANGE:
+    t->_greenSwitch(true);
+    t->_redSwitch(true);
+    break;
+  default:
+    break;
   }
+  if (t->_maxCycleCount == 0 || t->_cycleCount < t->_maxCycleCount)
+  {
+    t->_pulse->once_ms<TickerLed *>(t->_duration, TickerLed::_onPulse, t);
+  }
+  else
+  {
+    t->stop();
+  }
+  t->_cycleCount += 1;
 }
 
 /**
@@ -139,5 +179,57 @@ void TickerLed::_onPeriod(TickerLed *t)
  */
 void TickerLed::_onPulse(TickerLed *t)
 {
-  digitalWrite(t->_port, !(t->_turnOn));
+  switch (t->_mode)
+  {
+  case LED_GREEN:
+    t->_greenSwitch(false);
+    break;
+  case LED_RED:
+    t->_redSwitch(false);
+    break;
+  case LED_GREEN_RED:
+    if (t->_greenOn)
+    {
+      t->_greenSwitch(false);
+      t->_redSwitch(true);
+      t->_pulse->once_ms<TickerLed *>(t->_duration, TickerLed::_onPulse, t);
+    }
+    else if (t->_redOn)
+    {
+      t->_redSwitch(false);
+    }
+    break;
+  case LED_ORANGE:
+    t->_greenSwitch(false);
+    t->_redSwitch(false);
+    break;
+  default:
+    break;
+  }
+}
+
+void TickerLed::_greenSwitch(bool state)
+{
+  if (state)
+  {
+    digitalWrite(_portGreen, _signalOn);
+  }
+  else
+  {
+    digitalWrite(_portGreen, !_signalOn);
+  }
+  _greenOn = state;
+}
+
+void TickerLed::_redSwitch(bool state)
+{
+  if (state)
+  {
+    digitalWrite(_portRed, _signalOn);
+  }
+  else
+  {
+    digitalWrite(_portRed, !_signalOn);
+  }
+  _redOn = state;
 }
