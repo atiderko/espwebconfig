@@ -28,7 +28,6 @@ Logger &InterfaceData::logger()
 {
   if (_logger)
   {
-    _logger->startLock();
     _logger->setTimeStr(_time->str());
   }
   return *_logger;

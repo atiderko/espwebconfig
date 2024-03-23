@@ -23,7 +23,6 @@ limitations under the License.
 #ifndef EWC_LOGGER_H
 #define EWC_LOGGER_H
 
-#include <mutex>
 #include <Arduino.h>
 
 namespace EWC
@@ -41,7 +40,6 @@ namespace EWC
 
   public:
     Logger();
-    void disableMutex();
     void setBaudRate(uint32_t baudRate);
     void setLogging(bool enable);
     void timePrefix(bool enable);
@@ -66,7 +64,6 @@ namespace EWC
       if (_loggingEnabled)
       {
         _printer->println();
-        deleteLockGuard();
       }
       return *this;
     }
@@ -75,12 +72,9 @@ namespace EWC
     void startLock();
 
   private:
-    void deleteLockGuard();
     virtual size_t write(uint8_t character);
     virtual size_t write(const uint8_t *buffer, size_t size);
 
-    std::mutex _mutex;
-    std::lock_guard<std::mutex> *_lockGuard = NULL;
     bool _useMutex = true;
     bool _loggingEnabled = false;
     bool _timePrefix = true;

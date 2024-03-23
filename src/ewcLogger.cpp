@@ -27,12 +27,6 @@ Logger::Logger()
 {
 }
 
-void Logger::disableMutex()
-{
-  _useMutex = false;
-  deleteLockGuard();
-}
-
 void Logger::setLogging(bool enable)
 {
   _loggingEnabled = enable;
@@ -48,7 +42,6 @@ void Logger::setLogging(bool enable)
   {
     Serial.begin(_baudRate);
   }
-  deleteLockGuard();
 }
 
 size_t Logger::write(uint8_t character)
@@ -58,7 +51,6 @@ size_t Logger::write(uint8_t character)
   {
     result = _printer->write(character);
   }
-  deleteLockGuard();
   return result;
 }
 
@@ -69,20 +61,17 @@ size_t Logger::write(const uint8_t *buffer, size_t size)
   {
     result = _printer->write(buffer, size);
   }
-  deleteLockGuard();
   return result;
 }
 
 void Logger::setBaudRate(uint32_t baudRate)
 {
   _baudRate = baudRate;
-  deleteLockGuard();
 }
 
 void Logger::timePrefix(bool enable)
 {
   _timePrefix = enable;
-  deleteLockGuard();
 }
 
 void Logger::setTimeStr(String timeStr)
@@ -94,26 +83,7 @@ void Logger::setTimeStr(String timeStr)
   }
 }
 
-void Logger::startLock()
-{
-  if (_loggingEnabled && _useMutex)
-  {
-    std::lock_guard<std::mutex> *lock = new std::lock_guard<std::mutex>(_mutex);
-    _lockGuard = lock;
-  }
-}
-
 bool Logger::enabled()
 {
-  deleteLockGuard();
   return _loggingEnabled;
-}
-
-void Logger::deleteLockGuard()
-{
-  if (_lockGuard != NULL)
-  {
-    delete _lockGuard;
-    _lockGuard = NULL;
-  }
 }

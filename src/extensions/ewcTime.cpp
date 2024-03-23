@@ -228,6 +228,11 @@ void Time::_onTimeSave(WebServer *request)
 
 bool Time::timeAvailable()
 {
+  if (_paramManually || !isNtpEnabled()) {
+    if (_manualOffset > 1704067200) {  // since 01.01.2024T00:00:00
+      return true;
+    }
+  }
   struct tm timeInfo;
   time_t now;
   time(&now);
