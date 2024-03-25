@@ -36,6 +36,8 @@ void TickerLed::init(bool enable, const uint8_t active, const uint8_t portGreen,
   _portRed = portRed;
   _signalOn = active;
   _enabled = enable;
+  pinMode(_portGreen, OUTPUT);
+  pinMode(_portRed, OUTPUT);
   if (!enable)
   {
     stop();
@@ -92,8 +94,7 @@ void TickerLed::start(const ticker_twin_led_mode_t mode, const uint32_t cycle, c
  */
 void TickerLed::start(void)
 {
-  pinMode(_portGreen, OUTPUT);
-  pinMode(_portRed, OUTPUT);
+  stop();
   if (_period == nullptr)
   {
     _period = new Ticker();
@@ -124,8 +125,6 @@ void TickerLed::stop(void)
     digitalWrite(_portRed, !_signalOn);
     _greenOn = false;
     _redOn = false;
-    _maxCycleCount = 0;
-    _cycleCount = 0;
     if (_active)
     {
       I::get().logger() << "[EWC LED] stopped" << endl;
