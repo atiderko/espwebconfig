@@ -23,7 +23,6 @@ limitations under the License.
 #define EWC_TICKER_LED_H
 
 #include <Arduino.h>
-#include <Ticker.h>
 
 namespace EWC
 {
@@ -48,6 +47,7 @@ namespace EWC
       _redOn = false;
     }
     ~TickerLed() { stop(); }
+    void loop();
 
     void init(bool enable, const uint8_t active = LOW, const uint8_t portGreen = 13, const uint8_t portRed = 12);
     void enable(bool enable);
@@ -63,8 +63,6 @@ namespace EWC
     void stop(void);
 
   protected:
-    Ticker *_period = nullptr;   //< Ticker for flicking cycle
-    Ticker *_pulse = nullptr;    //< Ticker for pulse width generating
     uint32_t _cycle = 500;       //< Cycle time in [ms]
     uint32_t _duration = 100;    //< Pulse width in [ms]
     uint32_t _maxCycleCount = 0; //< after this count of cycles the timer will be disabled
@@ -75,17 +73,19 @@ namespace EWC
     void start(void);
 
   private:
-    static void _onPeriod(TickerLed *t);
-    static void _onPulse(TickerLed *t);
+    void _onPeriod();
+    void _onPulse();
     void _greenSwitch(bool state);
     void _redSwitch(bool state);
-    bool _active;       //< True if ticker was started, false if stopped
-    bool _greenOn;      //< True if green led is enabled
-    bool _redOn;        //< True if red led is enabled
-    uint8_t _portGreen; //< Port to output signal for green LED
-    uint8_t _portRed;   //< Port to output signal for red LED
-    uint8_t _signalOn;  //< Signal to turn on led
-    ticker_twin_led_mode_t _mode;
+    bool _active;                 //< True if ticker was started, false if stopped
+    bool _greenOn;                //< True if green led is enabled
+    bool _redOn;                  //< True if red led is enabled
+    uint8_t _portGreen;           //< Port to output signal for green LED
+    uint8_t _portRed;             //< Port to output signal for red LED
+    uint8_t _signalOn;            //< Signal to turn on led
+    ticker_twin_led_mode_t _mode; //< Mode describes which LEDs should be used
+    unsigned long _nextCycleTs;   //< Time if the LED should be turned on
+    unsigned long _nextOffTs;     //< Time if the LED should be turned off
   };
 
 }

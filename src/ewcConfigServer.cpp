@@ -804,6 +804,7 @@ void ConfigServer::_onWifiScan(WebServer *webServer)
 
 void ConfigServer::loop()
 {
+  _led.loop();
   if (WiFi.getMode() == WIFI_AP_STA)
   {
     _dnsServer.processNextRequest();

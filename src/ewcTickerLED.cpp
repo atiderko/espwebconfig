@@ -35,13 +35,9 @@ void TickerLed::init(bool enable, const uint8_t active, const uint8_t portGreen,
   _portGreen = portGreen;
   _portRed = portRed;
   _signalOn = active;
-  _enabled = enable;
   pinMode(_portGreen, OUTPUT);
   pinMode(_portRed, OUTPUT);
-  if (!enable)
-  {
-    stop();
-  }
+  this->enable(enable);
 }
 
 void TickerLed::enable(bool enable)
@@ -80,6 +76,8 @@ void TickerLed::start(const ticker_twin_led_mode_t mode, const uint32_t cycle, c
     _cycleCount = 0;
     _cycle = cycle;
     _mode = mode;
+    _nextCycleTs = 0;
+    _nextOffTs = 0;
     setDuration(duration);
     start();
   }
@@ -95,112 +93,103 @@ void TickerLed::start(const ticker_twin_led_mode_t mode, const uint32_t cycle, c
 void TickerLed::start(void)
 {
   stop();
-  if (_period == nullptr)
-  {
-    _period = new Ticker();
-    _pulse = new Ticker();
-  }
-  _pulse->detach();
-  // we have to start first cycle manually
-  _onPeriod(this);
-  // further cycles are triggered by a ticker timer
-  _period->attach_ms<TickerLed *>(_cycle, TickerLed::_onPeriod, this);
   _active = true;
+  // enable the led. Further cycle or duty switches are triggered in the loop().
+  _onPeriod();
 }
 
 void TickerLed::stop(void)
 {
-  if (_period != nullptr)
+  if (_active)
   {
-    _period->detach();
-    delete _period;
-    _period = nullptr;
-    if (_pulse != nullptr)
-    {
-      _pulse->detach();
-      delete _pulse;
-      _pulse = nullptr;
-    }
-    digitalWrite(_portGreen, !_signalOn);
-    digitalWrite(_portRed, !_signalOn);
-    _greenOn = false;
-    _redOn = false;
-    if (_active)
-    {
-      I::get().logger() << "[EWC LED] stopped" << endl;
-    }
+    I::get().logger() << "[EWC LED] stop" << endl;
   }
   _active = false;
+  digitalWrite(_portGreen, !_signalOn);
+  digitalWrite(_portRed, !_signalOn);
+  _greenOn = false;
+  _redOn = false;
+}
+
+void TickerLed::loop()
+{
+  if (_active)
+  {
+    unsigned long now = millis();
+    if (now >= _nextOffTs)
+    {
+      _onPulse();
+    }
+    if (now >= _nextCycleTs)
+    {
+      _onPeriod();
+    }
+  }
 }
 
 /**
- * Turn on the flicker signal and reserves a ticker to turn off the
- * signal. This behavior will perform every cycle to generate the
- * pseudo-PWM signal.
- * If the function is registered, call the callback function at the
- * end of one cycle.
- * @param  t  Its own address
+ * Turn on the LED.
  */
-void TickerLed::_onPeriod(TickerLed *t)
+void TickerLed::_onPeriod()
 {
-  switch (t->_mode)
+  switch (_mode)
   {
   case LED_GREEN:
-    t->_greenSwitch(true);
+    _greenSwitch(true);
     break;
   case LED_RED:
-    t->_redSwitch(true);
+    _redSwitch(true);
     break;
   case LED_GREEN_RED:
-    t->_greenSwitch(true);
+    _greenSwitch(true);
     break;
   case LED_ORANGE:
-    t->_greenSwitch(true);
-    t->_redSwitch(true);
+    _greenSwitch(true);
+    _redSwitch(true);
     break;
   default:
     break;
   }
-  if (t->_maxCycleCount == 0 || t->_cycleCount < t->_maxCycleCount)
+  if (_maxCycleCount == 0 || _cycleCount < _maxCycleCount)
   {
-    t->_pulse->once_ms<TickerLed *>(t->_duration, TickerLed::_onPulse, t);
+    _nextCycleTs = millis() + _cycle;
+    _nextOffTs = millis() + _duration;
   }
   else
   {
-    t->stop();
+    stop();
   }
-  t->_cycleCount += 1;
+  _cycleCount += 1;
 }
 
 /**
- * Turn off the flicker signal
- * @param  t  Its own address
+ * Turn off the led or switch to another color.
  */
-void TickerLed::_onPulse(TickerLed *t)
+void TickerLed::_onPulse()
 {
-  switch (t->_mode)
+  switch (_mode)
   {
   case LED_GREEN:
-    t->_greenSwitch(false);
+    _greenSwitch(false);
     break;
   case LED_RED:
-    t->_redSwitch(false);
+    _redSwitch(false);
     break;
   case LED_GREEN_RED:
-    if (t->_greenOn)
+    if (_greenOn)
     {
-      t->_greenSwitch(false);
-      t->_redSwitch(true);
-      t->_pulse->once_ms<TickerLed *>(t->_duration, TickerLed::_onPulse, t);
+      _greenSwitch(false);
+      _redSwitch(true);
+      _nextOffTs = millis() + _duration;
     }
-    else if (t->_redOn)
+    else if (_redOn)
     {
-      t->_redSwitch(false);
+      _redSwitch(false);
     }
     break;
   case LED_ORANGE:
-    t->_greenSwitch(false);
-    t->_redSwitch(false);
+    _greenSwitch(false);
+    _redSwitch(false);
     break;
   default:
     break;
