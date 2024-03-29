@@ -69,13 +69,11 @@ namespace EWC
     }
     // ----- used by ewcInterface -----
     void setTimeStr(String timeStr);
-    void startLock();
 
   private:
     virtual size_t write(uint8_t character);
     virtual size_t write(const uint8_t *buffer, size_t size);
 
-    bool _useMutex = true;
     bool _loggingEnabled = false;
     bool _timePrefix = true;
     bool _newLine = true;
