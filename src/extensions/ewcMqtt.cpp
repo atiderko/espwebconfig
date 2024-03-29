@@ -61,6 +61,21 @@ void Mqtt::setup(JsonDocument &config, bool resetConfig)
 #endif
 }
 
+void Mqtt::loop()
+{
+  if (paramEnabled)
+  {
+    if (!_mqttClient.connected())
+    {
+      if (millis() > _reconnectTs)
+      {
+        _reconnectTs = 0;
+        _connectToMqtt();
+      }
+    }
+  }
+}
+
 void Mqtt::fillJson(JsonDocument &config)
 {
   config["mqtt"]["enabled"] = paramEnabled;
@@ -228,14 +243,16 @@ void Mqtt::_onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
   I::get().logger() << F("[EWC MQTT] Disconnected from MQTT, reason: ") << (uint32_t)reason << endl;
   if (WiFi.isConnected() && (uint32_t)reason < 4)
   {
-#ifdef ESP8266
-    _mqttReconnectTimer.once(2.0, std::bind(&Mqtt::_connectToMqtt, this));
-#else
-    _mqttReconnectTimer.once(
-        2.0, +[](Mqtt *mqttInstance)
-             { mqttInstance->_connectToMqtt(); },
-        this);
-#endif
+    // reconnect in 2 seconds
+    _reconnectTs = millis() + 2000;
+    // #ifdef ESP8266
+    //     _mqttReconnectTimer.once(2.0, std::bind(&Mqtt::_connectToMqtt, this));
+    // #else
+    //     _mqttReconnectTimer.once(
+    //         2.0, +[](Mqtt *mqttInstance)
+    //              { mqttInstance->_connectToMqtt(); },
+    //         this);
+    // #endif
   }
 }
 
@@ -255,7 +272,7 @@ void Mqtt::_onWifiConnect(const WiFiEventStationModeGotIP &event)
 void Mqtt::_onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 {
   I::get().logger() << F("[EWC MQTT] Disconnected from Wi-Fi.") << endl;
-  _mqttReconnectTimer.detach(); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
+  _reconnectTs = 0; // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
 }
 #else
 void Mqtt::_onWifiConnect(WiFiEvent_t event, WiFiEventInfo_t info)
@@ -267,6 +284,6 @@ void Mqtt::_onWifiConnect(WiFiEvent_t event, WiFiEventInfo_t info)
 void Mqtt::_onWifiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info)
 {
   I::get().logger() << F("[EWC MQTT] Disconnected from Wi-Fi.") << endl;
-  _mqttReconnectTimer.detach(); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
+  _reconnectTs = 0; // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
 }
 #endif

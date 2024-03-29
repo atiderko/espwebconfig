@@ -29,7 +29,7 @@ namespace EWC
   class ConfigServer;
   class Config;
   class ConfigFS;
-  class TickerLed;
+  class Led;
   class Time;
 
   /** The objects of the interface are initialized by ConfigServer.
@@ -45,7 +45,7 @@ namespace EWC
     Config &config() { return *_config; }
     ConfigFS &configFS() { return *_configFS; }
     Logger &logger();
-    TickerLed &led() { return *_led; }
+    Led &led() { return *_led; }
     Time &time() { return *_time; }
 
   private:
@@ -53,7 +53,7 @@ namespace EWC
     Config *_config = nullptr;
     ConfigFS *_configFS = nullptr;
     Logger *_logger = nullptr;
-    TickerLed *_led = nullptr;
+    Led *_led = nullptr;
     Time *_time = nullptr;
   };
 

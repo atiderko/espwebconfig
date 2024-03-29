@@ -34,7 +34,6 @@ limitations under the License.
 #endif
 #include <Arduino.h>
 #include <AsyncMqttClient.h>
-#include <Ticker.h>
 #include "../ewcConfigInterface.h"
 
 namespace EWC
@@ -47,16 +46,17 @@ namespace EWC
     ~Mqtt();
 
     AsyncMqttClient &client() { return _mqttClient; }
-
     /** === ConfigInterface Methods === **/
     void setup(JsonDocument &config, bool resetConfig = false);
     void fillJson(JsonDocument &config);
     bool paramEnabled;
     String paramDiscoveryPrefix;
 
+    void loop();
+
   protected:
     AsyncMqttClient _mqttClient;
-    Ticker _mqttReconnectTimer;
+    unsigned long _reconnectTs = 0;
 #ifdef ESP8266
     WiFiEventHandler _wifiConnectHandler;
     WiFiEventHandler _wifiDisconnectHandler;

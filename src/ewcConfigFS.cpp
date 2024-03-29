@@ -21,7 +21,7 @@ limitations under the License.
 #include <LittleFS.h>
 #include "ewcConfig.h"
 #include "ewcConfigFS.h"
-#include "ewcTickerLED.h"
+#include "ewcLed.h"
 #include "ewcLogger.h"
 
 using namespace EWC;

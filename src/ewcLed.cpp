@@ -24,12 +24,12 @@ Based on:
 
 **************************************************************/
 
-#include "ewcTickerLed.h"
+#include "ewcLed.h"
 #include "ewcInterface.h"
 
 using namespace EWC;
 
-void TickerLed::init(bool enable, const uint8_t active, const uint8_t portGreen, const uint8_t portRed)
+void Led::init(bool enable, const uint8_t active, const uint8_t portGreen, const uint8_t portRed)
 {
   I::get().logger() << "[EWC LED] init ports green=" << portGreen << ", red=" << portRed << endl;
   _portGreen = portGreen;
@@ -40,7 +40,7 @@ void TickerLed::init(bool enable, const uint8_t active, const uint8_t portGreen,
   this->enable(enable);
 }
 
-void TickerLed::enable(bool enable)
+void Led::enable(bool enable)
 {
   I::get().logger() << "[EWC LED] enable " << enable << endl;
   _enabled = enable;
@@ -50,7 +50,7 @@ void TickerLed::enable(bool enable)
   }
 }
 
-void TickerLed::setDuration(const uint32_t duration)
+void Led::setDuration(const uint32_t duration)
 {
   _duration = duration;
   if (duration >= _cycle)
@@ -66,7 +66,7 @@ void TickerLed::setDuration(const uint32_t duration)
   }
 }
 
-void TickerLed::start(const ticker_twin_led_mode_t mode, const uint32_t cycle, const uint32_t duration, const uint32_t maxCycleCount)
+void Led::start(const twin_led_mode_t mode, const uint32_t cycle, const uint32_t duration, const uint32_t maxCycleCount)
 {
   if (_enabled)
   {
@@ -88,9 +88,9 @@ void TickerLed::start(const ticker_twin_led_mode_t mode, const uint32_t cycle, c
 }
 
 /**
- * Start ticker cycle
+ * Start LED cycle
  */
-void TickerLed::start(void)
+void Led::start(void)
 {
   stop();
   _active = true;
@@ -98,7 +98,7 @@ void TickerLed::start(void)
   _onPeriod();
 }
 
-void TickerLed::stop(void)
+void Led::stop(void)
 {
   if (_active)
   {
@@ -111,7 +111,7 @@ void TickerLed::stop(void)
   _redOn = false;
 }
 
-void TickerLed::loop()
+void Led::loop()
 {
   if (_active)
   {
@@ -130,7 +130,7 @@ void TickerLed::loop()
 /**
  * Turn on the LED.
  */
-void TickerLed::_onPeriod()
+void Led::_onPeriod()
 {
   switch (_mode)
   {
@@ -165,7 +165,7 @@ void TickerLed::_onPeriod()
 /**
  * Turn off the led or switch to another color.
  */
-void TickerLed::_onPulse()
+void Led::_onPulse()
 {
   switch (_mode)
   {
@@ -196,7 +196,7 @@ void TickerLed::_onPulse()
   }
 }
 
-void TickerLed::_greenSwitch(bool state)
+void Led::_greenSwitch(bool state)
 {
   if (state)
   {
@@ -209,7 +209,7 @@ void TickerLed::_greenSwitch(bool state)
   _greenOn = state;
 }
 
-void TickerLed::_redSwitch(bool state)
+void Led::_redSwitch(bool state)
 {
   if (state)
   {

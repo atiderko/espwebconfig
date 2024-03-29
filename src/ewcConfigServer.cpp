@@ -185,7 +185,7 @@ void ConfigServer::setup()
 
 void ConfigServer::_startAP()
 {
-  // Start ticker with AP_STA
+  // Start LED with AP_STA
   _led.start(LED_ORANGE, 1000, 100);
   I::get().logger() << endl;
   _msConfigPortalStart = _config.paramAPStartAlways ? 0 : millis();
@@ -238,7 +238,7 @@ void ConfigServer::_connect(const char *ssid, const char *pass)
     WiFi.disconnect(false);
     WiFi.begin();
   }
-  // Start Ticker according to the WiFi condition with Ticker is available.
+  // Start LED according to the WiFi condition if LED is available.
   if (WiFi.status() != WL_CONNECTED)
   {
     _led.start(LED_GREEN, 1000, 256);
@@ -283,11 +283,11 @@ void ConfigServer::_wifiOnStationModeDisconnected(const WiFiEventStationModeDisc
     }
   }
   }
-  // start timer for reconnect if not active
-  if (!_reconnectTimer.active())
+  // set time if we should reconnect
+  if (_reconnectTs == 0)
   {
     I::get().logger() << F("[EWC CS]: start reconnect Timer in 7 sec") << endl;
-    _reconnectTimer.once(10, ConfigServer::_reconnectWiFi, this);
+    _reconnectTs = millis() + 7000;
   }
 }
 
@@ -352,11 +352,11 @@ void ConfigServer::_wifiOnStationModeDisconnected(WiFiEvent_t event, WiFiEventIn
     }
   }
   }
-  // start timer for reconnect if not active
-  if (!_reconnectTimer.active())
+  // set time if we should reconnect
+  if (_reconnectTs == 0)
   {
-    I::get().logger() << F("[EWC CS]: start reconnect Timer in 7 sec (reason for the disconnect does not matter)") << endl;
-    _reconnectTimer.once(10, ConfigServer::_reconnectWiFi, this);
+    I::get().logger() << F("[EWC CS]: start reconnect Timer in 7 sec") << endl;
+    _reconnectTs = millis() + 7000;
   }
 }
 
@@ -388,15 +388,6 @@ void ConfigServer::_wifiOnSoftAPModeStationDisconnected(WiFiEvent_t event, WiFiE
   }
 }
 #endif
-
-void ConfigServer::_reconnectWiFi(ConfigServer *t)
-{
-  if (!t->isConnected())
-  {
-    I::get().logger() << F("[EWC CS]: reconnect to WiFi...") << endl;
-    t->_connect();
-  }
-}
 
 void ConfigServer::insertMenu(const char *name, const char *uri, const char *entry_id, bool visible, int position)
 {
@@ -814,6 +805,12 @@ void ConfigServer::loop()
   {
     if (WiFi.status() != WL_CONNECTED)
     {
+      if (millis() > _reconnectTs)
+      {
+        _reconnectTs = 0;
+        I::get().logger() << F("[EWC CS]: reconnect to WiFi...") << endl;
+        _connect();
+      }
       // after _msConfigPortalTimeout the portal will be disabled
       // this can be enabled after restart or successful connect
       if (!_ap_disabled_after_timeout)
@@ -871,8 +868,9 @@ void ConfigServer::loop()
       if (!_connected_wifi)
       {
         _connected_wifi = true;
+        _reconnectTs = 0;
         I::get().logger() << F("[EWC CS]: connected IP: ") << WiFi.localIP().toString() << endl;
-        // Stop LED Ticker.
+        // Stop LED
         _led.stop();
       }
     }

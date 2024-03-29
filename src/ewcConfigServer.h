@@ -30,14 +30,13 @@ limitations under the License.
 #include <WebServer.h>
 #endif
 typedef std::function<void()> WebServerHandlerFunction;
-#include <Ticker.h>
 
 #include <DNSServer.h>
 #include "extensions/ewcTime.h"
 #include "ewcConfigFS.h"
 #include "ewcLogger.h"
 #include "ewcConfig.h"
-#include "ewcTickerLED.h"
+#include "ewcLed.h"
 #include "ewcInterface.h"
 
 namespace EWC
@@ -120,7 +119,7 @@ namespace EWC
     /** Returns true if device is connected to an AP. **/
     bool isConnected() { return WiFi.status() == WL_CONNECTED; }
     Config &config() { return _config; }
-    TickerLed &led() { return _led; }
+    Led &led() { return _led; }
     WebServer &webServer() { return _server; }
     /** Sends content to the client. The authentication is carried out before send depending on the configuration. **/
     void sendContentP(WebServer *request, const String &contentType, PGM_P content);
@@ -139,8 +138,7 @@ namespace EWC
     DNSServer _dnsServer;
     ConfigFS _configFS;
     Logger _logger;
-    Ticker _reconnectTimer;
-    TickerLed _led;
+    Led _led;
     Time _time;
     Config _config;
     String _brand;
@@ -161,6 +159,7 @@ namespace EWC
     unsigned long _msConfigPortalStart = 0;
     unsigned long _msConfigPortalTimeout = 300000;
     unsigned long _msConnectTimeout = 60000;
+    unsigned long _reconnectTs = 0;
 
     // IPAddress _ap_static_ip;
     // IPAddress _ap_static_gw;
@@ -214,7 +213,6 @@ namespace EWC
     static String _toMACAddressString(const uint8_t mac[]);
     bool _isIp(const String &str);
     String _toStringIp(const IPAddress &ip);
-    static void _reconnectWiFi(ConfigServer *t);
 
     template <class T>
     auto _optionalIPFromString(T *obj, const char *s) -> decltype(obj->fromString(s))

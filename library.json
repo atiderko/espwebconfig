@@ -6,12 +6,14 @@
     "type": "git",
     "url": "https://github.com/atiderko/ewc.git"
   },
-  "authors": [{
-    "name": "Alexander Tiderko",
-    "email": "alexander.tiderko@gmail.com",
-    "url": "https://github.com/atiderko/ewc",
-    "maintainer": true
-  }],
+  "authors": [
+    {
+      "name": "Alexander Tiderko",
+      "email": "alexander.tiderko@gmail.com",
+      "url": "https://github.com/atiderko/ewc",
+      "maintainer": true
+    }
+  ],
   "dependencies": [
     {
       "name": "ArduinoJson",
@@ -21,11 +23,6 @@
     {
       "name": "AsyncMqttClient",
       "authors": "Marvin ROGER",
-      "frameworks": "arduino"
-    },
-    {
-      "name": "Ticker",
-      "authors": "Stefan Staub",
       "frameworks": "arduino"
     }
   ],

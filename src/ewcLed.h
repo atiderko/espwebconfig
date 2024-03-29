@@ -19,8 +19,8 @@ limitations under the License.
 
 **************************************************************/
 
-#ifndef EWC_TICKER_LED_H
-#define EWC_TICKER_LED_H
+#ifndef EWC_LED_H
+#define EWC_LED_H
 
 #include <Arduino.h>
 
@@ -33,12 +33,12 @@ namespace EWC
     LED_RED,
     LED_GREEN_RED,
     LED_ORANGE
-  } ticker_twin_led_mode_t;
+  } twin_led_mode_t;
 
-  class TickerLed
+  class Led
   {
   public:
-    explicit TickerLed(const uint8_t active = LOW, const uint8_t portGreen = 13, const uint8_t portRed = 12)
+    explicit Led(const uint8_t active = LOW, const uint8_t portGreen = 13, const uint8_t portRed = 12)
         : _portGreen(portGreen), _portRed(portRed), _signalOn(active)
     {
       _enabled = false;
@@ -46,7 +46,7 @@ namespace EWC
       _greenOn = false;
       _redOn = false;
     }
-    ~TickerLed() { stop(); }
+    ~Led() { stop(); }
     void loop();
 
     void init(bool enable, const uint8_t active = LOW, const uint8_t portGreen = 13, const uint8_t portRed = 12);
@@ -54,12 +54,12 @@ namespace EWC
     bool enabled() { return _enabled; }
     bool active() { return _active; }
     /**
-     * Start ticker cycle
+     * Start LED cycle
      * @param mode      Which LED's are on
      * @param cycle     Cycle time in [ms]
      * @param duration  Duty cycle in [ms]
      */
-    void start(const ticker_twin_led_mode_t mode, const uint32_t cycle, const uint32_t duration, const uint32_t max_cycle_count = 0);
+    void start(const twin_led_mode_t mode, const uint32_t cycle, const uint32_t duration, const uint32_t max_cycle_count = 0);
     void stop(void);
 
   protected:
@@ -77,15 +77,15 @@ namespace EWC
     void _onPulse();
     void _greenSwitch(bool state);
     void _redSwitch(bool state);
-    bool _active;                 //< True if ticker was started, false if stopped
-    bool _greenOn;                //< True if green led is enabled
-    bool _redOn;                  //< True if red led is enabled
-    uint8_t _portGreen;           //< Port to output signal for green LED
-    uint8_t _portRed;             //< Port to output signal for red LED
-    uint8_t _signalOn;            //< Signal to turn on led
-    ticker_twin_led_mode_t _mode; //< Mode describes which LEDs should be used
-    unsigned long _nextCycleTs;   //< Time if the LED should be turned on
-    unsigned long _nextOffTs;     //< Time if the LED should be turned off
+    bool _active;               //< True if LED was started, false if stopped
+    bool _greenOn;              //< True if green led is enabled
+    bool _redOn;                //< True if red led is enabled
+    uint8_t _portGreen;         //< Port to output signal for green LED
+    uint8_t _portRed;           //< Port to output signal for red LED
+    uint8_t _signalOn;          //< Signal to turn on led
+    twin_led_mode_t _mode;      //< Mode describes which LEDs should be used
+    unsigned long _nextCycleTs; //< Time if the LED should be turned on
+    unsigned long _nextOffTs;   //< Time if the LED should be turned off
   };
 
 }

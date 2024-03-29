@@ -39,7 +39,6 @@ board_build.filesystem = littlefs
 lib_deps =
     ArduinoJson
     AsyncMqttClient
-    Ticker
     ESPWebConfig=https://github.com/atiderko/espwebconfig.git
 ```
 
