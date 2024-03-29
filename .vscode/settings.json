@@ -11,7 +11,7 @@
   },
   "extensions.ignoreRecommendations": false,
   "workbench.colorCustomizations": {
-    "activityBar.activeBackground": "#063813",
+    "activityBar.background": "#063813",
     "statusBar.background": "#063813"
   },
   "cSpell.words": [
@@ -42,6 +42,7 @@
     "unordered_map": "cpp",
     "vector": "cpp",
     "initializer_list": "cpp",
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "functional": "cpp"
   }
 }
