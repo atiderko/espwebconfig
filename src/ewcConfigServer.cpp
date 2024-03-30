@@ -254,6 +254,7 @@ void ConfigServer::_wifiOnStationModeConnected(const WiFiEventStationModeConnect
     _config.setBootMode(BootMode::NORMAL);
   }
   _ap_disabled_after_timeout = false;
+  _disconnect_state = 0;
 }
 
 void ConfigServer::_wifiOnStationModeDisconnected(const WiFiEventStationModeDisconnected &event)
@@ -324,6 +325,7 @@ void ConfigServer::_wifiOnStationModeConnected(WiFiEvent_t event, WiFiEventInfo_
   I::get().logger() << F("[EWC CS]: _wifiOnStationModeConnected: ") << String(info.wifi_sta_connected.ssid, sizeof(info.wifi_sta_connected.ssid)) << endl;
   _config.setBootMode(BootMode::NORMAL);
   _ap_disabled_after_timeout = false;
+  _disconnect_state = 0;
 }
 
 void ConfigServer::_wifiOnStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
