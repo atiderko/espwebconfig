@@ -110,7 +110,11 @@ void Config::_fromJson(JsonDocument &doc)
   jv = doc["ewc"]["dev_name"];
   if (!jv.isNull())
   {
-    paramDeviceName = jv.as<String>();
+    String value = jv.as<String>();
+    if (!value.isEmpty())
+    {
+      paramDeviceName = value;
+    }
   }
   jv = doc["ewc"]["enable_serial_log"];
   if (!jv.isNull())
@@ -125,7 +129,11 @@ void Config::_fromJson(JsonDocument &doc)
   jv = doc["ewc"]["apName"];
   if (!jv.isNull())
   {
-    paramAPName = jv.as<String>();
+    String value = jv.as<String>();
+    if (!value.isEmpty())
+    {
+      paramAPName = value;
+    }
   }
   jv = doc["ewc"]["apPass"];
   if (!jv.isNull())
@@ -155,7 +163,11 @@ void Config::_fromJson(JsonDocument &doc)
   jv = doc["ewc"]["hostname"];
   if (!jv.isNull())
   {
-    paramHostname = jv.as<String>();
+    String value = jv.as<String>();
+    if (!value.isEmpty())
+    {
+      paramHostname = value;
+    }
   }
 }
 
