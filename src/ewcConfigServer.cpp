@@ -823,6 +823,7 @@ void ConfigServer::loop()
         if (millis() - _msConnectStart > _msConnectTimeout)
         {
           startAP = true;
+          I::get().logger() << F("[EWC CS]: _msConnectTimeout=") << _msConnectTimeout << ", start AP" << endl;
         }
         else
         {
@@ -830,11 +831,13 @@ void ConfigServer::loop()
           if (_disconnect_state > 0)
           {
             startAP = true;
+            I::get().logger() << F("[EWC CS]: _disconnect_state=") << _disconnect_state << ", start AP" << endl;
           }
           else if (WiFi.SSID().length() == 0)
           {
             // check for valid WiFi credentials
             startAP = true;
+            I::get().logger() << F("[EWC CS]: SSID is empty, start AP") << endl;
           }
         }
         if (startAP && !isAP())
