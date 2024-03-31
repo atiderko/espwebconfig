@@ -233,6 +233,8 @@ void Mqtt::_connectToMqtt()
 {
   if (!paramEnabled)
     return;
+  if (_connecting)
+    return;
   I::get().logger() << F("[EWC MQTT] Connecting to MQTT...") << _paramServer << ":" << _paramPort << endl;
   _connecting = true;
   _mqttClient.connect();
@@ -273,6 +275,7 @@ void Mqtt::_onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 {
   I::get().logger() << F("[EWC MQTT] Disconnected from Wi-Fi.") << endl;
   _reconnectTs = 0; // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
+  _connecting = false;
 }
 #else
 void Mqtt::_onWifiConnect(WiFiEvent_t event, WiFiEventInfo_t info)
