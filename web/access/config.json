@@ -1,8 +1,6 @@
 {
   "ewc": {
     "dev_name": "Balkon",
-    "enable_serial_log": false,
-    "enable_serial_log_disabled": false,
     "apName": "ewc-123ABC",
     "apPass": "",
     "ap_start_always": false,

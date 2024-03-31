@@ -27,6 +27,7 @@ limitations under the License.
 #include "generated/accessSetupHTML.h"
 #include "generated/ewcFailHTML.h"
 #include "generated/ewcSuccessHTML.h"
+#include "generated/loggingSetupHTML.h"
 #include "generated/webBaseCSS.h"
 #include "generated/webPostloadJS.h"
 #include "generated/webPreJS.h"
@@ -171,6 +172,9 @@ void ConfigServer::setup()
   insertMenuCb("Access", "/access/setup", "menu_access", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_ACCESS_SETUP_GZIP, sizeof(HTML_ACCESS_SETUP_GZIP)));
   _server.on("/access/config.json", std::bind(&ConfigServer::_onAccessGet, this, &_server));
   _server.on("/access/config/save", std::bind(&ConfigServer::_onAccessSave, this, &_server));
+  insertMenuCb("Logging", "/logging/setup", "menu_access", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_LOGGING_SETUP_GZIP, sizeof(HTML_LOGGING_SETUP_GZIP)));
+  _server.on("/logging/config.json", std::bind(&ConfigServer::_onLoggingGet, this, &_server));
+  _server.on("/logging/enable", std::bind(&ConfigServer::_onLoggingEnable, this, &_server));
   insertMenuCb("Info", "/ewc/info", "menu_info", std::bind(&ConfigServer::sendContentG, this, &_server, FPSTR(PROGMEM_CONFIG_TEXT_HTML), HTML_EWC_INFO_GZIP, sizeof(HTML_EWC_INFO_GZIP)));
   _server.on("/ewc/info.json", std::bind(&ConfigServer::_onGetInfo, this, &_server));
   if (_publicConfig)
@@ -519,14 +523,6 @@ void ConfigServer::_onAccessSave(WebServer *webServer)
   {
     _config.paramDeviceName = webServer->arg("dev_name");
   }
-  if (webServer->hasArg("enable_serial_log"))
-  {
-    I::get().logger().setLogging(webServer->arg("enable_serial_log").equals("true"));
-  }
-  else
-  {
-    I::get().logger().setLogging(false);
-  }
   if (webServer->hasArg("apName"))
   {
     _config.paramAPName = webServer->arg("apName");
@@ -602,6 +598,42 @@ void ConfigServer::_onGetInfo(WebServer *webServer)
   String output;
   serializeJson(json, output);
   webServer->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+}
+
+void ConfigServer::_onLoggingGet(WebServer *webServer)
+{
+  if (!isAuthenticated(webServer))
+  {
+    return webServer->requestAuthentication();
+  }
+  JsonDocument jsonDoc;
+  JsonObject json = jsonDoc.to<JsonObject>();
+  _config.fillJson(jsonDoc);
+  String output;
+  serializeJson(json, output);
+  webServer->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
+}
+
+void ConfigServer::_onLoggingEnable(WebServer *webServer)
+{
+  if (!isAuthenticated(webServer))
+  {
+    return webServer->requestAuthentication();
+  }
+  // I::get().logger() << "[EWC CS]: handle args: " << webServer->args() << endl;
+  // for (int i = 0; i < webServer->args(); i++) {
+  //     I::get().logger() << "[EWC CS]:   " << webServer->argName(i) << ": " << webServer->arg(i) << endl;
+  // }
+  if (webServer->hasArg("enable_serial_log"))
+  {
+    I::get().logger().setLogging(webServer->arg("enable_serial_log").equals("true"));
+  }
+  else
+  {
+    I::get().logger().setLogging(false);
+  }
+  I::get().configFS().save();
+  sendRedirect(webServer, "/logging/setup");
 }
 
 void ConfigServer::_onWiFiConnect(WebServer *webServer)
@@ -807,7 +839,7 @@ void ConfigServer::loop()
   {
     if (WiFi.status() != WL_CONNECTED)
     {
-      if (millis() > _reconnectTs)
+      if (_reconnectTs > 0 && millis() > _reconnectTs)
       {
         _reconnectTs = 0;
         I::get().logger() << F("[EWC CS]: reconnect to WiFi...") << endl;

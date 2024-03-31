@@ -186,6 +186,8 @@ namespace EWC
     void _onAccessGet(WebServer *request);
     void _onAccessSave(WebServer *request);
     void _onGetInfo(WebServer *request);
+    void _onLoggingGet(WebServer *request);
+    void _onLoggingEnable(WebServer *request);
     void _onWiFiConnect(WebServer *request);
     void _onWiFiDisconnect(WebServer *request);
     void _onWifiState(WebServer *request);

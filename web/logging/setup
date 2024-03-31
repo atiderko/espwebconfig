@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta
+      name="viewport"
+      charset="UTF-8"
+      content="width=device-width, initial-scale=1, user-scalable=yes"
+    />
+    <title>Logging Settings</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <script src="/js/pre.js"></script>
+  </head>
+  <body style="padding-top: 58px">
+    <div id="header"></div>
+    <div class="base-panel">
+      <form id="logEnable" action="/logging/enable" method="post">
+        <div class="noorder">
+          <div>
+            <label class="switch" role="switch">
+              <input
+                id="enable_serial_log"
+                type="checkbox"
+                name="enable_serial_log"
+                value="true"
+                role="switch"
+                onclick="submit();"
+              />
+              <span class="slider round" role="switch"></span>
+            </label>
+            <label id="lbl_enable_serial_log" after="enable_serial_log"
+              >Enable serial log</label
+            >
+            <label id="info_enable_serial_log"
+              >Prints logs to serial port</label
+            >
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      var jsons = [["/logging/config.json", "fillLogging"]];
+    </script>
+    <script src="/js/postload.js"></script>
+    <script type="text/javascript">
+      function fillLogging(data, url) {
+        document.getElementById("enable_serial_log").checked =
+          data["ewc"]["enable_serial_log"];
+        document.getElementById("enable_serial_log").disabled =
+          data["ewc"]["enable_serial_log_disabled"];
+      }
+    </script>
+  </body>
+</html>
