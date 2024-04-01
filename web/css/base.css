@@ -160,6 +160,24 @@ div .line_named {
   color: #737271;
 }
 
+div .line_named_h3 {
+  text-align: left;
+  font-weight: bold;
+  font-size: 115%;
+  padding-bottom: 3px;
+  margin: 12px 0 6px 0;
+  border-bottom: solid 1px #737271;
+}
+
+div .line_named_h4 {
+  text-align: left;
+  font-weight: bold;
+  font-size: 100%;
+  padding-bottom: 3px;
+  margin: 12px 0 6px 0;
+  border-bottom: solid 1px #737271;
+}
+
 /** slider **/
 .slider.number {
   -webkit-appearance: none;
