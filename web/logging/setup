@@ -23,6 +23,7 @@
                 type="checkbox"
                 class="switch input"
                 name="enable_serial_log"
+                value="on"
                 disabled
                 onclick="submit();"
               />

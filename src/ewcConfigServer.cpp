@@ -626,7 +626,7 @@ void ConfigServer::_onLoggingEnable(WebServer *webServer)
   // }
   if (webServer->hasArg("enable_serial_log"))
   {
-    I::get().logger().setLogging(webServer->arg("enable_serial_log").equals("true"));
+    I::get().logger().setLogging(webServer->arg("enable_serial_log").equals("on"));
   }
   else
   {
