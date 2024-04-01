@@ -117,6 +117,24 @@
         </div>
         <input id="npt_apply" type="submit" name="apply" value="Apply" />
       </form>
+      <div>
+        <input
+          id="btn_restart_esp"
+          type="button"
+          style="background: red; width: auto; padding: 8px 20px 8px 20px"
+          onClick="onRestartEsp();"
+          value="Restart ESP"
+        />
+      </div>
+      <!-- <div>
+        <input
+          id="btn_delete_cfg"
+          type="button"
+          style="background: red; width: auto; padding: 8px 20px 8px 20px"
+          onClick="onDeleteConfigs();"
+          value="Delete configs"
+        />
+      </div> -->
     </div>
 
     <script>
@@ -142,6 +160,18 @@
         });
         document.getElementById("loader").hidden = true;
         document.getElementById("base-panel").hidden = false;
+      }
+      function onRestartEsp() {
+        var check = confirm("Restart Esp?");
+        if (check == true) {
+          location.href = "/device/restart";
+        }
+      }
+      function onDeleteConfigs() {
+        var check = confirm("Delete all configuration files on esp?");
+        if (check == true) {
+          location.href = "/device/delete";
+        }
       }
     </script>
   </body>

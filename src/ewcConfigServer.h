@@ -194,6 +194,7 @@ namespace EWC
     void _onWifiScan(WebServer *request);
     void _onNotFound(WebServer *request);
     void _onDeviceReset(WebServer *request);
+    void _onDeviceRestart(WebServer *request);
 
     /** === WiFi handler === **/
 #if defined(ESP8266)

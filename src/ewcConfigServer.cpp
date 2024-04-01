@@ -181,7 +181,8 @@ void ConfigServer::setup()
   {
     _server.on("/config.json", std::bind(&ConfigServer::_sendFileContent, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), FPSTR(CONFIG_FILENAME)));
   }
-  // _server.on("/device/reset", std::bind(&ConfigServer::_onDeviceReset, this, &_server));
+  _server.on("/device/delete", std::bind(&ConfigServer::_onDeviceReset, this, &_server));
+  _server.on("/device/restart", std::bind(&ConfigServer::_onDeviceRestart, this, &_server));
   _server.on("/favicon.ico", std::bind(&ConfigServer::_sendFileContent, this, &_server, "image/x-icon", "/favicon.ico"));
   _server.onNotFound(std::bind(&ConfigServer::_onNotFound, this, &_server));
   _server.begin(); // Web server start
@@ -1059,6 +1060,12 @@ void ConfigServer::_onDeviceReset(WebServer *webServer)
   I::get().logger() << F("[EWC CS]: delete config file") << endl;
   I::get().configFS().deleteFile();
   sendPageSuccess(webServer, "Delete configuration file", "Delete successful! Please, restart to apply AP changes!", "/");
+}
+
+void ConfigServer::_onDeviceRestart(WebServer *webServer)
+{
+  I::get().logger() << F("[EWC CS]: restart by user request") << endl;
+  ESP.restart();
 }
 
 /** Redirect to captive portal if we got a request for another domain. Return true in that case so the page handler do not try to handle the request again. */
