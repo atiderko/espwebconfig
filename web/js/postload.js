@@ -34,7 +34,9 @@ function _loadJson() {
           if (request.readyState === XMLHttpRequest.DONE) {
             if (request.status === 200) {
               console.log("--> got " + tuple[0]);
-              console.log("  data:" + request.responseText);
+              if (tuple[0] != "/languages.json") {
+                console.log("  data:" + request.responseText);
+              }
               var data = JSON.parse(request.responseText);
               window[func](data, url);
             }
