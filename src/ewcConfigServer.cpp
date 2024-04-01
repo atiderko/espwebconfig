@@ -863,17 +863,23 @@ void ConfigServer::loop()
           if (_disconnect_state > 0)
           {
             startAP = true;
-            I::get().logger() << F("[EWC CS]: _disconnect_state=") << _disconnect_state << ", start AP" << endl;
           }
           else if (WiFi.SSID().length() == 0)
           {
             // check for valid WiFi credentials
             startAP = true;
-            I::get().logger() << F("[EWC CS]: SSID is empty, start AP") << endl;
           }
         }
         if (startAP && !isAP())
         {
+          if (_disconnect_state > 0)
+          {
+            I::get().logger() << F("[EWC CS]: _disconnect_state=") << _disconnect_state << ", start AP" << endl;
+          }
+          else if (WiFi.SSID().length() == 0)
+          {
+            I::get().logger() << F("[EWC CS]: SSID is empty, start AP") << endl;
+          }
           // start AP
           I::get().logger() << F("[EWC CS]: change WiFi mode to AP_STA") << endl;
           WiFi.mode(WIFI_AP_STA);
