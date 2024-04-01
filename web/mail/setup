@@ -10,19 +10,30 @@
 
   <body style="padding-top:58px;">
     <div id="header"></div>
-    <div class="base-panel">
+    <div id="loader" class="loader"></div>
+    <div id="base-panel" class="base-panel" hidden>
         <form action="/mail/config/save" method="post">
           <div class="noorder">
             <div>
-              <input id="on_warning" type="checkbox" name="on_warning" value="true" checked><label id="lbl_on_warning">Send on warning</label></input>
-              <label id="info_on_warning">Send only warnings, e.g. no regular function is possible</label>
+              <input id="on_warning" type="checkbox" name="on_warning" value="true" checked>
+                <label id="lbl_on_warning">Send on warning</label>
+              </input>
+              <label id="info_on_warning">
+                Send only warnings, e.g. no regular function is possible
+              </label>
             </div>
             <div>
-              <input id="on_change" type="checkbox" name="on_change" value="true" checked><label id="lbl_on_change">Send on change</label></input>
-              <label id="info_on_change">Send on state changes, e.g. function mode is changed</label>
+              <input id="on_change" type="checkbox" name="on_change" value="true" checked>
+                <label id="lbl_on_change">Send on change</label>
+              </input>
+              <label id="info_on_change">
+                Send on state changes, e.g. function mode is changed
+              </label>
             </div>
             <div>
-              <input id="on_event" type="checkbox" name="on_event" value="true"><label id="lbl_on_event">Send on each event</label></input>
+              <input id="on_event" type="checkbox" name="on_event" value="true">
+                <label id="lbl_on_event">Send on each event</label>
+              </input>
             </div>
             <div>
                 <label id="lbl_receiver" for="receiver">Receiver:</label>
@@ -69,6 +80,8 @@ function onTestMail() {
     ].forEach(function(id,idy,arr) {
       document.getElementById(id).value = data["mail"][id];
     });
+    document.getElementById("loader").hidden = true;
+    document.getElementById("base-panel").hidden = false;
   }
 </script>
 </body>

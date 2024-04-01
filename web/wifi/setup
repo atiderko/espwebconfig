@@ -1,89 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
-
   <head>
-    <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <meta
+      name="viewport"
+      charset="UTF-8"
+      content="width=device-width, initial-scale=1, user-scalable=yes"
+    />
     <title>WiFi Setup</title>
-    <link rel="stylesheet" href="/css/base.css">
-    <link rel="stylesheet" href="/css/wifiicons.css">
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/wifiicons.css" />
     <script src="/js/pre.js"></script>
   </head>
-  <body style="padding-top:58px;">
+  <body style="padding-top: 58px">
     <div id="header"></div>
     <div class="base-panel">
-        <form action="/wifi/config/save" method="post">
-          <div class="spinner">
-              <div id="dbl">
-                <div id="dbl1" class="dbl-bounce1"></div>
-                <div id="dbl2" class="dbl-bounce2"></div>
-              </div>
-              <div id="ssid_current" style="position:absolute;left:-120%;right:-120%;text-align:center;margin:0px auto;font-weight:bold;color:#0b0b33;">
-                <label id="lbl_reqcurstate">requesting current state...</label>
-              </div>
+      <form action="/wifi/config/save" method="post">
+        <div class="spinner">
+          <div id="dbl">
+            <div id="dbl1" class="dbl-bounce1"></div>
+            <div id="dbl2" class="dbl-bounce2"></div>
           </div>
-          <div style="text-align:center;padding-bottom: 20px;margin:16px 0 16px 0;border-bottom:solid 1px #263238;"></div>
-          <div id="list_ssid">
-             <label id="lbl_list_ssid_scan">scan in progress...</label>
-             <label id="lbl_list_ssid_scan_count"></label>
-             <label id="lbl_list_ssid_failed" style="color:red;"></label>
+          <div
+            id="ssid_current"
+            style="
+              position: absolute;
+              left: -120%;
+              right: -120%;
+              text-align: center;
+              margin: 0px auto;
+              font-weight: bold;
+              color: #0b0b33;
+            "
+          >
+            <label id="lbl_reqcurstate">requesting current state...</label>
           </div>
-          <div id="list_ssid_info" style="margin:16px 0 8px 0;border-bottom:solid 1px #263238;"></div>
-          <div class="noorder">
-            <div>
-                <label id="lbl_ssid" for="ssid">SSID</label>
-                <input id="ssid" type="text" name="ssid" placeholder="SSID">
-            </div>
-            <div>
-                <label id="lbl_passphrase" for="passphrase">Passphrase</label>
-                <input id="passphrase" type="password" name="passphrase" placeholder="Passphrase">
-                <input id="pass-status" class="pwdcb" type="checkbox" aria-hidden="true" onClick="viewPassword('passphrase', 'pass-status')">
-            </div>
-            <div>
-                <input id="dhcp" type="checkbox" name="dhcp" value="true" checked onclick="vsw(!this.checked, 'exp');">Enable DHCP</input>
-            </div>
-            <div class="exp">
-                <label id="lbl_staip" for="stationIP">IP Address</label>
-                <input id="stationIP" type="text" name="stationIP" value="">
-            </div>
-            <div class="exp">
-                <label id="lbl_gtway" for="gateway">Gateway</label>
-                <input id="gateway" type="text" name="gateway" value="">
-            </div>
-            <div class="exp">
-                <label id="lbl_ntmsk" for="netmask">Netmask</label>
-                <input id="netmask" type="text" name="netmask" value="">
-            </div>
-            <div class="exp">
-                <label id="lbl_dns1" for="dns1">DNS1</label>
-                <input id="dns1" type="text" name="dns1" value="">
-            </div>
-            <div class="exp">
-                <label id="lbl_dns2" for="dns2">DNS2</label>
-                <input id="dns2" type="text" name="dns2" value="">
-            </div>
-            <div><input id="npt_apply" type="submit" name="apply" value="Apply"></div>
-            <div><input id="btn_disable_wifi" type="button" style="background:red;width:auto;padding:8px 20px 8px 20px" onClick="onDisableWiFi();" value="Disable WiFi"></div>
         </div>
-        </form>
+        <div
+          style="
+            text-align: center;
+            padding-bottom: 20px;
+            margin: 16px 0 16px 0;
+            border-bottom: solid 1px #263238;
+          "
+        ></div>
+        <div id="list_ssid">
+          <label id="lbl_list_ssid_scan">scan in progress...</label>
+          <label id="lbl_list_ssid_scan_count"></label>
+          <label id="lbl_list_ssid_failed" style="color: red"></label>
+        </div>
+        <div
+          id="list_ssid_info"
+          style="margin: 16px 0 8px 0; border-bottom: solid 1px #263238"
+        ></div>
+        <div class="noorder">
+          <div>
+            <label id="lbl_ssid" for="ssid">SSID</label>
+            <input id="ssid" type="text" name="ssid" placeholder="SSID" />
+          </div>
+          <div>
+            <label id="lbl_passphrase" for="passphrase">Passphrase</label>
+            <input
+              id="passphrase"
+              type="password"
+              name="passphrase"
+              placeholder="Passphrase"
+            />
+            <input
+              id="pass-status"
+              class="pwdcb"
+              type="checkbox"
+              aria-hidden="true"
+              onClick="viewPassword('passphrase', 'pass-status')"
+            />
+          </div>
+          <div>
+            <input
+              id="dhcp"
+              type="checkbox"
+              name="dhcp"
+              value="true"
+              checked
+              onclick="vsw(!this.checked, 'exp');"
+            />
+            Enable DHCP
+          </div>
+          <div class="exp">
+            <label id="lbl_staip" for="stationIP">IP Address</label>
+            <input id="stationIP" type="text" name="stationIP" value="" />
+          </div>
+          <div class="exp">
+            <label id="lbl_gtway" for="gateway">Gateway</label>
+            <input id="gateway" type="text" name="gateway" value="" />
+          </div>
+          <div class="exp">
+            <label id="lbl_ntmsk" for="netmask">Netmask</label>
+            <input id="netmask" type="text" name="netmask" value="" />
+          </div>
+          <div class="exp">
+            <label id="lbl_dns1" for="dns1">DNS1</label>
+            <input id="dns1" type="text" name="dns1" value="" />
+          </div>
+          <div class="exp">
+            <label id="lbl_dns2" for="dns2">DNS2</label>
+            <input id="dns2" type="text" name="dns2" value="" />
+          </div>
+          <div>
+            <input id="npt_apply" type="submit" name="apply" value="Apply" />
+          </div>
+          <div>
+            <input
+              id="btn_disable_wifi"
+              type="button"
+              style="background: red; width: auto; padding: 8px 20px 8px 20px"
+              onClick="onDisableWiFi();"
+              value="Disable WiFi"
+            />
+          </div>
+        </div>
+      </form>
     </div>
 
-  <script type="text/javascript">
-    window.onload=function(){
-      ["stationIP","gateway","netmask","dns1","dns2"].forEach(function(n,o,t){
-        io=document.getElementById(n),io.placeholder='0.0.0.0',io.pattern='^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'});
-      vsw(false, 'exp')};
-    function onFocus(e){
-      document.getElementById('ssid').value=e,document.getElementById('passphrase').focus()
-    }
-    function onDisableWiFi() {
-        var check = confirm('Disable WiFi? You will need hardware reset to revert this decision!'); 
-      if (check == true) {
-        location.href='/wifi/disable';
+    <script type="text/javascript">
+      window.onload = function () {
+        ["stationIP", "gateway", "netmask", "dns1", "dns2"].forEach(function (
+          n,
+          o,
+          t
+        ) {
+          (io = document.getElementById(n)),
+            (io.placeholder = "0.0.0.0"),
+            (io.pattern =
+              "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+        });
+        vsw(false, "exp");
+      };
+      function onFocus(e) {
+        (document.getElementById("ssid").value = e),
+          document.getElementById("passphrase").focus();
       }
-    }
-  </script>
-  <script>jsons = [ ["/wifi/state.json", "wifistate"], ["/wifi/stations.json", "wifistations"] ];</script>
-  <script src="/js/wifi.js"></script>
-  <script src="/js/postload.js"></script>
-</body>
+      function onDisableWiFi() {
+        var check = confirm(
+          "Disable WiFi? You will need hardware reset to revert this decision!"
+        );
+        if (check == true) {
+          location.href = "/wifi/disable";
+        }
+      }
+    </script>
+    <script>
+      jsons = [
+        ["/wifi/state.json", "wifistate"],
+        ["/wifi/stations.json", "wifistations"],
+      ];
+    </script>
+    <script src="/js/wifi.js"></script>
+    <script src="/js/postload.js"></script>
+  </body>
 </html>

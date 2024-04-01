@@ -12,20 +12,21 @@
   </head>
   <body style="padding-top: 58px">
     <div id="header"></div>
-    <div class="base-panel">
+    <div id="loader" class="loader"></div>
+    <div id="base-panel" class="base-panel" hidden>
       <form id="logEnable" action="/logging/enable" method="post">
         <div class="noorder">
           <div>
-            <label class="switch" role="switch">
+            <label class="switch">
               <input
                 id="enable_serial_log"
                 type="checkbox"
+                class="switch input"
                 name="enable_serial_log"
-                value="true"
-                role="switch"
+                disabled
                 onclick="submit();"
               />
-              <span class="slider round" role="switch"></span>
+              <span class="switch slider"></span>
             </label>
             <label id="lbl_enable_serial_log" after="enable_serial_log"
               >Enable serial log</label
@@ -48,6 +49,8 @@
           data["ewc"]["enable_serial_log"];
         document.getElementById("enable_serial_log").disabled =
           data["ewc"]["enable_serial_log_disabled"];
+        document.getElementById("loader").hidden = true;
+        document.getElementById("base-panel").hidden = false;
       }
     </script>
   </body>

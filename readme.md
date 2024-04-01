@@ -130,3 +130,10 @@ void setup()
 ## Favicon.ico
 
 Upload a **favicon.ico** with `pio run --target uploadfs`
+
+## Test html files
+
+An easy way to test the HTLM files is to use TinyWeb:
+https://www.ritlabs.com/en/products/tinyweb/download.php
+
+Copy the `web/xyz/setup` file to `web/index.html` and run `tiny.exe C:\ESPWebConfig\web 80`

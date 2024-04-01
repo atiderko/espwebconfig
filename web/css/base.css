@@ -508,13 +508,13 @@ input.error::-ms-input-placeholder {
   height: 15px;
 }
 
-.switch input[role="switch"] {
+.switch.input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-.slider[role="switch"] {
+.switch.slider {
   position: absolute;
   cursor: pointer;
   height: 15px;
@@ -527,7 +527,7 @@ input.error::-ms-input-placeholder {
   transition: 0.2s;
 }
 
-.slider[role="switch"]:before {
+.switch.slider:before {
   position: absolute;
   content: "";
   height: 9px;
@@ -539,25 +539,56 @@ input.error::-ms-input-placeholder {
   transition: 0.2s;
 }
 
-input[role="switch"]:checked + .slider[role="switch"] {
+.switch.input:checked + .switch.slider {
   background-color: #2196f3;
 }
 
-input[role="switch"]:focus + .slider[role="switch"] {
+.switch.input:focus + .switch.slider {
   box-shadow: 0 0 1px #2196f3;
 }
 
-input[role="switch"]:checked + .slider[role="switch"]:before {
+.switch.input:checked + .switch.slider:before {
   -webkit-transform: translateX(20px);
   -ms-transform: translateX(20px);
   transform: translateX(20px);
 }
 
-/* Rounded sliders */
-.slider.round[role="switch"] {
+.switch.slider {
   border-radius: 16px;
 }
 
-.slider.round[role="switch"]:before {
+.switch.slider:before {
   border-radius: 50%;
+}
+
+/* Loader */
+.loader {
+  margin-top: 8px;
+  margin-left: 8px;
+  border: 8px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 8px solid #3498db;
+  width: 32px;
+  height: 32px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

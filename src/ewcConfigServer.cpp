@@ -182,7 +182,7 @@ void ConfigServer::setup()
     _server.on("/config.json", std::bind(&ConfigServer::_sendFileContent, this, &_server, FPSTR(PROGMEM_CONFIG_APPLICATION_JS), FPSTR(CONFIG_FILENAME)));
   }
   // _server.on("/device/reset", std::bind(&ConfigServer::_onDeviceReset, this, &_server));
-  _server.on("/favicon.ico", std::bind(&ConfigServer::_sendFileContent, this, &_server, "/favicon.ico", "image/x-icon"));
+  _server.on("/favicon.ico", std::bind(&ConfigServer::_sendFileContent, this, &_server, "image/x-icon", "/favicon.ico"));
   _server.onNotFound(std::bind(&ConfigServer::_onNotFound, this, &_server));
   _server.begin(); // Web server start
 }

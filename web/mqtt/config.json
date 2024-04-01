@@ -1,10 +1,10 @@
 {
-    "mqtt": {
-        "enabled": true,
-        "server": "brocker",
-        "port": 1883,
-        "user": "mqtt",
-        "pass": "secure",
-        "prefix": "ewc"
-    }
+  "mqtt": {
+    "enabled": true,
+    "server": "brocker",
+    "port": 1883,
+    "user": "mqtt",
+    "pass": "secure",
+    "prefix": "ewc"
+  }
 }

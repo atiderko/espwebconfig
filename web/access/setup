@@ -12,7 +12,8 @@
   </head>
   <body style="padding-top: 58px">
     <div id="header"></div>
-    <div class="base-panel">
+    <div id="loader" class="loader"></div>
+    <div id="base-panel" class="base-panel" hidden>
       <form action="/access/config/save" method="post">
         <div class="noorder">
           <div>
@@ -45,16 +46,16 @@
             />
           </div>
           <div>
-            <label class="switch" role="switch">
+            <label class="switch">
               <input
                 id="ap_start_always"
                 type="checkbox"
+                class="switch input"
                 name="ap_start_always"
                 value="true"
-                role="switch"
                 checked
               />
-              <span class="slider round" role="switch"></span>
+              <span class="switch slider"></span>
             </label>
             <label id="lbl_ap_start_always" after="ap_start_always"
               >AP start always</label
@@ -73,16 +74,16 @@
             />
           </div>
           <div>
-            <label class="switch" role="switch">
+            <label class="switch">
               <input
                 id="basic_auth"
                 type="checkbox"
+                class="switch input"
                 name="basic_auth"
                 value="true"
-                role="switch"
                 onclick="vsw(this.checked, 'http');"
               />
-              <span class="slider round" role="switch"></span>
+              <span class="switch slider"></span>
             </label>
             <label id="lbl_basic_auth" after="basic_auth"
               >Enable HTTP authentication</label
@@ -123,14 +124,12 @@
     </script>
     <script src="/js/postload.js"></script>
     <script type="text/javascript">
-      window.onload = function () {
-        vsw(false, "http");
-      };
       function fillAccess(data, url) {
         document.getElementById("ap_start_always").checked =
           data["ewc"]["ap_start_always"];
         document.getElementById("basic_auth").checked =
           data["ewc"]["basic_auth"];
+        vsw(data["ewc"]["basic_auth"], "http");
         [
           "dev_name",
           "apName",
@@ -141,7 +140,8 @@
         ].forEach(function (id, idy, arr) {
           document.getElementById(id).value = data["ewc"][id];
         });
-        // setTimeout(getJSON.bind(null, "/access/config.json", "fillaccess"), 3000);
+        document.getElementById("loader").hidden = true;
+        document.getElementById("base-panel").hidden = false;
       }
     </script>
   </body>
