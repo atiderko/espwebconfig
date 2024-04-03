@@ -151,6 +151,10 @@ void Mqtt::_fromJson(JsonDocument &config)
       _connectToMqtt();
     }
   }
+  else if (_mqttClient.connected())
+  {
+    _mqttClient.disconnect();
+  }
 }
 
 void Mqtt::_onMqttConfig(WebServer *request)
@@ -177,12 +181,12 @@ void Mqtt::_onMqttSave(WebServer *request)
     I::get().logger() << "  " << request->argName(i) << ": " << request->arg(i) << endl;
   }
   JsonDocument config;
+  bool mqtt_enabled = false;
   if (request->hasArg("mqtt_enabled"))
   {
-    bool a = request->arg("mqtt_enabled").equals("true");
-    config["mqtt"]["enabled"] = a;
-    I::get().logger() << "  _onMqttSave, enabled " << a << " -> " << request->arg("mqtt_enabled") << endl;
+    mqtt_enabled = request->arg("mqtt_enabled").equals("true");
   }
+  config["mqtt"]["enabled"] = mqtt_enabled;
   if (request->hasArg("mqtt_server"))
   {
     config["mqtt"]["server"] = request->arg("mqtt_server");
