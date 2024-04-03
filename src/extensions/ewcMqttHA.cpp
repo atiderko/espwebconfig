@@ -237,12 +237,25 @@ void MqttHA::publishState(String uniqueId, String value, bool retain, uint8_t qo
   // #ifdef ESP32
   //   std::lock_guard<std::mutex> lck(_mutex);
   // #endif
+  // Serial.print("+p");
+  if (!_ewcMqtt->client().connected())
+  {
+    return;
+  }
   for (auto itc = _properties.begin(); itc != _properties.end(); itc++)
   {
     if (strcmp(uniqueId.c_str(), itc->uniqueId.c_str()) == 0)
     {
       I::get().logger() << F("[MqttHA] publish ") << value << F(" to ") << itc->stateTopic << endl;
-      _ewcMqtt->client().publish(itc->stateTopic.c_str(), qos, retain, value.c_str());
+      uint16_t packetId = _ewcMqtt->client().publish(itc->stateTopic.c_str(), qos, retain, value.c_str());
+      if (packetId == 0)
+      {
+        I::get().logger() << F("✘ [MqttHA] publish ") << value << F(" to ") << itc->stateTopic << endl;
+      }
+      else
+      {
+        I::get().logger() << F("[MqttHA] publish ") << value << F(" to ") << itc->stateTopic << " , as packet id: " << packetId << endl;
+      }
     }
   }
 }
