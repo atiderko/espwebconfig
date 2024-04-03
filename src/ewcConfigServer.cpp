@@ -856,7 +856,6 @@ void ConfigServer::loop()
         if (millis() - _msConnectStart > _msConnectTimeout)
         {
           startAP = true;
-          I::get().logger() << F("[EWC CS]: _msConnectTimeout=") << _msConnectTimeout << ", start AP" << endl;
         }
         else
         {
@@ -873,6 +872,11 @@ void ConfigServer::loop()
         }
         if (startAP && !isAP())
         {
+          if (millis() - _msConnectStart > _msConnectTimeout)
+          {
+            I::get().logger() << F("[EWC CS]: _msConnectTimeout=") << _msConnectTimeout << ", start AP" << endl;
+          }
+
           if (_disconnect_state > 0)
           {
             I::get().logger() << F("[EWC CS]: _disconnect_state=") << _disconnect_state << ", start AP" << endl;
