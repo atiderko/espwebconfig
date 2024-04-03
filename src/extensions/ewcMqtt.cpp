@@ -67,7 +67,7 @@ void Mqtt::loop()
   {
     if (!_mqttClient.connected())
     {
-      if (millis() > _reconnectTs)
+      if (_reconnectTs > 0 && millis() > _reconnectTs)
       {
         _reconnectTs = 0;
         _connectToMqtt();
@@ -260,6 +260,7 @@ void Mqtt::_onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
     //         this);
     // #endif
   }
+  _connecting = false;
 }
 
 void Mqtt::_onMqttConnect(bool sessionPresent)
