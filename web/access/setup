@@ -168,7 +168,9 @@
         }
       }
       function onDeleteConfigs() {
-        var check = confirm("Delete all configuration files on esp?");
+        var check = confirm(
+          "Delete all configuration files on esp and restart?"
+        );
         if (check == true) {
           location.href = "/device/delete";
         }

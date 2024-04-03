@@ -1059,12 +1059,14 @@ void ConfigServer::_onDeviceReset(WebServer *webServer)
 {
   I::get().logger() << F("[EWC CS]: delete config file") << endl;
   I::get().configFS().deleteFile();
-  sendPageSuccess(webServer, "Delete configuration file", "Delete successful! Please, restart to apply AP changes!", "/");
+  sendRedirect(webServer, "/");
+  ESP.restart();
 }
 
 void ConfigServer::_onDeviceRestart(WebServer *webServer)
 {
   I::get().logger() << F("[EWC CS]: restart by user request") << endl;
+  sendRedirect(webServer, "/");
   ESP.restart();
 }
 
