@@ -293,8 +293,8 @@ void ConfigServer::_wifiOnStationModeDisconnected(const WiFiEventStationModeDisc
   // set time if we should reconnect
   if (_reconnectTs == 0)
   {
-    I::get().logger() << F("[EWC CS]: start reconnect Timer in 7 sec") << endl;
-    _reconnectTs = millis() + 7000;
+    I::get().logger() << F("[EWC CS]: start reconnect Timer in 15 sec") << endl;
+    _reconnectTs = millis() + 10000;
   }
 }
 
@@ -363,8 +363,8 @@ void ConfigServer::_wifiOnStationModeDisconnected(WiFiEvent_t event, WiFiEventIn
   // set time if we should reconnect
   if (_reconnectTs == 0)
   {
-    I::get().logger() << F("[EWC CS]: start reconnect Timer in 7 sec") << endl;
-    _reconnectTs = millis() + 7000;
+    I::get().logger() << F("[EWC CS]: start reconnect Timer in 15 sec") << endl;
+    _reconnectTs = millis() + 10000;
   }
 }
 
