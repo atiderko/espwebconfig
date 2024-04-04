@@ -117,6 +117,7 @@ void ConfigServer::setup()
     SET_HOSTNAME(_config.paramHostname.c_str());
 
   I::get().logger() << F("[EWC CS]: setup wifi events") << endl;
+  WiFi.setAutoReconnect(false);
 #if defined(ESP8266)
   p1 = WiFi.onStationModeConnected(std::bind(&ConfigServer::_wifiOnStationModeConnected, this, std::placeholders::_1));
   p2 = WiFi.onStationModeDisconnected(std::bind(&ConfigServer::_wifiOnStationModeDisconnected, this, std::placeholders::_1));
