@@ -71,7 +71,7 @@ void Led::start(const twin_led_mode_t mode, const uint32_t cycle, const uint32_t
   if (_enabled)
   {
 
-    I::get().logger() << "[EWC LED] start in mode: " << mode << ", cycle: " << cycle << ", duration: " << duration << endl;
+    I::get().logger() << "[EWC LED] start in mode: " << mode << ", cycle: " << cycle << ", duration: " << duration << ", maxCycleCount: " << maxCycleCount << endl;
     _maxCycleCount = maxCycleCount;
     _cycleCount = 0;
     _cycle = cycle;
@@ -92,7 +92,15 @@ void Led::start(const twin_led_mode_t mode, const uint32_t cycle, const uint32_t
  */
 void Led::start(void)
 {
-  stop();
+  // stop if running
+  if (_active)
+  {
+    _active = false;
+    digitalWrite(_portGreen, !_signalOn);
+    digitalWrite(_portRed, !_signalOn);
+    _greenOn = false;
+    _redOn = false;
+  }
   _active = true;
   // enable the led. Further cycle or duty switches are triggered in the loop().
   _onPeriod();
@@ -157,6 +165,7 @@ void Led::_onPeriod()
   }
   else
   {
+    I::get().logger() << "[EWC LED] stop, maxCycleCount (" << _maxCycleCount << ") reached" << endl;
     stop();
   }
   _cycleCount += 1;
