@@ -1,6 +1,7 @@
 {
-    "ssid": "myssid",
-    "connected": true,
-    "failed": false,
-    "reason": "WRONG_PASSWORD"
+  "ssid": "myssid",
+  "connected": true,
+  "failed": false,
+  "reason": "WRONG_PASSWORD",
+  "local_ip": "192.168.0.33"
 }

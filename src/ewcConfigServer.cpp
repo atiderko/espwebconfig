@@ -734,6 +734,14 @@ void ConfigServer::_onWifiState(WebServer *webServer)
   json["connected"] = WiFi.status() == WL_CONNECTED;
   json["failed"] = _disconnect_state > 0;
   json["reason"] = _disconnect_reason;
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    json["local_ip"] = WiFi.localIP().toString();
+  }
+  else
+  {
+    json["local_ip"] = "";
+  }
   String output;
   serializeJson(json, output);
   webServer->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);
