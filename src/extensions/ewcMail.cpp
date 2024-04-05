@@ -414,7 +414,10 @@ bool Mail::_send(const char *subject, const char *body)
     data += "From: " + I::get().config().paramDeviceName + " <" + _mailSender + ">\r\n";
     data += "To: <" + _mailReceiver + ">\r\n";
     data += "Subject: " + I::get().config().paramDeviceName + " - " + subject + "\r\n";
-    data += "Date: " + EWC::I::get().time().str() + "\r\n";
+    if (EWC::I::get().time().timeAvailable())
+    {
+      data += "Date: " + EWC::I::get().time().str() + "\r\n";
+    }
     data += "" + String(body) + "\r\n.\r\n";
     _mailData = data;
     return true;
