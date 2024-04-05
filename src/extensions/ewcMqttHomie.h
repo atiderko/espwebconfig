@@ -64,10 +64,10 @@ namespace EWC
   class CallbackTopic
   {
   public:
-    AsyncMqttClientInternals::OnMessageUserCallback callback;
+    Mqtt::MqttMessageFunction callback;
     String topic;
 
-    CallbackTopic(String nodeId, String propertyId, AsyncMqttClientInternals::OnMessageUserCallback callbackFunc)
+    CallbackTopic(String nodeId, String propertyId, Mqtt::MqttMessageFunction callbackFunc)
     {
       _nodeId = nodeId;
       _propertyId = propertyId;
@@ -112,7 +112,7 @@ namespace EWC
     /** Adds property to an existing node. The node should be inserted first. */
     bool addProperty(String nodeId, String propertyId, String name, String datatype, String format = "", String unit = "", bool retained = true);
     /** Adds a settable property to an existing node. The node should be inserted first. */
-    bool addPropertySettable(String nodeId, String propertyId, String name, String datatype, AsyncMqttClientInternals::OnMessageUserCallback callback, String format = "", String unit = "", bool retained = true);
+    bool addPropertySettable(String nodeId, String propertyId, String name, String datatype, Mqtt::MqttMessageFunction callback, String format = "", String unit = "", bool retained = true);
     /** Publishes a value a property. */
     void publishState(String nodeId, String propertyId, String value, bool retain = false, uint8_t qos = 1);
 
@@ -127,8 +127,8 @@ namespace EWC
     uint32_t _idxPublishConfig;
     uint16_t _waitForPacketId;
 
-    void _onMqttConnect(bool sessionPresent);
-    void _onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total);
+    void _onMqttConnect();
+    void _onMqttMessage(String &topic, String &payload);
     void _onMqttAck(uint16_t packetId);
   };
 };

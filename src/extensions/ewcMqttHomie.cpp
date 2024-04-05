@@ -40,7 +40,7 @@ MqttConfigTopic::~MqttConfigTopic()
 uint16_t MqttConfigTopic::publish(EWC::Mqtt &mqtt)
 {
   I::get().logger() << "[MQTTHomie]: publish " << _value << " to " << _topic << endl;
-  return mqtt.client().publish(_topic.c_str(), _qos, _retain, _value.c_str());
+  return mqtt.publish(_topic, _value, _retain, _qos);
 }
 
 MqttHomie::MqttHomie()
@@ -62,11 +62,9 @@ void MqttHomie::setup(EWC::Mqtt &mqtt, String deviceName, String deviceId)
   _homieDevice.nodes.clear();
   _homieDevice.name = deviceName;
   _homieDevice.id = deviceId;
-  mqtt.client().onMessage(std::bind(&MqttHomie::_onMqttMessage, this, std::placeholders::_1, std::placeholders::_2,
-                                    std::placeholders::_3, std::placeholders::_4,
-                                    std::placeholders::_5, std::placeholders::_6));
-  mqtt.client().onConnect(std::bind(&MqttHomie::_onMqttConnect, this, std::placeholders::_1));
-  mqtt.client().onPublish(std::bind(&MqttHomie::_onMqttAck, this, std::placeholders::_1));
+  mqtt.onMessage(std::bind(&MqttHomie::_onMqttMessage, this, std::placeholders::_1, std::placeholders::_2));
+  mqtt.onConnected(std::bind(&MqttHomie::_onMqttConnect, this));
+  mqtt.onFakeAck(std::bind(&MqttHomie::_onMqttAck, this, std::placeholders::_1));
 }
 
 bool MqttHomie::addNode(String id, String name, String type)
@@ -116,7 +114,7 @@ bool MqttHomie::addProperty(String nodeId, String propertyId, String name, Strin
   return false;
 }
 
-bool MqttHomie::addPropertySettable(String nodeId, String propertyId, String name, String datatype, AsyncMqttClientInternals::OnMessageUserCallback callback, String format, String unit, bool retained)
+bool MqttHomie::addPropertySettable(String nodeId, String propertyId, String name, String datatype, Mqtt::MqttMessageFunction callback, String format, String unit, bool retained)
 {
   for (auto itn = _homieDevice.nodes.begin(); itn != _homieDevice.nodes.end(); itn++)
   {
@@ -139,11 +137,11 @@ bool MqttHomie::addPropertySettable(String nodeId, String propertyId, String nam
   return false;
 }
 
-void MqttHomie::_onMqttConnect(bool sessionPresent)
+void MqttHomie::_onMqttConnect()
 {
-  I::get().logger() << F("[MQTTHomie] setup on connect, session present: ") << sessionPresent << endl;
+  I::get().logger() << F("[MQTTHomie] setup on MQTT connected") << endl;
   I::get().logger() << "[MQTTHomie]: ESP heap: _onMqttConnect: " << ESP.getFreeHeap() << endl;
-  String prefix = _ewcMqtt->paramDiscoveryPrefix;
+  String prefix = _ewcMqtt->getDiscoveryPrefix();
   prefix.replace(SEP, "");
   if (prefix.length() == 0)
   {
@@ -152,7 +150,7 @@ void MqttHomie::_onMqttConnect(bool sessionPresent)
   _homieDevice.prefix = prefix;
   _homieStateTopic = _homieDevice.prefix + SEP + _homieDevice.id + SEP + "$state";
   I::get().logger() << F("[MQTTHomie] configure homie topics") << endl;
-  _ewcMqtt->client().setWill(_homieStateTopic.c_str(), 2, true, "lost");
+  _ewcMqtt->client().setWill(_homieStateTopic.c_str(), "lost", true, 2);
   _waitForPacketId = 0;
   _idxPublishConfig = 0;
   _configTopics.clear();
@@ -226,7 +224,7 @@ void MqttHomie::_onMqttConnect(bool sessionPresent)
           if (topicSet.compareTo(itc->topic) == 0)
           {
             I::get().logger() << F("[MQTTHomie] subscribe to ") << topicSet << endl;
-            _ewcMqtt->client().subscribe(itc->topic.c_str(), 2);
+            _ewcMqtt->subscribe(itc->topic.c_str(), 2);
             break;
           }
         }
@@ -241,17 +239,17 @@ void MqttHomie::publishState(String nodeId, String propertyId, String value, boo
 {
   String topic = _homieDevice.prefix + SEP + _homieDevice.id + SEP + nodeId + SEP + propertyId;
   I::get().logger() << F("[MQTTHomie] publish ") << value << F(" to ") << topic << endl;
-  _ewcMqtt->client().publish(topic.c_str(), qos, retain, value.c_str());
+  _ewcMqtt->publish(topic, value, retain, qos);
 }
 
-void MqttHomie::_onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total)
+void MqttHomie::_onMqttMessage(String &topic, String &payload)
 {
   I::get().logger() << F("[MQTTHomie] onMqttMessage; topic: ") << topic << F("; payload: ") << payload << endl;
   for (auto itc = _callbacks.begin(); itc != _callbacks.end(); itc++)
   {
-    if (strcmp((char *)topic, itc->topic.c_str()) == 0)
+    if (strcmp(topic.c_str(), itc->topic.c_str()) == 0)
     {
-      itc->callback(topic, payload, properties, len, index, total);
+      itc->callback(topic, payload);
     }
   }
 }

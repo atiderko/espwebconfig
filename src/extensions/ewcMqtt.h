@@ -20,6 +20,12 @@ limitations under the License.
 **************************************************************/
 
 // See AsyncMqttClient: https://github.com/marvinroger/async-mqtt-client
+// When using many mqtt messages, we had to struggle with stability problems.
+// We have therefore switched to
+// https://github.com/256dpi/arduino-mqtt.git
+// The publish() method only blocks for QOS > 0.
+// In order not to block the loop() too much when sending many messages,
+// onFakeAck() can be used. See sending the configuration in MqttHA.
 
 #ifndef EWC_MQTT_h
 #define EWC_MQTT_h
@@ -31,9 +37,10 @@ limitations under the License.
 #elif defined(ESP32)
 #include "WiFi.h"
 #include "WebServer.h"
+#include <vector>
 #endif
 #include <Arduino.h>
-#include <AsyncMqttClient.h>
+#include <MQTT.h>
 #include "../ewcConfigInterface.h"
 
 namespace EWC
@@ -42,20 +49,48 @@ namespace EWC
   class Mqtt : public ConfigInterface
   {
   public:
-    Mqtt();
+    typedef std::function<void()> MqttConnectedFunction;
+    typedef std::function<void(String &topic, String &payload)> MqttMessageFunction;
+    typedef std::function<void(uint16_t packetId)> MqttAck;
+    class Message
+    {
+    public:
+      String topic;
+      String payload;
+      Message(String &topic, String &payload)
+      {
+        this->topic = topic;
+        this->payload = payload;
+      }
+    };
+
+    Mqtt(String prefix = "ewc");
     ~Mqtt();
 
-    AsyncMqttClient &client() { return _mqttClient; }
+    MQTTClient &client() { return _mqttClient; }
     /** === ConfigInterface Methods === **/
     void setup(JsonDocument &config, bool resetConfig = false);
     void fillJson(JsonDocument &config);
-    bool paramEnabled;
-    String paramDiscoveryPrefix;
 
     void loop();
 
+    /** Getter **/
+    String &getDiscoveryPrefix() { return _paramDiscoveryPrefix; }
+
+    /** Callbacks **/
+    void onConnected(MqttConnectedFunction callback) { _cbConnected = callback; }
+    void onMessage(MqttMessageFunction callback) { _cbOnMessage = callback; }
+    void onFakeAck(MqttAck callback) { _cbOnFakeAck = callback; }
+
+    /** Functions **/
+    bool subscribe(const String &topic, int qos);
+    /** Returns packet id of message sent. The id is only valid for qos > 0.
+     * In the next loop() we take the first packet id and call onFakeAck(). **/
+    uint16_t publish(const String &topic, const String &payload, bool retained = false, int qos = 0);
+
   protected:
-    AsyncMqttClient _mqttClient;
+    WiFiClient _net;
+    MQTTClient _mqttClient;
     unsigned long _reconnectTs = 0;
 #ifdef ESP8266
     WiFiEventHandler _wifiConnectHandler;
@@ -63,12 +98,21 @@ namespace EWC
 #endif
 
     /** === Parameter === **/
+    bool _paramEnabled;
+    String _defaultPrefix;
+    String _paramDiscoveryPrefix;
     String _paramServer;
     uint16_t _paramPort;
     String _paramUser;
     String _paramPassword;
 
+    /** === Callbacks === **/
+    MqttConnectedFunction _cbConnected;
+    MqttMessageFunction _cbOnMessage;
+    MqttAck _cbOnFakeAck;
+
     void _initParams();
+    void _initMqtt();
     void _fromJson(JsonDocument &config);
     void _onMqttConfig(WebServer *request);
     void _onMqttState(WebServer *request);
@@ -83,14 +127,12 @@ namespace EWC
 #endif
 
     void _connectToMqtt();
-    void _onMqttDisconnect(AsyncMqttClientDisconnectReason reason);
-    void _onMqttConnect(bool sessionPresent);
+    void _messageReceived(String &topic, String &payload);
 
   private:
-    bool _connecting;
-    bool _failed;
-    String _failedReason;
+    bool _connectionStateLast = false;
+    std::vector<uint16_t> _lastSendAcks;
+    std::vector<Message> _messages;
   };
-
 };
 #endif

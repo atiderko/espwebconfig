@@ -36,7 +36,7 @@ HAPropertyConfig::HAPropertyConfig(String component, String uniqueId, String nam
   this->settable = false;
   this->retained = retained;
 }
-HAPropertyConfig::HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String objectId, AsyncMqttClientInternals::OnMessageUserCallback callback, String unit, bool retained)
+HAPropertyConfig::HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String objectId, Mqtt::MqttMessageFunction callback, String unit, bool retained)
 {
   this->uniqueId = uniqueId;
   this->component = component;
@@ -118,7 +118,7 @@ uint16_t HAProperty::publishConfig(EWC::Mqtt &mqtt)
   String output;
   serializeJson(this->jsonConfig, output);
   I::get().logger() << F("[MqttHA]: ") << output << endl;
-  return mqtt.client().publish(this->discoveryTopic.c_str(), 2, false, output.c_str());
+  return mqtt.publish(this->discoveryTopic, output, false, 2);
 }
 
 MqttHA::MqttHA()
@@ -142,11 +142,9 @@ void MqttHA::setup(EWC::Mqtt &mqtt, String deviceId, String deviceName, String m
   _mqttDevice.serialNumber = I::get().config().getChipId();
   _mqttDevice.swVersion = I::get().server().version();
 
-  mqtt.client().onMessage(std::bind(&MqttHA::_onMqttMessage, this, std::placeholders::_1, std::placeholders::_2,
-                                    std::placeholders::_3, std::placeholders::_4,
-                                    std::placeholders::_5, std::placeholders::_6));
-  mqtt.client().onConnect(std::bind(&MqttHA::_onMqttConnect, this, std::placeholders::_1));
-  mqtt.client().onPublish(std::bind(&MqttHA::_onMqttAck, this, std::placeholders::_1));
+  mqtt.onMessage(std::bind(&MqttHA::_onMqttMessage, this, std::placeholders::_1, std::placeholders::_2));
+  mqtt.onConnected(std::bind(&MqttHA::_onMqttConnect, this));
+  mqtt.onFakeAck(std::bind(&MqttHA::_onMqttAck, this, std::placeholders::_1));
 }
 
 bool MqttHA::_hasProperty(String uniqueId)
@@ -163,10 +161,6 @@ bool MqttHA::_hasProperty(String uniqueId)
 
 bool MqttHA::addProperty(String component, String uniqueId, String name, String deviceClass, String objectId, String unit, bool retained)
 {
-  // #ifdef ESP32
-  //   std::lock_guard<std::mutex> lck(_mutex);
-  // #endif
-
   if (_hasProperty(uniqueId))
   {
     I::get().logger() << F("✘ [MqttHA] can not add property with id: ") << uniqueId << F(", already exists!") << endl;
@@ -178,12 +172,8 @@ bool MqttHA::addProperty(String component, String uniqueId, String name, String 
   return true;
 }
 
-bool MqttHA::addPropertySettable(String component, String uniqueId, String name, String deviceClass, String objectId, AsyncMqttClientInternals::OnMessageUserCallback callback, String unit, bool retained)
+bool MqttHA::addPropertySettable(String component, String uniqueId, String name, String deviceClass, String objectId, Mqtt::MqttMessageFunction callback, String unit, bool retained)
 {
-  // #ifdef ESP32
-  //   std::lock_guard<std::mutex> lck(_mutex);
-  // #endif
-
   if (_hasProperty(uniqueId))
   {
     I::get().logger() << F("✘ [MqttHA] can not add settable property with id: ") << uniqueId << F(", already exists!") << endl;
@@ -195,15 +185,12 @@ bool MqttHA::addPropertySettable(String component, String uniqueId, String name,
   return true;
 }
 
-void MqttHA::_onMqttConnect(bool sessionPresent)
+void MqttHA::_onMqttConnect()
 {
-  // #ifdef ESP32
-  //   std::lock_guard<std::mutex> lck(_mutex);
-  // #endif
   _properties.clear();
-  I::get().logger() << F("[MqttHA] setup on connect, session present: ") << sessionPresent << endl;
+  I::get().logger() << F("[MqttHA] setup on connect...") << endl;
   I::get().logger() << "[MqttHA]: ESP heap: _onMqttConnect: " << ESP.getFreeHeap() << endl;
-  String prefix = _ewcMqtt->paramDiscoveryPrefix;
+  String prefix = _ewcMqtt->getDiscoveryPrefix();
   prefix.replace("/", "");
   if (prefix.length() == 0)
   {
@@ -220,7 +207,8 @@ void MqttHA::_onMqttConnect(bool sessionPresent)
   _statusTopic = prefix + "/status";
   // String statusValue = "online";
   // _ewcMqtt->client().publish(_statusTopic.c_str(), 1, true, statusValue.c_str());
-  _ewcMqtt->client().subscribe(_statusTopic.c_str(), 2);
+  // _ewcMqtt->client().setWill(_homieStateTopic.c_str(), "lost", true, 2);
+  _ewcMqtt->subscribe(_statusTopic.c_str(), 2);
   // publish first configuration
   _waitForPacketId = -1;
   _idxPublishConfig = 0;
@@ -234,10 +222,6 @@ void MqttHA::_onMqttConnect(bool sessionPresent)
 
 void MqttHA::publishState(String uniqueId, String value, bool retain, uint8_t qos)
 {
-  // #ifdef ESP32
-  //   std::lock_guard<std::mutex> lck(_mutex);
-  // #endif
-  // Serial.print("+p");
   if (!_ewcMqtt->client().connected())
   {
     return;
@@ -246,7 +230,8 @@ void MqttHA::publishState(String uniqueId, String value, bool retain, uint8_t qo
   {
     if (strcmp(uniqueId.c_str(), itc->uniqueId.c_str()) == 0)
     {
-      uint16_t packetId = _ewcMqtt->client().publish(itc->stateTopic.c_str(), qos, retain, value.c_str());
+      // uint16_t packetId = _ewcMqtt->client().publish(itc->stateTopic.c_str(), qos, retain, value.c_str());
+      uint16_t packetId = _ewcMqtt->publish(itc->stateTopic, value, retain, qos);
       if (packetId == 0)
       {
         I::get().logger() << F("✘ [MqttHA] publish ") << value << F(" to ") << itc->stateTopic << endl;
@@ -259,17 +244,14 @@ void MqttHA::publishState(String uniqueId, String value, bool retain, uint8_t qo
   }
 }
 
-void MqttHA::_onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total)
+void MqttHA::_onMqttMessage(String &topic, String &payload)
 {
-  // #ifdef ESP32
-  //   std::lock_guard<std::mutex> lck(_mutex);
-  // #endif
   I::get().logger() << F("[MqttHA] onMqttMessage; topic: ") << topic << F("; payload: ") << payload << endl;
   for (auto itc = _properties.begin(); itc != _properties.end(); itc++)
   {
-    if (strcmp((char *)topic, itc->commandTopic.c_str()) == 0)
+    if (strcmp(topic.c_str(), itc->commandTopic.c_str()) == 0)
     {
-      itc->callback(topic, payload, properties, len, index, total);
+      itc->callback(topic, payload);
     }
   }
   if (_statusTopic.compareTo(topic) == 0 && String("online").compareTo(payload) == 0)
@@ -289,9 +271,6 @@ void MqttHA::_onMqttMessage(char *topic, char *payload, AsyncMqttClientMessagePr
 
 void MqttHA::_onMqttAck(uint16_t packetId)
 {
-  // #ifdef ESP32
-  //   std::lock_guard<std::mutex> lck(_mutex);
-  // #endif
   I::get().logger() << F("[MqttHA]: received ack for ") << packetId << endl;
   if (packetId == _waitForPacketId)
   {
@@ -310,7 +289,7 @@ void MqttHA::_onMqttAck(uint16_t packetId)
       else
       {
         I::get().logger() << F("[MqttHA] subscribe to ") << _properties[_idxPublishConfig].commandTopic << endl;
-        _waitForPacketId = _ewcMqtt->client().subscribe(_properties[_idxPublishConfig].commandTopic.c_str(), 2);
+        _waitForPacketId = _ewcMqtt->subscribe(_properties[_idxPublishConfig].commandTopic.c_str(), 2);
         _idxPublishConfig++;
       }
     }

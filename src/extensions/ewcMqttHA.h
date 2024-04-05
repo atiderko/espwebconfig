@@ -48,9 +48,9 @@ namespace EWC
     String unit;
     bool retained;
     bool settable = false;
-    AsyncMqttClientInternals::OnMessageUserCallback callback = nullptr;
+    Mqtt::MqttMessageFunction callback = nullptr;
     HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String objectId, String unit, bool retained);
-    HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String objectId, AsyncMqttClientInternals::OnMessageUserCallback callback, String unit = "", bool retained = true);
+    HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String objectId, Mqtt::MqttMessageFunction callback, String unit = "", bool retained = true);
     String getStateTopic(String discoveryPrefix);
     String getCmdTopic(String discoveryPrefix);
   };
@@ -77,7 +77,7 @@ namespace EWC
     String commandTopic = "";
     bool publishedConfig = false;
     bool settable = false;
-    AsyncMqttClientInternals::OnMessageUserCallback callback = nullptr;
+    Mqtt::MqttMessageFunction callback = nullptr;
     // {
     //   "name":"Irrigation",
     //   "device_class":"temperature",
@@ -132,7 +132,7 @@ namespace EWC
      * <discovery_prefix>/<component>/<object_id>/state
      * <discovery_prefix>/<component>/<object_id>/set
      */
-    bool addPropertySettable(String component, String uniqueId, String name, String deviceClass, String objectId, AsyncMqttClientInternals::OnMessageUserCallback callback, String unit = "", bool retained = true);
+    bool addPropertySettable(String component, String uniqueId, String name, String deviceClass, String objectId, Mqtt::MqttMessageFunction callback, String unit = "", bool retained = true);
     /** Publishes a value a property. */
     void publishState(String uniqueId, String value, bool retain = false, uint8_t qos = 1);
 
@@ -151,8 +151,8 @@ namespace EWC
 
     bool _hasProperty(String uniqueId);
 
-    void _onMqttConnect(bool sessionPresent);
-    void _onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total);
+    void _onMqttConnect();
+    void _onMqttMessage(String &topic, String &payload);
     void _onMqttAck(uint16_t packetId);
   };
 };

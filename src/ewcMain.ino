@@ -47,7 +47,7 @@ void setup()
   EWC::I::get().configFS().addConfig(updater_);
   // optional: add page to setup time
   EWC::I::get().configFS().addConfig(time_);
-  // optional: add page for MQTT settings and async client
+  // optional: add page for MQTT settings
   EWC::I::get().configFS().addConfig(mqtt_);
   // optional: update brand and version
   server.setBrand("EWC", "1.0.1");
