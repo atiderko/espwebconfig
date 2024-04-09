@@ -76,6 +76,7 @@ namespace EWC
 
     /** Getter **/
     String &getDiscoveryPrefix() { return _paramDiscoveryPrefix; }
+    uint16_t getSendIntervalMs() { return _paramSendInterval * 1000; }
 
     /** Callbacks **/
     void onConnected(MqttConnectedFunction callback) { _cbConnected = callback; }
@@ -105,6 +106,7 @@ namespace EWC
     uint16_t _paramPort;
     String _paramUser;
     String _paramPassword;
+    uint16_t _paramSendInterval;
 
     /** === Callbacks === **/
     MqttConnectedFunction _cbConnected;

@@ -1,220 +1,225 @@
 {
-    "menu_wifi": {
-        "de": "WLAN"
-    },
-    "menu_info": {
-        "de": "Info"
-    },
-    "menu_access": {
-        "de": "Zugriff"
-    },
-    "menu_time": {
-        "de": "Zeit"
-    },
-    "menu_mqtt": {
-        "de": "MQTT"
-    },
-    "menu_mail": {
-        "de": "EMail"
-    },
+  "menu_wifi": {
+    "de": "WLAN"
+  },
+  "menu_info": {
+    "de": "Info"
+  },
+  "menu_access": {
+    "de": "Zugriff"
+  },
+  "menu_time": {
+    "de": "Zeit"
+  },
+  "menu_mqtt": {
+    "de": "MQTT"
+  },
+  "menu_mail": {
+    "de": "EMail"
+  },
 
-    "btn_disable_wifi": {
-        "de": "Deaktiviere WLAN"
-    },
-    "lbl_reqcurstate": {
-        "de": "aktualisiere den Status..."
-    },
-    "lbl_connecting": {
-        "de": "verbinden..."
-    },
-    "lbl_connected": {
-        "de": "verbunden"
-    },
-    "lbl_list_ssid_scan": {
-        "de": "suche nach WLAN AP's..."
-    },
-    "lbl_total": {
-        "de": "Gesamt:"
-    },
-    "lbl_hidden": {
-        "de": "Unsichtbar:"
-    },
-    "lbl_list_ssid_failed": {
-        "de": "Suche nach WLAN AP's fehlgeschlagen!"
-    },
-    "btn_disconnect": {
-        "de": "trennen"
-    },
+  "btn_disable_wifi": {
+    "de": "Deaktiviere WLAN"
+  },
+  "lbl_reqcurstate": {
+    "de": "aktualisiere den Status..."
+  },
+  "lbl_connecting": {
+    "de": "verbinden..."
+  },
+  "lbl_connected": {
+    "de": "verbunden"
+  },
+  "lbl_list_ssid_scan": {
+    "de": "suche nach WLAN AP's..."
+  },
+  "lbl_total": {
+    "de": "Gesamt:"
+  },
+  "lbl_hidden": {
+    "de": "Unsichtbar:"
+  },
+  "lbl_list_ssid_failed": {
+    "de": "Suche nach WLAN AP's fehlgeschlagen!"
+  },
+  "btn_disconnect": {
+    "de": "trennen"
+  },
 
-    "lbl_version": {
-        "de": "Firmwareversion"
-    },
-    "lbl_estab_ssid": {
-        "de": "Aufgebaute Verbindung"
-    },
-    "lbl_wifi_mode": {
-        "de": "Modus"
-    },
-    "lbl_local_ip": {
-        "de": "IP"
-    },
-    "lbl_gateway": {
-        "de": "Gateway"
-    },
-    "lbl_netwask": {
-        "de": "Netzwerkmaske"
-    },
-    "lbl_softap_ip": {
-        "de": "SoftAP IP"
-    },
-    "lbl_ap_mac": {
-        "de": "AP MAC"
-    },
-    "lbl_sta_mac": {
-        "de": "STA MAC"
-    },
-    "lbl_channel": {
-        "de": "Kanal"
-    },
-    "lbl_dbm": {
-        "de": "dBm"
-    },
-    "lbl_chip_id": {
-        "de": "Chip ID"
-    },
-    "lbl_cpu_freq": {
-        "de": "CPU Freq."
-    },
-    "lbl_flash_size": {
-        "de": "Flashgröße"
-    },
-    "lbl_free_heap": {
-        "de": "Freier Specher"
-    },
+  "lbl_version": {
+    "de": "Firmwareversion"
+  },
+  "lbl_estab_ssid": {
+    "de": "Aufgebaute Verbindung"
+  },
+  "lbl_wifi_mode": {
+    "de": "Modus"
+  },
+  "lbl_local_ip": {
+    "de": "IP"
+  },
+  "lbl_gateway": {
+    "de": "Gateway"
+  },
+  "lbl_netwask": {
+    "de": "Netzwerkmaske"
+  },
+  "lbl_softap_ip": {
+    "de": "SoftAP IP"
+  },
+  "lbl_ap_mac": {
+    "de": "AP MAC"
+  },
+  "lbl_sta_mac": {
+    "de": "STA MAC"
+  },
+  "lbl_channel": {
+    "de": "Kanal"
+  },
+  "lbl_dbm": {
+    "de": "dBm"
+  },
+  "lbl_chip_id": {
+    "de": "Chip ID"
+  },
+  "lbl_cpu_freq": {
+    "de": "CPU Freq."
+  },
+  "lbl_flash_size": {
+    "de": "Flashgröße"
+  },
+  "lbl_free_heap": {
+    "de": "Freier Specher"
+  },
 
-    "lbl_fw_version": {
-        "de": "Aktuelle Version:"
-    },
-    "div_manually": {
-        "de": "Manuell"
-    },
-    "lbl_firmware": {
-        "de": "Firmware"
-    },
-    "npt_update": {
-        "de": "Aktualisiere"
-    },
+  "lbl_fw_version": {
+    "de": "Aktuelle Version:"
+  },
+  "div_manually": {
+    "de": "Manuell"
+  },
+  "lbl_firmware": {
+    "de": "Firmware"
+  },
+  "npt_update": {
+    "de": "Aktualisiere"
+  },
 
-    "lbl_apname": {
-        "de": "AP Name"
-    },
-    "lbl_appass": {
-        "de": "AP Passwort"
-    },
-    "lbl_ap_start_always": {
-        "de": "AP starte immer"
-    },
-    "info_ap_start_always": {
-        "de": "Starte AP auch wenn verbunden."
-    },
-    "lbl_hostname": {
-        "de": "Hostname"
-    },
-    "lbl_basic_auth": {
-        "de": "HTTP Authentifikation"
-    },
-    "lbl_httpuser": {
-        "de": "HTTP Benutzer"
-    },
-    "lbl_httppass": {
-        "de": "HTTP Passwort"
-    },
+  "lbl_apname": {
+    "de": "AP Name"
+  },
+  "lbl_appass": {
+    "de": "AP Passwort"
+  },
+  "lbl_ap_start_always": {
+    "de": "AP starte immer"
+  },
+  "info_ap_start_always": {
+    "de": "Starte AP auch wenn verbunden."
+  },
+  "lbl_hostname": {
+    "de": "Hostname"
+  },
+  "lbl_basic_auth": {
+    "de": "HTTP Authentifikation"
+  },
+  "lbl_httpuser": {
+    "de": "HTTP Benutzer"
+  },
+  "lbl_httppass": {
+    "de": "HTTP Passwort"
+  },
 
-    "lbl_current": {
-        "de": "Aktuelle Zeit"
-    },
-    "lbl_timezone": {
-        "de": "Zeitzone"
-    },
-    "lbl_manually": {
-        "de": "Manuelle Zeit"
-    },
-    "info_manually": {
-        "de": "Die Zeit muss dann nach jedem Start neu eingestellt werden!"
-    },
-    "lbl_dnd_enabled": {
-        "de": "Nicht stören in der Zeit"
-    },
-    "lbl_dnd_from": {
-        "de": "Von"
-    },
-    "lbl_dnd_to": {
-        "de": "Bis"
-    },
-    "npt_apply": {
-        "de": "Übernehmen"
-    },
+  "lbl_current": {
+    "de": "Aktuelle Zeit"
+  },
+  "lbl_timezone": {
+    "de": "Zeitzone"
+  },
+  "lbl_manually": {
+    "de": "Manuelle Zeit"
+  },
+  "info_manually": {
+    "de": "Die Zeit muss dann nach jedem Start neu eingestellt werden!"
+  },
+  "lbl_dnd_enabled": {
+    "de": "Nicht stören in der Zeit"
+  },
+  "lbl_dnd_from": {
+    "de": "Von"
+  },
+  "lbl_dnd_to": {
+    "de": "Bis"
+  },
+  "npt_apply": {
+    "de": "Übernehmen"
+  },
 
-    "lbl_settings": {
-        "de": "Einstellungen"
-    },
-    "lbl_mqtt_enabled": {
-        "de": "Aktiviere MQTT"
-    },
-    "lbl_mqtt_server": {
-        "de": "Server"
-    },
-    "lbl_mqtt_port": {
-        "de": "Port"
-    },
-    "lbl_user": {
-        "de": "Benutzer"
-    },
-    "lbl_passphrase": {
-        "de": "Passwort"
-    },
-    "lbl_mqtt_prefix": {
-        "de": "Discovery prefix"
-    },
+  "lbl_settings": {
+    "de": "Einstellungen"
+  },
+  "lbl_mqtt_enabled": {
+    "de": "Aktiviere MQTT"
+  },
+  "lbl_mqtt_server": {
+    "de": "Server"
+  },
+  "lbl_mqtt_port": {
+    "de": "Port"
+  },
+  "lbl_user": {
+    "de": "Benutzer"
+  },
+  "lbl_passphrase": {
+    "de": "Passwort"
+  },
+  "lbl_mqtt_prefix": {
+    "de": "Discovery prefix"
+  },
+  "lbl_mqtt_send_interval": {
+    "de": "Sendeintervall"
+  },
+  "info_mqtt_send_interval": {
+    "de": "Sendeintervall in Sekunden. Standard: 0 (bei jeder Änderung)"
+  },
 
-    "lbl_on_warning": {
-        "de": "Sende Warnungen"
-    },
-    "info_on_warning": {
-        "de": "Sende nur Warnungen, z.B. keine reguläre Funktion ist möglich"
-    },
-    "lbl_on_change": {
-        "de": "Sende Änderungen"
-    },
-    "info_on_change": {
-        "de": "Sende nur wenn der Funktionsmodus gewechselt wurde."
-    },
-    "lbl_on_event": {
-        "de": "Sende bei jedem Ereignis"
-    },
-    "lbl_receiver": {
-        "de": "Empfänger"
-    },
-    "info_receiver": {
-        "de": "Adresse des Empfängers der E-Mails."
-    },
-    "lbl_sender": {
-        "de": "Sender"
-    },
-    "lbl_smtp": {
-        "de": "SMTP Server"
-    },
-    "lbl_port": {
-        "de": "SMTP Port"
-    },
-    "btn_test_send": {
-        "de": "Testen"
-    },
-    "lbl_enable_serial_log": {
-      "de": "Aktiviere Log"
-    },
-    "info_enable_serial_log": {
-      "de": "Aktiviert seriellen Port für die Log Ausgaben."
-    }
-
+  "lbl_on_warning": {
+    "de": "Sende Warnungen"
+  },
+  "info_on_warning": {
+    "de": "Sende nur Warnungen, z.B. keine reguläre Funktion ist möglich"
+  },
+  "lbl_on_change": {
+    "de": "Sende Änderungen"
+  },
+  "info_on_change": {
+    "de": "Sende nur wenn der Funktionsmodus gewechselt wurde."
+  },
+  "lbl_on_event": {
+    "de": "Sende bei jedem Ereignis"
+  },
+  "lbl_receiver": {
+    "de": "Empfänger"
+  },
+  "info_receiver": {
+    "de": "Adresse des Empfängers der E-Mails."
+  },
+  "lbl_sender": {
+    "de": "Sender"
+  },
+  "lbl_smtp": {
+    "de": "SMTP Server"
+  },
+  "lbl_port": {
+    "de": "SMTP Port"
+  },
+  "btn_test_send": {
+    "de": "Testen"
+  },
+  "lbl_enable_serial_log": {
+    "de": "Aktiviere Log"
+  },
+  "info_enable_serial_log": {
+    "de": "Aktiviert seriellen Port für die Log Ausgaben."
+  }
 }

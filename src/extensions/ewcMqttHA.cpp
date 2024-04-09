@@ -147,6 +147,38 @@ void MqttHA::setup(EWC::Mqtt &mqtt, String deviceId, String deviceName, String m
   mqtt.onFakeAck(std::bind(&MqttHA::_onMqttAck, this, std::placeholders::_1));
 }
 
+void MqttHA::loop()
+{
+  if (!_ewcMqtt->client().connected() || _ewcMqtt->getSendIntervalMs() == 0)
+  {
+    return;
+  }
+  if (_sendPropIndex < _properties.size())
+  {
+    unsigned long ts = millis();
+    auto &prop = _properties.at(_sendPropIndex);
+    if (prop.sendValueAvailable && ts - prop.sendTs >= _ewcMqtt->getSendIntervalMs())
+    {
+      uint16_t packetId = _ewcMqtt->publish(prop.stateTopic, prop.sendValue, prop.sendRetain, prop.sendQos);
+      if (packetId == 0)
+      {
+        I::get().logger() << F("✘ [MqttHA] publish ") << prop.sendValue << F(" to ") << prop.stateTopic << endl;
+      }
+      else
+      {
+        I::get().logger() << F("[MqttHA] publish ") << prop.sendValue << F(" to ") << prop.stateTopic << " , as packet id: " << packetId << endl;
+      }
+      prop.sendValueAvailable = false;
+      prop.sendTs = ts;
+    }
+    _sendPropIndex += 1;
+  }
+  else
+  {
+    _sendPropIndex = 0;
+  }
+}
+
 bool MqttHA::_hasProperty(String uniqueId)
 {
   for (auto itn = _propertyConfigs.begin(); itn != _propertyConfigs.end(); itn++)
@@ -222,7 +254,7 @@ void MqttHA::_onMqttConnect()
 
 void MqttHA::publishState(String uniqueId, String value, bool retain, uint8_t qos)
 {
-  if (!_ewcMqtt->client().connected())
+  if (!_ewcMqtt->client().connected() && _ewcMqtt->getSendIntervalMs() == 0)
   {
     return;
   }
@@ -230,16 +262,26 @@ void MqttHA::publishState(String uniqueId, String value, bool retain, uint8_t qo
   {
     if (strcmp(uniqueId.c_str(), itc->uniqueId.c_str()) == 0)
     {
-      // uint16_t packetId = _ewcMqtt->client().publish(itc->stateTopic.c_str(), qos, retain, value.c_str());
-      uint16_t packetId = _ewcMqtt->publish(itc->stateTopic, value, retain, qos);
-      if (packetId == 0)
+      if (_ewcMqtt->getSendIntervalMs() == 0)
       {
-        I::get().logger() << F("✘ [MqttHA] publish ") << value << F(" to ") << itc->stateTopic << endl;
+        // uint16_t packetId = _ewcMqtt->client().publish(itc->stateTopic.c_str(), qos, retain, value.c_str());
+        uint16_t packetId = _ewcMqtt->publish(itc->stateTopic, value, retain, qos);
+        if (packetId == 0)
+        {
+          I::get().logger() << F("✘ [MqttHA] publish ") << value << F(" to ") << itc->stateTopic << endl;
+        }
+        else
+        {
+          I::get().logger() << F("[MqttHA] publish ") << value << F(" to ") << itc->stateTopic << " , as packet id: " << packetId << endl;
+        }
+        itc->sendValueAvailable = false;
       }
       else
       {
-        I::get().logger() << F("[MqttHA] publish ") << value << F(" to ") << itc->stateTopic << " , as packet id: " << packetId << endl;
+        // store and send later
+        itc->setValue(value, retain, qos);
       }
+      return;
     }
   }
 }

@@ -78,6 +78,14 @@ namespace EWC
     bool publishedConfig = false;
     bool settable = false;
     Mqtt::MqttMessageFunction callback = nullptr;
+
+    // value to send later
+    bool sendValueAvailable = false;
+    String sendValue = "";
+    bool sendRetain = false;
+    uint8_t sendQos = 0;
+    unsigned long sendTs = 0;
+
     // {
     //   "name":"Irrigation",
     //   "device_class":"temperature",
@@ -102,6 +110,13 @@ namespace EWC
     JsonDocument jsonConfig;
     HAProperty(String discoveryPrefix, HAPropertyConfig &config, HADevice &device);
     uint16_t publishConfig(EWC::Mqtt &mqtt);
+    void setValue(String value, bool retain = false, uint8_t qos = 0)
+    {
+      sendValueAvailable = true;
+      sendValue = value;
+      sendRetain = retain;
+      sendQos = qos;
+    }
   };
 
   class MqttHA
@@ -111,6 +126,8 @@ namespace EWC
     ~MqttHA();
 
     void setup(EWC::Mqtt &mqtt, String deviceId, String deviceName, String model = "esp");
+    /** needs to called if interval sand is enabled **/
+    void loop();
 
     /** Adds property to the device
      * <discovery_prefix>/<component>/<object_id>/state
@@ -148,6 +165,7 @@ namespace EWC
     std::vector<HAProperty> _properties;
     uint32_t _idxPublishConfig;
     uint16_t _waitForPacketId;
+    size_t _sendPropIndex = 0;
 
     bool _hasProperty(String uniqueId);
 

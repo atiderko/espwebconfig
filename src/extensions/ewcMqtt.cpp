@@ -109,6 +109,7 @@ void Mqtt::fillJson(JsonDocument &config)
   config["mqtt"]["user"] = _paramUser;
   config["mqtt"]["pass"] = _paramPassword;
   config["mqtt"]["prefix"] = _paramDiscoveryPrefix;
+  config["mqtt"]["send_interval"] = _paramSendInterval;
 }
 
 void Mqtt::_initParams()
@@ -119,6 +120,7 @@ void Mqtt::_initParams()
   _paramUser = "";
   _paramPassword = "";
   _paramDiscoveryPrefix = _defaultPrefix;
+  _paramSendInterval = 0;
 }
 
 void Mqtt::_initMqtt()
@@ -168,6 +170,11 @@ void Mqtt::_fromJson(JsonDocument &config)
   if (!jv.isNull())
   {
     _paramDiscoveryPrefix = jv.as<String>();
+  }
+  jv = config["mqtt"]["send_interval"];
+  if (!jv.isNull())
+  {
+    _paramSendInterval = jv.as<int>();
   }
 }
 
@@ -221,6 +228,10 @@ void Mqtt::_onMqttSave(WebServer *request)
   {
     config["mqtt"]["prefix"] = request->arg("mqtt_prefix");
   }
+  if (request->hasArg("mqtt_send_interval") && !request->arg("mqtt_send_interval").isEmpty())
+  {
+    config["mqtt"]["send_interval"] = request->arg("mqtt_send_interval").toInt();
+  }
   _fromJson(config);
   I::get().configFS().save();
   String details;
@@ -243,6 +254,7 @@ void Mqtt::_onMqttState(WebServer *request)
   jsonDoc["reason"] = "";
   jsonDoc["server"] = _paramServer;
   jsonDoc["port"] = _paramPort;
+  jsonDoc["send_interval"] = _paramSendInterval;
   String output;
   serializeJson(jsonDoc, output);
   request->send(200, FPSTR(PROGMEM_CONFIG_APPLICATION_JSON), output);

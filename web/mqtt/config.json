@@ -5,6 +5,7 @@
     "port": 1883,
     "user": "mqtt",
     "pass": "secure",
-    "prefix": "ewc"
+    "prefix": "ewc",
+    "send_interval": 15
   }
 }

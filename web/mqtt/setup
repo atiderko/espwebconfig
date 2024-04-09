@@ -90,6 +90,25 @@
               <!--label id="info_mqtt_prefix">Optional: </label-->
             </div>
           </div>
+          <div>
+            <label id="lbl_mqtt_send_interval" for="check_interval">
+              Send interval
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="600"
+              value="0"
+              class="slider number"
+              id="mqtt_send_interval"
+              name="mqtt_send_interval"
+              oninput="this.nextElementSibling.value = this.value"
+            />
+            <output id="send_interval_output">0</output>
+            <label id="info_mqtt_send_interval">
+              send interval in seconds. Default: 0 (on every change)
+            </label>
+          </div>
         </div>
         <input id="npt_apply" type="submit" name="apply" value="Apply" />
       </form>
@@ -107,15 +126,15 @@
         document.getElementById("mqtt_enabled").checked =
           data["mqtt"]["enabled"];
         vsw(data["mqtt"]["enabled"], "exp");
-        ["server", "port", "user", "pass", "prefix"].forEach(function (
-          id,
-          idy,
-          arr
-        ) {
-          document.getElementById("mqtt_" + id).value = data["mqtt"][id];
-        });
+        ["server", "port", "user", "pass", "prefix", "send_interval"].forEach(
+          function (id, idy, arr) {
+            document.getElementById("mqtt_" + id).value = data["mqtt"][id];
+          }
+        );
         document.getElementById("loader").hidden = true;
         document.getElementById("base-panel").hidden = false;
+        document.getElementById("send_interval_output").value =
+          data["mqtt"]["send_interval"];
       }
     </script>
     <script>

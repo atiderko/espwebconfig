@@ -1,9 +1,10 @@
 {
-    "enabled": true,
-    "connecting": false,
-    "connected": true,
-    "failed": false,
-    "reason": "Timeout",
-    "server": "brocker",
-    "port": "1883"
+  "enabled": true,
+  "connecting": false,
+  "connected": true,
+  "failed": false,
+  "reason": "Timeout",
+  "server": "brocker",
+  "port": "1883",
+  "send_interval": 15
 }
