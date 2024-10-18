@@ -25,23 +25,25 @@ limitations under the License.
 
 using namespace EWC;
 
-HAPropertyConfig::HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String objectId, String unit, bool retained)
+HAPropertyConfig::HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String stateClass, String objectId, String unit, bool retained)
 {
   this->uniqueId = uniqueId;
   this->component = component;
   this->name = name;
   this->deviceClass = deviceClass;
+  this->stateClass = stateClass;
   this->objectId = objectId;
   this->unit = unit;
   this->settable = false;
   this->retained = retained;
 }
-HAPropertyConfig::HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String objectId, Mqtt::MqttMessageFunction callback, String unit, bool retained)
+HAPropertyConfig::HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String stateClass, String objectId, Mqtt::MqttMessageFunction callback, String unit, bool retained)
 {
   this->uniqueId = uniqueId;
   this->component = component;
   this->name = name;
   this->deviceClass = deviceClass;
+  this->stateClass = stateClass;
   this->objectId = objectId;
   this->unit = unit;
   this->retained = retained;
@@ -69,21 +71,45 @@ HAProperty::HAProperty(String discoveryPrefix, HAPropertyConfig &config, HADevic
     this->callback = config.callback;
   }
   this->discoveryTopic = discoveryPrefix + "/" + config.component + "/" + I::get().config().getChipId() + "/" + config.objectId + "/config";
+
   // create json configuration for discovery in home assistant
+  if (config.component.equals("number"))
+  {
+    jsonConfig["command_topic"] = "dummy topic"; // dummy topic to avoid errors in Home Assistant
+  }
+
+  // Fields that are valid for all sensor, binary sensor, button, image, number, select, weather entities
+
+  // name (optional) : Defines a name of the entity.
   if (config.name.length() > 0)
   {
     jsonConfig["name"] = config.name;
   }
+
+  // unique_id string (Optional)
+  // An ID that uniquely identifies this entity. Will be combined with the unique ID of the configuration block if
+  // available. This allows changing the name, icon and entity_id from the web interface
+  jsonConfig["unique_id"] = this->uniqueId;
+
+  // device_class device_class (Optional, default: None)
+  // Sets the class of the device, changing the device state and icon that is displayed on the UI (see below).
+  // It does not set the unit_of_measurement.
   if (config.deviceClass.length() > 0)
   {
     jsonConfig["device_class"] = config.deviceClass;
   }
+
+  if (config.stateClass.length() > 0)
+  {
+    jsonConfig["state_class"] = config.stateClass;
+  }
   jsonConfig["state_topic"] = this->stateTopic;
+
   if (config.unit.length() > 0)
   {
     jsonConfig["unit_of_measurement"] = config.unit;
   }
-  jsonConfig["unique_id"] = this->uniqueId;
+
   if (this->settable)
   {
     jsonConfig["command_topic"] = this->commandTopic;
@@ -107,6 +133,10 @@ HAProperty::HAProperty(String discoveryPrefix, HAPropertyConfig &config, HADevic
     {
       jsonDevice["configuration_url"] = device.configurationUrl;
     }
+
+    // Provide manufacturer so the corresponding Manufacturer field is not set to <unknown>
+    jsonDevice["manufacturer"] = "Tiderko";
+
     device.added = true;
   }
 }
@@ -191,27 +221,27 @@ bool MqttHA::_hasProperty(String uniqueId)
   return false;
 }
 
-bool MqttHA::addProperty(String component, String uniqueId, String name, String deviceClass, String objectId, String unit, bool retained)
+bool MqttHA::addProperty(String component, String uniqueId, String name, String deviceClass, String stateClass, String objectId, String unit, bool retained)
 {
   if (_hasProperty(uniqueId))
   {
     I::get().logger() << F("✘ [MqttHA] can not add property with id: ") << uniqueId << F(", already exists!") << endl;
     return false;
   }
-  HAPropertyConfig hp(component, uniqueId, name, deviceClass, objectId, unit, retained);
+  HAPropertyConfig hp(component, uniqueId, name, deviceClass, stateClass, objectId, unit, retained);
   _propertyConfigs.push_back(hp);
   I::get().logger() << F("[MqttHA] added property with id: ") << uniqueId << endl;
   return true;
 }
 
-bool MqttHA::addPropertySettable(String component, String uniqueId, String name, String deviceClass, String objectId, Mqtt::MqttMessageFunction callback, String unit, bool retained)
+bool MqttHA::addPropertySettable(String component, String uniqueId, String name, String deviceClass, String stateClass, String objectId, Mqtt::MqttMessageFunction callback, String unit, bool retained)
 {
   if (_hasProperty(uniqueId))
   {
     I::get().logger() << F("✘ [MqttHA] can not add settable property with id: ") << uniqueId << F(", already exists!") << endl;
     return false;
   }
-  HAPropertyConfig hp(component, uniqueId, name, deviceClass, objectId, callback, unit, retained);
+  HAPropertyConfig hp(component, uniqueId, name, deviceClass, stateClass, objectId, callback, unit, retained);
   _propertyConfigs.push_back(hp);
   I::get().logger() << F("[MqttHA] added settable property with id: ") << uniqueId << endl;
   return true;

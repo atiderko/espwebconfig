@@ -44,17 +44,23 @@ namespace EWC
     String component;
     String name = "";
     String deviceClass = "";
+    String stateClass = "";
     String objectId;
     String unit;
     bool retained;
     bool settable = false;
     Mqtt::MqttMessageFunction callback = nullptr;
-    HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String objectId, String unit, bool retained);
-    HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String objectId, Mqtt::MqttMessageFunction callback, String unit = "", bool retained = true);
+    HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String stateClass, String objectId, String unit, bool retained);
+    HAPropertyConfig(String component, String uniqueId, String name, String deviceClass, String stateClass, String objectId, Mqtt::MqttMessageFunction callback, String unit = "", bool retained = true);
     String getStateTopic(String discoveryPrefix);
     String getCmdTopic(String discoveryPrefix);
   };
 
+  /*!
+   * All variables are listed as "Supported abbreviations for device registry configuration" in
+   * https://www.home-assistant.io/integrations/mqtt/
+   *
+   */
   class HADevice
   {
   public:
@@ -68,6 +74,12 @@ namespace EWC
     HADevice() {}
   };
 
+  /*!
+   * All variables are listed as "Configuration Variables" in
+   * https://www.home-assistant.io/integrations/template#trigger-based-template-binary-sensors-buttons-images-numbers-selects-and-sensors
+   *
+   * Not all variables are required, see \c #HAProperty() for build content of the JSON object that will be send to the Home Assistant.
+   */
   class HAProperty
   {
   public:
@@ -143,13 +155,27 @@ namespace EWC
      * 'volatile_organic_compounds_parts', 'voltage', 'volume', 'volume_storage', 'water', 'weight', 'wind_speed'
      * :objectID: The ID of the device. This is only to allow for separate topics for each device and is not used for the entity_id.
      *  The ID of the device must only consist of characters from the character class [a-zA-Z0-9_-] (alphanumerics, underscore and hyphen)
+     *
+     *
+     * The variables differ depending on the defined entity:
+     * number: https://www.home-assistant.io/integrations/number.mqtt/
+     * sensor: https://www.home-assistant.io/integrations/number.mqtt/
+     * binary_sensor: https://www.home-assistant.io/integrations/binary_sensor.mqtt/
+     *
+     * At least for these entities, the description of the “device” entry is identical.
+     * For other entries, it must be noted that the (required) entries and their number differ depending on the entity.
+     *
+     * The approach of passing the entries as parameters of the method \c #addProperty() is unfortunately not flexible
+     * enough. In addition, dependencies in relation to the defined entity must be taken into account later when
+     * sending in the \c #HAProperty() method.
      */
-    bool addProperty(String component, String uniqueId, String name, String deviceClass, String objectId, String unit = "", bool retained = true);
+    bool addProperty(String component, String uniqueId, String name, String deviceClass, String stateClass, String objectId, String unit = "", bool retained = true);
+
     /** Adds a settable property.
      * <discovery_prefix>/<component>/<object_id>/state
      * <discovery_prefix>/<component>/<object_id>/set
      */
-    bool addPropertySettable(String component, String uniqueId, String name, String deviceClass, String objectId, Mqtt::MqttMessageFunction callback, String unit = "", bool retained = true);
+    bool addPropertySettable(String component, String uniqueId, String name, String deviceClass, String stateClass, String objectId, Mqtt::MqttMessageFunction callback, String unit = "", bool retained = true);
     /** Publishes a value a property. */
     void publishState(String uniqueId, String value, bool retain = false, uint8_t qos = 1);
 
