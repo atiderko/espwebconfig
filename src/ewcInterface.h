@@ -57,14 +57,19 @@ namespace EWC
     Time *_time = nullptr;
   };
 
+  static InterfaceData *gInterfaceData = nullptr;
+
   class I
   {
   public:
-    static InterfaceData &get() { return _interface; }
-
-  private:
-    // Initialized in ewcConfigServer.cpp
-    static InterfaceData _interface;
+    static InterfaceData &get()
+    {
+      if (!gInterfaceData)
+      {
+        gInterfaceData = new InterfaceData();
+      }
+      return *gInterfaceData;
+    }
   };
 
 };

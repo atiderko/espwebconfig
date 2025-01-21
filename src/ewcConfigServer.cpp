@@ -56,8 +56,6 @@ limitations under the License.
 
 using namespace EWC;
 
-InterfaceData I::_interface; // need to define the static variable
-
 PGM_P ConfigServer::wlStatusSymbols[] = {
     "IDLE",
     "CONNECTING",
@@ -85,7 +83,6 @@ ConfigServer::ConfigServer(uint16_t port)
     : _server(port),
       _brand("ESP Web Config")
 {
-
   I::get()._server = this;
   I::get()._config = &_config;
   I::get()._configFS = &_configFS;
